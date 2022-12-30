@@ -68,7 +68,7 @@ internal class ShowStrategiesCommand : IMenuCommand
 
             await _telegramService.SendTextMessageToUserAsync(
                 $"Here you can select existing strategy and see it's properties with strategy itself and instance.{Environment.NewLine}{Environment.NewLine}" +
-                $"<i>Tip:</i> if you do not see instance properties it's mean that you did not create instance for strategy.{Environment.NewLine}" +
+                $"<b>Tip:</b> if you do not see instance properties it's mean that you did not create instance for strategy.{Environment.NewLine}" +
                 "You can create instance in Update Strategy menu option.", 
                 _telegramMenuStore.GetGoBackKeyboard(_telegramMenuStore.TelegramButtons.Strategies),
                 cancellationToken: cancellationToken
@@ -143,8 +143,9 @@ internal class ShowStrategiesCommand : IMenuCommand
             if (strategy.InstanceType != InstanceType.NoInstance)
             {
                 var instanceObject = _jsonService.Deserialize(strategy.InstanceJson, 
-                    _dtoValidator.GetDtoTypeByInstanceType(strategy.InstanceType));
-                
+                    _dtoValidator.GetDtoTypeByInstanceType(strategy.InstanceType),
+                    JsonSerializationSettings.IgnoreJsonPropertyName);
+
                 var instanceExpandoObject = GetExpandObject(instanceObject.Data);
                 var instanceObjectSerialize = _jsonService.SerializeObject(instanceExpandoObject);
                 var instanceJObject = _jsonService.GetJObject(instanceObjectSerialize.Data).Data;
