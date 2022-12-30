@@ -1,0 +1,18 @@
+{
+    "Client": {
+        "Server": "Default"
+    },
+    "InternetConnection": {
+        "PingUrl": "google.com.ua",
+        "PingTimeOutMilliseconds": 3000,
+        "IterationWaitMilliseconds": 1000,
+        "ReconnectionAttempts" : 5
+    },
+    "Logger": {
+        "LogLevel": "Information",
+        "RestClientLogLevel": "Warning",
+        "SocketClientLogLevel": "Warning",
+        "FileName": "logs.txt",
+        "LogTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext}: {Message}{NewLine}{Exception}"
+    }
+}
