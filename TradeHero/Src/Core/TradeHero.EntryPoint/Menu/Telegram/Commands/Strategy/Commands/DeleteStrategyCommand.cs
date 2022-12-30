@@ -55,7 +55,7 @@ internal class DeleteStrategyCommand : IMenuCommand
             );
 
             await _telegramService.SendTextMessageToUserAsync(
-                $"Here you can delete strategy.{Environment.NewLine}<i>Tip:</i> You cannot delete active strategy.", 
+                $"Here you can delete strategy.{Environment.NewLine}{Environment.NewLine}<b>Tip:</b> You cannot delete active strategy.", 
                 _telegramMenuStore.GetGoBackKeyboard(_telegramMenuStore.TelegramButtons.Strategies),
                 cancellationToken: cancellationToken
             );

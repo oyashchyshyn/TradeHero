@@ -59,8 +59,8 @@ internal class SetActiveStrategyCommand : IMenuCommand
             );
 
             await _telegramService.SendTextMessageToUserAsync(
-                $"Here you can change current active strategy.{Environment.NewLine}" +
-                $"<i>Tip:</i> You cannot cannot change active strategy when it's in trading process.{Environment.NewLine}" +
+                $"Here you can change current active strategy.{Environment.NewLine}{Environment.NewLine}" +
+                $"<b>Tip:</b> You cannot cannot change active strategy when it's in trading process.{Environment.NewLine}" +
                 "If you want to change active strategy firs of all you need to stop strategy.", 
                 _telegramMenuStore.GetGoBackKeyboard(_telegramMenuStore.TelegramButtons.Strategies),
                 cancellationToken: cancellationToken
