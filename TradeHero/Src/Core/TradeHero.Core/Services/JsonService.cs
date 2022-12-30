@@ -1,4 +1,5 @@
 using System.Dynamic;
+using CryptoExchange.Net.Converters;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -28,6 +29,8 @@ internal class JsonService : IJsonService
                 Formatting = formatting
             };
 
+            serializerSettings.Converters.Add(new EnumConverter());
+            
             if (serializationSettings == JsonSerializationSettings.IgnoreJsonPropertyName)
             {
                 serializerSettings.ContractResolver = new IgnoreJsonPropertyNameContractResolver();
@@ -50,6 +53,8 @@ internal class JsonService : IJsonService
         try
         {
             var serializerSettings = new JsonSerializerSettings();
+            
+            serializerSettings.Converters.Add(new EnumConverter());
 
             if (serializationSettings == JsonSerializationSettings.IgnoreJsonPropertyName)
             {
@@ -84,6 +89,8 @@ internal class JsonService : IJsonService
         try
         {
             var serializerSettings = new JsonSerializerSettings();
+            
+            serializerSettings.Converters.Add(new EnumConverter());
 
             if (serializationSettings == JsonSerializationSettings.IgnoreJsonPropertyName)
             {
@@ -135,6 +142,8 @@ internal class JsonService : IJsonService
         try
         {
             var serializerSettings = new JsonSerializer();
+            
+            serializerSettings.Converters.Add(new EnumConverter());
 
             if (serializationSettings == JsonSerializationSettings.IgnoreJsonPropertyName)
             {
