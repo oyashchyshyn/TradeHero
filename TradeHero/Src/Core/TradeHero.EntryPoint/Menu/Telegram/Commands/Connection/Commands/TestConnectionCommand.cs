@@ -59,7 +59,7 @@ internal class TestConnectionCommand : IMenuCommand
 
         await _telegramService.SendTextMessageToUserAsync(
             $"Here you can test connection to exchanger.{Environment.NewLine}" +
-            "<b>Tip:</b> You can test any connection event when bot strategy is running.", 
+            "<b>Tip:</b> You can test any connection even when bot strategy is running.", 
             _telegramMenuStore.GetGoBackKeyboard(_telegramMenuStore.TelegramButtons.Connections),
             cancellationToken: cancellationToken
         );
