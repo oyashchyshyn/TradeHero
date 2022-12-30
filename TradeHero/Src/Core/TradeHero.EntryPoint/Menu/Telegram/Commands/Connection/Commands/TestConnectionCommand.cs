@@ -47,12 +47,12 @@ internal class TestConnectionCommand : IMenuCommand
             return;
         }
             
-        var inlineKeyboardButtons = connections.Select(strategy => 
+        var inlineKeyboardButtons = connections.Select(connection => 
             new List<InlineKeyboardButton>
             {
-                new(strategy.IsActive ? $"{strategy.Name} (Active)" : strategy.Name)
+                new(connection.IsActive ? $"{connection.Name} (Active)" : connection.Name)
                 {
-                    CallbackData = strategy.Id.ToString()
+                    CallbackData = connection.Id.ToString()
                 }
             }
         );
