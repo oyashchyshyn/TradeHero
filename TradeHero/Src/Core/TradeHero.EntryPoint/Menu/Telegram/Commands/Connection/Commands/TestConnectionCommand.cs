@@ -153,7 +153,7 @@ internal class TestConnectionCommand : IMenuCommand
 
         await _telegramService.SendTextMessageToUserAsync(
             message,
-            _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.Strategies),
+            _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.Connections),
             cancellationToken: cancellationToken
         );
     }
