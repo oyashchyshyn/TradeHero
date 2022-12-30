@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using TradeHero.Contracts.EntryPoint;
+using TradeHero.Contracts.Repositories.Models;
 using TradeHero.EntryPoint.Data;
 using TradeHero.EntryPoint.Data.Dtos.Instance;
 using TradeHero.EntryPoint.Data.Dtos.Strategy;
@@ -60,12 +61,12 @@ public static class ThLogicServiceCollectionExtensions
         serviceCollection.AddTransient<ConnectionCommand>();
         serviceCollection.AddTransient<TestConnectionCommand>();
         serviceCollection.AddTransient<AddConnectionCommand>();
-        serviceCollection.AddTransient<UpdateConnectionCommand>();
         serviceCollection.AddTransient<SetActiveConnectionCommand>();
         serviceCollection.AddTransient<ShowConnectionsCommand>();
         serviceCollection.AddTransient<DeleteConnectionCommand>();
         
         // Data validation
+        serviceCollection.AddTransient<IValidator<ConnectionDto>, ConnectionDtoValidation>();
         serviceCollection.AddTransient<IValidator<PercentLimitStrategyDto>, PercentLimitStrategyDtoValidation>();
         serviceCollection.AddTransient<IValidator<PercentMoveStrategyDto>, PercentMoveStrategyDtoValidation>();
         serviceCollection.AddTransient<IValidator<ClusterVolumeInstanceDto>, ClusterVolumeOptionsDtoValidation>();

@@ -78,7 +78,7 @@ internal class StartStrategyCommand : IMenuCommand
         
             await _telegramService.SendTextMessageToUserAsync(
                 "Strategy started! Enjoy lazy pidor.", 
-                _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.MainMenu),
+                _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.Bot),
                 cancellationToken: cancellationToken
             );
         }
@@ -114,7 +114,7 @@ internal class StartStrategyCommand : IMenuCommand
         
         await _telegramService.SendTextMessageToUserAsync(
             "Choose action:",
-            _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.MainMenu),
+            _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.Bot),
             cancellationToken: cancellationToken
         );
     }

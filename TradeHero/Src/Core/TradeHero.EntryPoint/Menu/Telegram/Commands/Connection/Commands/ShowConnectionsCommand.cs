@@ -1,5 +1,9 @@
 using Microsoft.Extensions.Logging;
+using Telegram.Bot.Types.ReplyMarkups;
+using TradeHero.Contracts.Extensions;
 using TradeHero.Contracts.Menu;
+using TradeHero.Contracts.Repositories;
+using TradeHero.Contracts.Repositories.Models;
 using TradeHero.Contracts.Services;
 
 namespace TradeHero.EntryPoint.Menu.Telegram.Commands.Connection.Commands;
@@ -8,16 +12,22 @@ internal class ShowConnectionsCommand : IMenuCommand
 {
     private readonly ILogger<ShowConnectionsCommand> _logger;
     private readonly ITelegramService _telegramService;
+    private readonly IDateTimeService _dateTimeService;
+    private readonly IConnectionRepository _connectionRepository;
     private readonly TelegramMenuStore _telegramMenuStore;
 
     public ShowConnectionsCommand(
         ILogger<ShowConnectionsCommand> logger,
         ITelegramService telegramService,
+        IDateTimeService dateTimeService,
+        IConnectionRepository connectionRepository,
         TelegramMenuStore telegramMenuStore
         )
     {
         _logger = logger;
         _telegramService = telegramService;
+        _dateTimeService = dateTimeService;
+        _connectionRepository = connectionRepository;
         _telegramMenuStore = telegramMenuStore;
     }
     
@@ -28,10 +38,36 @@ internal class ShowConnectionsCommand : IMenuCommand
         try
         {
             _telegramMenuStore.LastCommandId = Id;
-        
+            
+            var connections = await _connectionRepository.GetConnectionsAsync();
+            if (!connections.Any())
+            {
+                _logger.LogError("There is no connections. In {Method}", nameof(HandleCallbackDataAsync));
+
+                await SendMessageWithClearDataAsync("There is no connections.", cancellationToken);
+                
+                return;
+            }
+            
+            var inlineKeyboardButtons = connections.Select(strategy => 
+                new List<InlineKeyboardButton>
+                {
+                    new(strategy.IsActive ? $"{strategy.Name} (Active)" : strategy.Name)
+                    {
+                        CallbackData = strategy.Id.ToString()
+                    }
+                }
+            );
+
             await _telegramService.SendTextMessageToUserAsync(
-                "Choose option:", 
-                _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.Strategies),
+                "Here you can select connection and see it's properties", 
+                _telegramMenuStore.GetGoBackKeyboard(_telegramMenuStore.TelegramButtons.Connections),
+                cancellationToken: cancellationToken
+            );
+            
+            await _telegramService.SendTextMessageToUserAsync(
+                "Select connection that you want to see settings:", 
+                _telegramMenuStore.GetInlineKeyboard(inlineKeyboardButtons),
                 cancellationToken: cancellationToken
             );
         }
@@ -48,9 +84,36 @@ internal class ShowConnectionsCommand : IMenuCommand
         return Task.CompletedTask;
     }
 
-    public Task HandleCallbackDataAsync(string callbackData, CancellationToken cancellationToken)
+    public async Task HandleCallbackDataAsync(string callbackData, CancellationToken cancellationToken)
     {
-        return Task.CompletedTask;
+        try
+        {
+            var connection = await _connectionRepository.GetConnectionByIdAsync(Guid.Parse(callbackData));
+            if (connection == null)
+            {
+                _logger.LogWarning("Connection with key {Key} does not exist. In {Method}", 
+                    callbackData, nameof(HandleCallbackDataAsync));
+
+                await SendMessageWithClearDataAsync("Connection does not exist.", cancellationToken);
+                
+                return;
+            }
+
+            var localCreationDateTime = _dateTimeService.ConvertToLocalTime(connection.CreationDateTime);
+            
+            var message = $"{nameof(ConnectionDto.Name).LowercaseFirstLetter()}: {connection.Name}{Environment.NewLine}" +
+                          $"{nameof(ConnectionDto.ApiKey).LowercaseFirstLetter()}: {connection.ApiKey}{Environment.NewLine}" +
+                          $"{nameof(ConnectionDto.SecretKey).LowercaseFirstLetter()}: {connection.SecretKey}{Environment.NewLine}" +
+                          $"{nameof(ConnectionDto.CreationDateTime).LowercaseFirstLetter()}: {localCreationDateTime:dd.MM.yyyy hh:mm:ss}";
+            
+            await SendMessageWithClearDataAsync(message, cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogCritical(exception, "In {Method}", nameof(HandleCallbackDataAsync));
+
+            await SendMessageWithClearDataAsync("There was an error during process, please, try later.", cancellationToken);
+        }
     }
     
     #region Private methods
@@ -61,7 +124,7 @@ internal class ShowConnectionsCommand : IMenuCommand
 
         await _telegramService.SendTextMessageToUserAsync(
             message,
-            _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.Strategies),
+            _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.Connections),
             cancellationToken: cancellationToken
         );
     }

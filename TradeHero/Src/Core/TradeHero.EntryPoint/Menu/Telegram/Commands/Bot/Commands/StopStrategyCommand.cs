@@ -59,7 +59,7 @@ internal class StopStrategyCommand : IMenuCommand
 
             await _telegramService.SendTextMessageToUserAsync(
                 "Strategy stopped.", 
-                _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.MainMenu),
+                _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.Bot),
                 cancellationToken: cancellationToken
             );
         }
@@ -95,7 +95,7 @@ internal class StopStrategyCommand : IMenuCommand
         
         await _telegramService.SendTextMessageToUserAsync(
             "Choose action:",
-            _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.MainMenu),
+            _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.Bot),
             cancellationToken: cancellationToken
         );
     }

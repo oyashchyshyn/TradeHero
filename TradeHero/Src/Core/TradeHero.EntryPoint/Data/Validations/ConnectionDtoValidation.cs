@@ -8,11 +8,13 @@ namespace TradeHero.EntryPoint.Data.Validations;
 internal class ConnectionDtoValidation : AbstractValidator<ConnectionDto>
 {
     private readonly IConnectionRepository _strategyRepository;
-    
-    public ConnectionDtoValidation(IConnectionRepository strategyRepository) 
+
+    public ConnectionDtoValidation(
+        IConnectionRepository strategyRepository
+    ) 
     {
         _strategyRepository = strategyRepository;
-        
+
         RuleSet(ValidationRuleSet.Create.ToString(), () =>
         {
             RuleFor(x => x.Name)
@@ -46,11 +48,6 @@ internal class ConnectionDtoValidation : AbstractValidator<ConnectionDto>
         
         RuleFor(x => x.SecretKey)
             .NotEmpty();
-        
-        RuleFor(x => x)
-            .MustAsync(CheckIsConnectionToExchangerValidAsync)
-            .When(x => !string.IsNullOrWhiteSpace(x.ApiKey) && !string.IsNullOrWhiteSpace(x.SecretKey))
-            .WithMessage("Cannot connect to exchanger.");
     }
 
     private async Task<bool> CheckIsNameDoesNotExistInDatabaseForCreateAsync(ConnectionDto percentLimitStrategyDto, 
@@ -64,17 +61,6 @@ internal class ConnectionDtoValidation : AbstractValidator<ConnectionDto>
     {
         return !await _strategyRepository.IsNameExistInDatabaseForUpdate(percentLimitStrategyDto.Id, name);
     }
-    
-    private async Task<bool> CheckIsConnectionToExchangerValidAsync(ConnectionDto percentLimitStrategyDto, ConnectionDto percentLimitStrategyDtoT, 
-        CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(percentLimitStrategyDto.ApiKey) || string.IsNullOrWhiteSpace(percentLimitStrategyDto.SecretKey))
-        {
-            return false;
-        }
-        
-        return true;
-    }
-    
+
     #endregion
 }

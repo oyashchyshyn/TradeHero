@@ -4,5 +4,5 @@ namespace TradeHero.Contracts.Client;
 
 public interface IThSocketBinanceClient : IBinanceSocketClient
 {
-    void SetCredentials(string key, string secret);
+    
 }

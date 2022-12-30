@@ -52,22 +52,6 @@ internal class StrategyRepository : IStrategyRepository
         }
     }
 
-    public StrategyDto? GetActiveStrategy()
-    {
-        try
-        {
-            var activeStrategySettings = _database.Strategies.AsNoTracking().SingleOrDefault(x => x.IsActive);
-
-            return activeStrategySettings != null ? GenerateStrategyDto(activeStrategySettings) : null;
-        }
-        catch (Exception exception)
-        {
-            _logger.LogCritical(exception, "In {Method}", nameof(GetActiveStrategy));
-
-            return null;
-        }
-    }
-    
     public async Task<StrategyDto?> GetActiveStrategyAsync()
     {
         try

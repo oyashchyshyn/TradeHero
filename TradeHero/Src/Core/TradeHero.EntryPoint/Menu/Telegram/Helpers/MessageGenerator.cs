@@ -9,6 +9,22 @@ namespace TradeHero.EntryPoint.Menu.Telegram.Helpers;
 
 internal static class MessageGenerator
 {
+    public static string GenerateValidationErrorMessage(List<ValidationFailure> validationFailures)
+    {
+        var stringBuilder = new StringBuilder();
+        
+        stringBuilder.Append($"There was an error during data validation. Check errors:{Environment.NewLine}{Environment.NewLine}");
+        
+        foreach (var validationFailure in validationFailures)
+        {
+            stringBuilder.Append(
+                $"<b>{validationFailure.PropertyName.LowercaseFirstLetter()}</b> - {validationFailure.ErrorMessage}{Environment.NewLine}"
+            );
+        }
+        
+        return stringBuilder.ToString();
+    }
+    
     public static string GenerateValidationErrorMessage(List<ValidationFailure> validationFailures, Type type)
     {
         var propertyNameWithJsonPropertyName = type.GetPropertyNameAndJsonPropertyName();
@@ -26,7 +42,7 @@ internal static class MessageGenerator
         
         return stringBuilder.ToString();
     }
-    
+
     public static string GenerateCreateStrategyTypeMessage(StrategyType strategyType)
     {
         var propertyNamesWithDescription = strategyType switch

@@ -72,7 +72,6 @@ internal class TelegramMenu : IMenuService
             serviceProvider.GetRequiredService<ConnectionCommand>(),
             serviceProvider.GetRequiredService<TestConnectionCommand>(),
             serviceProvider.GetRequiredService<AddConnectionCommand>(),
-            serviceProvider.GetRequiredService<UpdateConnectionCommand>(),
             serviceProvider.GetRequiredService<SetActiveConnectionCommand>(),
             serviceProvider.GetRequiredService<ShowConnectionsCommand>(),
             serviceProvider.GetRequiredService<DeleteConnectionCommand>()
