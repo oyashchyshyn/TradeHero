@@ -22,27 +22,13 @@ internal class DtoValidator
         _serviceProvider = serviceProvider;
     }
 
-    public Type GetDtoTypeByStrategyType(StrategyType strategyType)
+    public async Task<ValidationResult?> GetValidationResultAsync<T>(T instance, ValidationRuleSet validationRuleSet = ValidationRuleSet.Default)
     {
-        return strategyType switch
-        {
-            StrategyType.PercentLimit => typeof(PercentLimitStrategyDto),
-            StrategyType.PercentMove => typeof(PercentMoveStrategyDto),
-            StrategyType.NoStrategy => throw new ArgumentOutOfRangeException(),
-            _ => throw new ArgumentOutOfRangeException()
-        };
+        var validator = _serviceProvider.GetRequiredService<IValidator<T>>();
+        return await validator.ValidateAsync(instance, 
+            options => options.IncludeRuleSets(validationRuleSet.ToString()));
     }
-    
-    public Type GetDtoTypeByInstanceType(InstanceType instanceType)
-    {
-        return instanceType switch
-        {
-            InstanceType.SpotClusterVolume => typeof(ClusterVolumeInstanceDto),
-            InstanceType.NoInstance => throw new ArgumentOutOfRangeException(),
-            _ => throw new ArgumentOutOfRangeException()
-        };
-    }
-    
+
     public async Task<ValidationResult?> GetValidationResultAsync(Type type, object instance, 
         ValidationRuleSet validationRuleSet = ValidationRuleSet.Default)
     {
@@ -77,5 +63,26 @@ internal class DtoValidator
 
             return null;
         }
+    }
+    
+    public Type GetDtoTypeByStrategyType(StrategyType strategyType)
+    {
+        return strategyType switch
+        {
+            StrategyType.PercentLimit => typeof(PercentLimitStrategyDto),
+            StrategyType.PercentMove => typeof(PercentMoveStrategyDto),
+            StrategyType.NoStrategy => throw new ArgumentOutOfRangeException(),
+            _ => throw new ArgumentOutOfRangeException()
+        };
+    }
+    
+    public Type GetDtoTypeByInstanceType(InstanceType instanceType)
+    {
+        return instanceType switch
+        {
+            InstanceType.SpotClusterVolume => typeof(ClusterVolumeInstanceDto),
+            InstanceType.NoInstance => throw new ArgumentOutOfRangeException(),
+            _ => throw new ArgumentOutOfRangeException()
+        };
     }
 }

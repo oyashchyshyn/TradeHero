@@ -1,40 +1,32 @@
 ﻿using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Menu;
-using TradeHero.Contracts.Repositories;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.Store;
-using TradeHero.Contracts.Strategy;
 
-namespace TradeHero.EntryPoint.Menu.Telegram.Commands.StartStop;
+namespace TradeHero.EntryPoint.Menu.Telegram.Commands.Bot.Commands;
 
-internal class StartStrategyCommand : IMenuCommand
+internal class StopStrategyCommand : IMenuCommand
 {
-    private readonly ILogger<StartStrategyCommand> _logger;
+    private readonly ILogger<StopStrategyCommand> _logger;
     private readonly ITelegramService _telegramService;
-    private readonly IStrategyRepository _strategyRepository;
-    private readonly IStrategyFactory _strategyFactory;
     private readonly IStore _store;
     private readonly TelegramMenuStore _telegramMenuStore;
 
-    public StartStrategyCommand(
-        ILogger<StartStrategyCommand> logger,
+    public StopStrategyCommand(
+        ILogger<StopStrategyCommand> logger,
         ITelegramService telegramService, 
-        IStrategyRepository strategyRepository, 
-        IStrategyFactory strategyFactory, 
         IStore store, 
         TelegramMenuStore telegramMenuStore
         )
     {
         _logger = logger;
         _telegramService = telegramService;
-        _strategyRepository = strategyRepository;
-        _strategyFactory = strategyFactory;
         _store = store;
         _telegramMenuStore = telegramMenuStore;
     }
     
-    public string Id => _telegramMenuStore.TelegramButtons.StartStrategy;
+    public string Id => _telegramMenuStore.TelegramButtons.StopStrategy;
 
     public async Task ExecuteAsync(CancellationToken cancellationToken)
     {
@@ -42,42 +34,31 @@ internal class StartStrategyCommand : IMenuCommand
         {
             _telegramMenuStore.LastCommandId = Id;
         
-            var activeStrategy = await _strategyRepository.GetActiveStrategyAsync();
-            if (activeStrategy == null)
+            if (_store.Bot.Strategy == null)
             {
-                await ErrorMessageAsync("There is no active strategy.", cancellationToken);
-                
-                return;
-            }
-            
-            var strategy = _strategyFactory.GetStrategy(activeStrategy.StrategyType);
-            if (strategy == null)
-            {
-                await ErrorMessageAsync("Strategy does not exist.", cancellationToken);
-            
-                return;
-            }
+                await ErrorMessageAsync("Cannot stop strategy because it does not running.", cancellationToken);
 
+                return;
+            }
+        
             await _telegramService.SendTextMessageToUserAsync(
-                "In starting process...", 
+                "Stopping...", 
                 _telegramMenuStore.GetRemoveKeyboard(),
                 cancellationToken: cancellationToken
             );
-        
-            var strategyResult = await strategy.InitAsync(activeStrategy);
-            if (strategyResult != ActionResult.Success)
+
+            var stopResult = await _store.Bot.Strategy.FinishAsync(true);
+            if (stopResult != ActionResult.Success)
             {
-                await strategy.FinishAsync(true);
+                await ErrorMessageAsync("Error during stopping strategy.", cancellationToken);
                 
-                await ErrorMessageAsync($"Cannot start '{activeStrategy.Name}' strategy. Error code: {strategyResult}", cancellationToken);
-            
                 return;
             }
-        
-            _store.Bot.SetStrategy(strategy, StrategyStatus.Running);
-        
+            
+            _store.Bot.SetStrategy(null, StrategyStatus.Idle);
+
             await _telegramService.SendTextMessageToUserAsync(
-                "Strategy started! Enjoy lazy pidor.", 
+                "Strategy stopped.", 
                 _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.MainMenu),
                 cancellationToken: cancellationToken
             );

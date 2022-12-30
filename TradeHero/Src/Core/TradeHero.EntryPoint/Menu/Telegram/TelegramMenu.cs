@@ -10,8 +10,9 @@ using TradeHero.Contracts.Strategy;
 using TradeHero.EntryPoint.Menu.Telegram.Commands;
 using TradeHero.EntryPoint.Menu.Telegram.Commands.Bot;
 using TradeHero.EntryPoint.Menu.Telegram.Commands.Bot.Commands;
+using TradeHero.EntryPoint.Menu.Telegram.Commands.Connection;
+using TradeHero.EntryPoint.Menu.Telegram.Commands.Connection.Commands;
 using TradeHero.EntryPoint.Menu.Telegram.Commands.Positions;
-using TradeHero.EntryPoint.Menu.Telegram.Commands.StartStop;
 using TradeHero.EntryPoint.Menu.Telegram.Commands.Strategy;
 using TradeHero.EntryPoint.Menu.Telegram.Commands.Strategy.Commands;
 
@@ -67,7 +68,14 @@ internal class TelegramMenu : IMenuService
             serviceProvider.GetRequiredService<AddStrategyCommand>(),
             serviceProvider.GetRequiredService<UpdateStrategyCommand>(),
             serviceProvider.GetRequiredService<SetActiveStrategyCommand>(),
-            serviceProvider.GetRequiredService<DeleteStrategyCommand>()
+            serviceProvider.GetRequiredService<DeleteStrategyCommand>(),
+            serviceProvider.GetRequiredService<ConnectionCommand>(),
+            serviceProvider.GetRequiredService<TestConnectionCommand>(),
+            serviceProvider.GetRequiredService<AddConnectionCommand>(),
+            serviceProvider.GetRequiredService<UpdateConnectionCommand>(),
+            serviceProvider.GetRequiredService<SetActiveConnectionCommand>(),
+            serviceProvider.GetRequiredService<ShowConnectionsCommand>(),
+            serviceProvider.GetRequiredService<DeleteConnectionCommand>()
         });
     }
 

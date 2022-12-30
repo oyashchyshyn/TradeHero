@@ -9,4 +9,6 @@ public interface IConnectionRepository
     Task AddConnectionAsync(ConnectionDto connectionDto);
     Task UpdateConnectionAsync(ConnectionDto connectionDto);
     Task DeleteConnectionAsync(ConnectionDto connectionDto);
+    Task<bool> IsNameExistInDatabaseForCreate(string name);
+    Task<bool> IsNameExistInDatabaseForUpdate(Guid id, string name);
 }

@@ -11,9 +11,10 @@ using TradeHero.EntryPoint.Menu.Telegram;
 using TradeHero.EntryPoint.Menu.Telegram.Commands;
 using TradeHero.EntryPoint.Menu.Telegram.Commands.Bot;
 using TradeHero.EntryPoint.Menu.Telegram.Commands.Bot.Commands;
+using TradeHero.EntryPoint.Menu.Telegram.Commands.Connection;
+using TradeHero.EntryPoint.Menu.Telegram.Commands.Connection.Commands;
 using TradeHero.EntryPoint.Menu.Telegram.Commands.Positions;
 using TradeHero.EntryPoint.Menu.Telegram.Commands.Positions.Commands;
-using TradeHero.EntryPoint.Menu.Telegram.Commands.StartStop;
 using TradeHero.EntryPoint.Menu.Telegram.Commands.Strategy;
 using TradeHero.EntryPoint.Menu.Telegram.Commands.Strategy.Commands;
 
@@ -54,6 +55,15 @@ public static class ThLogicServiceCollectionExtensions
         serviceCollection.AddTransient<ShowStrategiesCommand>();
         serviceCollection.AddTransient<ShowStrategiesPropertiesCommand>();
         serviceCollection.AddTransient<DeleteStrategyCommand>();
+        
+        // Connection settings
+        serviceCollection.AddTransient<ConnectionCommand>();
+        serviceCollection.AddTransient<TestConnectionCommand>();
+        serviceCollection.AddTransient<AddConnectionCommand>();
+        serviceCollection.AddTransient<UpdateConnectionCommand>();
+        serviceCollection.AddTransient<SetActiveConnectionCommand>();
+        serviceCollection.AddTransient<ShowConnectionsCommand>();
+        serviceCollection.AddTransient<DeleteConnectionCommand>();
         
         // Data validation
         serviceCollection.AddTransient<IValidator<PercentLimitStrategyDto>, PercentLimitStrategyDtoValidation>();

@@ -18,6 +18,8 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
             RuleFor(x => x.Name)
                 .MustAsync(CheckIsNameDoesNotExistInDatabaseForCreate)
                 .WithMessage(x => $"Strategy with name '{x.Name}' already exist.");
+            
+            GeneralRules();
         });
         
         RuleSet(ValidationRuleSet.Update.ToString(), () =>

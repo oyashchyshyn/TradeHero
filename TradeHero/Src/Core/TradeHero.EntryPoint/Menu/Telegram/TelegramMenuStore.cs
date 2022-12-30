@@ -38,9 +38,9 @@ internal class TelegramMenuStore
 
     public ReplyMarkupBase GetKeyboard(string telegramMenuId)
     {
-        if (telegramMenuId == TelegramButtons.MainMenu)
+        if (telegramMenuId == TelegramButtons.Bot)
         {
-            return _telegramKeyboards.GetMainMenuKeyboard(_store.Bot.Strategy == null);
+            return _telegramKeyboards.GetBotKeyboard(_store.Bot.Strategy == null);
         }
         
         return _keyboards.ContainsKey(telegramMenuId) 
@@ -76,9 +76,10 @@ internal class TelegramMenuStore
 
     private void SetKeyboards()
     {
-        _keyboards.Add(TelegramButtons.Bot, _telegramKeyboards.GetBotKeyboard());
+        _keyboards.Add(TelegramButtons.MainMenu, _telegramKeyboards.GetMainMenuKeyboard());
         _keyboards.Add(TelegramButtons.Positions, _telegramKeyboards.GetPositionsKeyboard());
         _keyboards.Add(TelegramButtons.Strategies, _telegramKeyboards.GetStrategiesKeyboard());
+        _keyboards.Add(TelegramButtons.Connections, _telegramKeyboards.GetConnectionsKeyboard());
         _keyboards.Add(TelegramButtons.GoBackKeyboard, _telegramKeyboards.GetGoBackKeyboard());
     }
 
@@ -107,21 +108,19 @@ internal class TelegramMenuStore
             _telegramButtonIds = telegramButtonIds;
         }
         
-        public ReplyKeyboardMarkup GetMainMenuKeyboard(bool showStart)
+        public ReplyKeyboardMarkup GetMainMenuKeyboard()
         {
             var keyboard = new List<List<KeyboardButton>>
             {
                 new()
                 {
-                    showStart 
-                        ? new KeyboardButton($"{_telegramButtonIds.StartStrategy}Start strategy")
-                        : new KeyboardButton($"{_telegramButtonIds.StopStrategy}Stop strategy"),
-                    new KeyboardButton($"{_telegramButtonIds.Bot}Bot")
+                    new KeyboardButton($"{_telegramButtonIds.Bot}Bot"),
+                    new KeyboardButton($"{_telegramButtonIds.Positions}Positions")
                 },
                 new()
                 {
-                    new KeyboardButton($"{_telegramButtonIds.Strategies}Strategies"),
-                    new KeyboardButton($"{_telegramButtonIds.Positions}Positions")
+                    new KeyboardButton($"{_telegramButtonIds.Connections}Connections"),
+                    new KeyboardButton($"{_telegramButtonIds.Strategies}Strategies")
                 }
             };
 
@@ -131,18 +130,21 @@ internal class TelegramMenuStore
             };
         }
         
-        public ReplyKeyboardMarkup GetBotKeyboard()
+        public ReplyKeyboardMarkup GetBotKeyboard(bool showStart)
         {
             var keyboard = new List<List<KeyboardButton>>
             {
                 new()
                 {
-                    new KeyboardButton($"{_telegramButtonIds.CheckCodeStatus}Check code status"),
-                    new KeyboardButton($"{_telegramButtonIds.MainMenu}Main menu")
+                    showStart 
+                        ? new KeyboardButton($"{_telegramButtonIds.StartStrategy}Start strategy")
+                        : new KeyboardButton($"{_telegramButtonIds.StopStrategy}Stop strategy"),
+                    new KeyboardButton($"{_telegramButtonIds.CheckCodeStatus}Check code status")
                 },
                 new()
                 {
-                    new KeyboardButton($"{_telegramButtonIds.Pidor}Ask question to bot")
+                    new KeyboardButton($"{_telegramButtonIds.Pidor}Ask question to bot"),
+                    new KeyboardButton($"{_telegramButtonIds.MainMenu}Main menu")
                 }
             };
 
@@ -158,8 +160,8 @@ internal class TelegramMenuStore
             {
                 new()
                 {
-                    new KeyboardButton($"{_telegramButtonIds.StrategiesProperties}Show strategies properties"),
-                    new KeyboardButton($"{_telegramButtonIds.StrategiesShow}Show existing strategies")
+                    new KeyboardButton($"{_telegramButtonIds.StrategiesProperties}Show strategy properties"),
+                    new KeyboardButton($"{_telegramButtonIds.StrategiesShow}Show strategies")
                 },
                 new() 
                 {
@@ -170,6 +172,37 @@ internal class TelegramMenuStore
                 {
                     new KeyboardButton($"{_telegramButtonIds.StrategiesUpdate}Update strategy"),
                     new KeyboardButton($"{_telegramButtonIds.StrategiesDelete}Delete strategy")
+                },
+                new()
+                {
+                    new KeyboardButton($"{_telegramButtonIds.MainMenu}Main menu")
+                }
+            };
+
+            return new ReplyKeyboardMarkup(keyboard)
+            {
+                ResizeKeyboard = true
+            };
+        }
+        
+        public ReplyKeyboardMarkup GetConnectionsKeyboard()
+        {
+            var keyboard = new List<List<KeyboardButton>>
+            {
+                new()
+                {
+                    new KeyboardButton($"{_telegramButtonIds.ConnectionsShow}Show connections"),
+                    new KeyboardButton($"{_telegramButtonIds.ConnectionsSetActive}Set active")
+                },
+                new() 
+                {
+                    new KeyboardButton($"{_telegramButtonIds.ConnectionsTest}Test connection"),
+                    new KeyboardButton($"{_telegramButtonIds.ConnectionsAdd}Add connection")
+                },
+                new()
+                {
+                    new KeyboardButton($"{_telegramButtonIds.ConnectionsUpdate}Update connection"),
+                    new KeyboardButton($"{_telegramButtonIds.ConnectionsDelete}Delete connection")
                 },
                 new()
                 {
@@ -225,10 +258,10 @@ internal class TelegramMenuStore
     internal class TelegramButtonIds
     {
         public readonly string MainMenu = "\U000026EA ";
+
+        public readonly string Bot = "\U0001F47E ";
         public readonly string StartStrategy = "\U0001F3C3 ";
         public readonly string StopStrategy = "\U0001F534 ";
-    
-        public readonly string Bot = "\U0001F47E ";
         public readonly string CheckCodeStatus = "\U0001F4DF ";
         public readonly string Pidor = "\U0001F491 ";
     
@@ -243,6 +276,14 @@ internal class TelegramMenuStore
         public readonly string StrategiesSetActive = $"\U0001FA84{SetActive} ";
         public readonly string StrategiesDelete = $"\U0001FA84{Delete} ";
 
+        public readonly string Connections = "\U0001F4DE ";
+        public readonly string ConnectionsShow = $"\U0001F4DE{Show} ";
+        public readonly string ConnectionsAdd = $"\U0001F4DE{Add} ";
+        public readonly string ConnectionsUpdate = $"\U0001F4DE{Update} ";
+        public readonly string ConnectionsSetActive = $"\U0001F4DE{SetActive} ";
+        public readonly string ConnectionsDelete = $"\U0001F4DE{Delete} ";
+        public readonly string ConnectionsTest = $"\U0001F4DE\U0001F7E4 ";
+        
         public readonly string GoBackKeyboard = "\U0001F519 ";
         
         // System helpers

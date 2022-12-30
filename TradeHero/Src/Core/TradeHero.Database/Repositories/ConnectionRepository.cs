@@ -44,6 +44,16 @@ internal class ConnectionRepository : IConnectionRepository
         throw new NotImplementedException();
     }
 
+    public async Task<bool> IsNameExistInDatabaseForCreate(string name)
+    {
+        return await _database.Connections.AnyAsync(x => x.Name == name);
+    }
+    
+    public async Task<bool> IsNameExistInDatabaseForUpdate(Guid id, string name)
+    {
+        return await _database.Connections.AnyAsync(x => x.Id != id && x.Name == name);
+    }
+
     #region private methods
 
     private static ConnectionDto GenerateConnectionDto(Connection connection)

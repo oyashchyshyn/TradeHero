@@ -1,32 +1,40 @@
 ﻿using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Menu;
+using TradeHero.Contracts.Repositories;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.Store;
+using TradeHero.Contracts.Strategy;
 
-namespace TradeHero.EntryPoint.Menu.Telegram.Commands.StartStop;
+namespace TradeHero.EntryPoint.Menu.Telegram.Commands.Bot.Commands;
 
-internal class StopStrategyCommand : IMenuCommand
+internal class StartStrategyCommand : IMenuCommand
 {
-    private readonly ILogger<StopStrategyCommand> _logger;
+    private readonly ILogger<StartStrategyCommand> _logger;
     private readonly ITelegramService _telegramService;
+    private readonly IStrategyRepository _strategyRepository;
+    private readonly IStrategyFactory _strategyFactory;
     private readonly IStore _store;
     private readonly TelegramMenuStore _telegramMenuStore;
 
-    public StopStrategyCommand(
-        ILogger<StopStrategyCommand> logger,
+    public StartStrategyCommand(
+        ILogger<StartStrategyCommand> logger,
         ITelegramService telegramService, 
+        IStrategyRepository strategyRepository, 
+        IStrategyFactory strategyFactory, 
         IStore store, 
         TelegramMenuStore telegramMenuStore
         )
     {
         _logger = logger;
         _telegramService = telegramService;
+        _strategyRepository = strategyRepository;
+        _strategyFactory = strategyFactory;
         _store = store;
         _telegramMenuStore = telegramMenuStore;
     }
     
-    public string Id => _telegramMenuStore.TelegramButtons.StopStrategy;
+    public string Id => _telegramMenuStore.TelegramButtons.StartStrategy;
 
     public async Task ExecuteAsync(CancellationToken cancellationToken)
     {
@@ -34,31 +42,42 @@ internal class StopStrategyCommand : IMenuCommand
         {
             _telegramMenuStore.LastCommandId = Id;
         
-            if (_store.Bot.Strategy == null)
+            var activeStrategy = await _strategyRepository.GetActiveStrategyAsync();
+            if (activeStrategy == null)
             {
-                await ErrorMessageAsync("Cannot stop strategy because it does not running.", cancellationToken);
-
-                return;
-            }
-        
-            await _telegramService.SendTextMessageToUserAsync(
-                "Stopping...", 
-                _telegramMenuStore.GetRemoveKeyboard(),
-                cancellationToken: cancellationToken
-            );
-
-            var stopResult = await _store.Bot.Strategy.FinishAsync(true);
-            if (stopResult != ActionResult.Success)
-            {
-                await ErrorMessageAsync("Error during stopping strategy.", cancellationToken);
+                await ErrorMessageAsync("There is no active strategy.", cancellationToken);
                 
                 return;
             }
             
-            _store.Bot.SetStrategy(null, StrategyStatus.Idle);
+            var strategy = _strategyFactory.GetStrategy(activeStrategy.StrategyType);
+            if (strategy == null)
+            {
+                await ErrorMessageAsync("Strategy does not exist.", cancellationToken);
+            
+                return;
+            }
 
             await _telegramService.SendTextMessageToUserAsync(
-                "Strategy stopped.", 
+                "In starting process...", 
+                _telegramMenuStore.GetRemoveKeyboard(),
+                cancellationToken: cancellationToken
+            );
+        
+            var strategyResult = await strategy.InitAsync(activeStrategy);
+            if (strategyResult != ActionResult.Success)
+            {
+                await strategy.FinishAsync(true);
+                
+                await ErrorMessageAsync($"Cannot start '{activeStrategy.Name}' strategy. Error code: {strategyResult}", cancellationToken);
+            
+                return;
+            }
+        
+            _store.Bot.SetStrategy(strategy, StrategyStatus.Running);
+        
+            await _telegramService.SendTextMessageToUserAsync(
+                "Strategy started! Enjoy lazy pidor.", 
                 _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.MainMenu),
                 cancellationToken: cancellationToken
             );
