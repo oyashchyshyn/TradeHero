@@ -143,8 +143,9 @@ internal class ShowStrategiesCommand : IMenuCommand
             if (strategy.InstanceType != InstanceType.NoInstance)
             {
                 var instanceObject = _jsonService.Deserialize(strategy.InstanceJson, 
-                    _dtoValidator.GetDtoTypeByInstanceType(strategy.InstanceType));
-                
+                    _dtoValidator.GetDtoTypeByInstanceType(strategy.InstanceType),
+                    JsonSerializationSettings.IgnoreJsonPropertyName);
+
                 var instanceExpandoObject = GetExpandObject(instanceObject.Data);
                 var instanceObjectSerialize = _jsonService.SerializeObject(instanceExpandoObject);
                 var instanceJObject = _jsonService.GetJObject(instanceObjectSerialize.Data).Data;
