@@ -17,21 +17,20 @@ internal static class Program
             var environmentType = args.Any() 
                 ? (EnvironmentType)Enum.Parse(typeof(EnvironmentType), args[0]) 
                 : EnvironmentType.Production;
-            
-            if (await FirstRunScreen.RunAsync(environmentType, baseDirectory))
-            {
-                var host = Host.CreateDefaultBuilder(args)
-                    .UseEnvironment(environmentType.ToString())
-                    .UseContentRoot(baseDirectory)
-                    .ConfigureServices((_, serviceCollection) =>
-                    {
-                        serviceCollection.AddThDependencyCollection();
-                        serviceCollection.AddSingleton<IHostLifetime, TradeHeroLifetime>();
-                    })
-                    .Build();
 
-                await host.RunAsync();   
-            }
+            await FirstRunScreen.RunAsync(environmentType, baseDirectory);
+            
+            var host = Host.CreateDefaultBuilder(args)
+                .UseEnvironment(environmentType.ToString())
+                .UseContentRoot(baseDirectory)
+                .ConfigureServices((_, serviceCollection) =>
+                {
+                    serviceCollection.AddThDependencyCollection();
+                    serviceCollection.AddSingleton<IHostLifetime, TradeHeroLifetime>();
+                })
+                .Build();
+
+            await host.RunAsync();
         }
         catch (Exception exception)
         {

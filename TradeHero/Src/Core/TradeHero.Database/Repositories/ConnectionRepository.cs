@@ -58,11 +58,11 @@ internal class ConnectionRepository : IConnectionRepository
         }
     }
     
-    public ConnectionDto GetActiveConnection()
+    public ConnectionDto? GetActiveConnection()
     {
-        var activeConnection = _database.Connections.AsNoTracking().Single(x => x.IsActive);
+        var activeConnection = _database.Connections.AsNoTracking().SingleOrDefault(x => x.IsActive);
 
-        return GenerateConnectionDto(activeConnection);
+        return activeConnection == null ? null : GenerateConnectionDto(activeConnection);
     }
 
     public async Task<bool> SetActiveConnectionAsync(Guid connectionId)
