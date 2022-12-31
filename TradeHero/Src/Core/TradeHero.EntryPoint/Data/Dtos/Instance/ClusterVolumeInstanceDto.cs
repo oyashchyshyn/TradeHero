@@ -18,7 +18,7 @@ internal class ClusterVolumeInstanceDto
     
     [Description("Enables asynhronious check on results. Available range is 1 to 2000.")]
     [JsonProperty("items_in_task")]
-    public int ItemsInTask { get; set; } = 1;
+    public int ItemsInTask { get; set; }
 
     [Description("Telegram channel id. This parameter is optional.")]
     [JsonProperty("tg_channel_id")]

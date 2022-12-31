@@ -41,7 +41,6 @@ internal class PercentLimitStrategyDto : BaseStrategyDto
     
     [EnumDescription("Defines the action of signal for open position. Available values are '{0}'.", typeof(KlineActionSignal))]
     [JsonProperty("open_pos_action_signal")]
-    
     public KlineActionSignal KlineActionForOpen { get; set; }
     
     [EnumDescription("Defines the power of signal for open position. Available values are '{0}'.", typeof(KlinePowerSignal))]
@@ -94,14 +93,14 @@ internal class PercentLimitStrategyDto : BaseStrategyDto
     [JsonProperty("ts_enable")]
     public bool EnableTrailingStops { get; set; }
     
-    [Description("Callback rate for trailing stop. Available range is 0.1 to 5.0.")]
-    [JsonProperty("ts_callback_rate")]
-    public decimal CallbackRate { get; set; }
-    
     [Description("Roe of position when to place trailing stop order. Available range is -10000.0 to 10000.0.")]
     [JsonProperty("ts_from_roe")]
     public decimal TrailingStopRoe { get; set; }
     
+    [Description("Callback rate for trailing stop. Available range is 0.1 to 5.0.")]
+    [JsonProperty("ts_callback_rate")]
+    public decimal CallbackRate { get; set; }
+
     [Description("Need for cases when ts is reached 'ts_from_roe' but you want to place an additional market stop order. Available range is 0.0 to 100.0. This parameter is optional, skip it if do not want to use it.")]
     [JsonProperty("ts_safe_market_stop")]
     public decimal? MarketStopSafePriceFromLastPricePercent { get; set; }

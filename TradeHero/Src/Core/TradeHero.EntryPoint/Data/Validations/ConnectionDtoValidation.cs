@@ -16,6 +16,8 @@ internal class ConnectionDtoValidation : AbstractValidator<ConnectionDto>
     private readonly IConnectionRepository _strategyRepository;
     private readonly IBinanceResolver _binanceResolver;
 
+    private readonly Dictionary<string, string> _propertyNames = typeof(ConnectionDto).GetPropertyNameAndJsonPropertyName();
+    
     public ConnectionDtoValidation(
         ILogger<ConnectionDtoValidation> logger,
         IConnectionRepository strategyRepository, 
@@ -41,14 +43,12 @@ internal class ConnectionDtoValidation : AbstractValidator<ConnectionDto>
     private async Task<bool> CheckNameAsync(ConnectionDto connectionDto, 
         string name, ValidationContext<ConnectionDto> propertyContext, CancellationToken cancellationToken)
     {
-        var propertyNames = typeof(ConnectionDto).GetPropertyNameAndJsonPropertyName();
-        
         try
         {
             if (string.IsNullOrWhiteSpace(name))
             {
                 propertyContext.AddFailure(new ValidationFailure(
-                    propertyNames[connectionDto.Name], "Cannot be empty."));
+                    _propertyNames[nameof(ConnectionDto.Name)], "Cannot be empty."));
                 
                 return false;
             }
@@ -57,18 +57,18 @@ internal class ConnectionDtoValidation : AbstractValidator<ConnectionDto>
             {
                 case < 3:
                     propertyContext.AddFailure(new ValidationFailure(
-                        propertyNames[connectionDto.Name], "Minimum length 3."));
+                        _propertyNames[nameof(ConnectionDto.Name)], "Minimum length 3."));
                     return false;
                 case > 40:
                     propertyContext.AddFailure(new ValidationFailure(
-                        propertyNames[connectionDto.Name], "Maximum length 40."));
+                        _propertyNames[nameof(ConnectionDto.Name)], "Maximum length 40."));
                     return false;
             }
 
             if (!await _strategyRepository.IsNameExistInDatabaseForCreate(name))
             {
                 propertyContext.AddFailure(new ValidationFailure(
-                    propertyNames[connectionDto.Name], $"Connection with name '{name}' already exist."));
+                    _propertyNames[nameof(ConnectionDto.Name)], $"Connection with name '{name}' already exist."));
             }
             
             return true;
@@ -78,7 +78,7 @@ internal class ConnectionDtoValidation : AbstractValidator<ConnectionDto>
             _logger.LogCritical(exception, "In {Method}", nameof(CheckNameAsync));
             
             propertyContext.AddFailure(new ValidationFailure(
-                $"{propertyNames[connectionDto.Name]}", 
+                $"{_propertyNames[nameof(ConnectionDto.Name)]}", 
                 "Validation failed."));
             
             return false;
@@ -88,8 +88,6 @@ internal class ConnectionDtoValidation : AbstractValidator<ConnectionDto>
     private async Task<bool> CheckApiAndSecretKeysAsync(ConnectionDto connectionDto, ConnectionDto connectionDtoFromRule, 
         ValidationContext<ConnectionDto> propertyContext, CancellationToken cancellationToken)
     {
-        var propertyNames = typeof(ConnectionDto).GetPropertyNameAndJsonPropertyName();
-        
         IThRestBinanceClient? restBinanceClient = null;
         
         try
@@ -97,7 +95,7 @@ internal class ConnectionDtoValidation : AbstractValidator<ConnectionDto>
             if (string.IsNullOrWhiteSpace(connectionDto.ApiKey))
             {
                 propertyContext.AddFailure(new ValidationFailure(
-                    propertyNames[connectionDto.ApiKey], "Cannot be empty."));
+                    _propertyNames[nameof(ConnectionDto.ApiKey)], "Cannot be empty."));
                 
                 return false;
             }
@@ -105,7 +103,7 @@ internal class ConnectionDtoValidation : AbstractValidator<ConnectionDto>
             if (string.IsNullOrWhiteSpace(connectionDto.SecretKey))
             {
                 propertyContext.AddFailure(new ValidationFailure(
-                    propertyNames[connectionDto.SecretKey], "Cannot be empty."));
+                    _propertyNames[nameof(ConnectionDto.SecretKey)], "Cannot be empty."));
                 
                 return false;
             }
@@ -115,7 +113,7 @@ internal class ConnectionDtoValidation : AbstractValidator<ConnectionDto>
             if (restBinanceClient == null)
             {
                 propertyContext.AddFailure(new ValidationFailure(
-                    $"{propertyNames[connectionDto.ApiKey]}/{propertyNames[connectionDto.SecretKey]}", 
+                    $"{_propertyNames[nameof(ConnectionDto.ApiKey)]}/{_propertyNames[nameof(ConnectionDto.ApiKey)]}", 
                     "Cannot get client for this api/secret key combination."));
 
                 return false;
@@ -125,7 +123,7 @@ internal class ConnectionDtoValidation : AbstractValidator<ConnectionDto>
             if (!apiKeyPermissionsRequest.Success)
             {
                 propertyContext.AddFailure(new ValidationFailure(
-                    $"{propertyNames[connectionDto.ApiKey]}/{propertyNames[connectionDto.SecretKey]}", 
+                    $"{_propertyNames[nameof(ConnectionDto.ApiKey)]}/{_propertyNames[nameof(ConnectionDto.ApiKey)]}", 
                     "Cannot connect to exchanger by this api/secret key combination."));
 
                 return false;
@@ -134,7 +132,7 @@ internal class ConnectionDtoValidation : AbstractValidator<ConnectionDto>
             if (!apiKeyPermissionsRequest.Data.EnableFutures)
             {
                 propertyContext.AddFailure(new ValidationFailure(
-                    $"{propertyNames[connectionDto.ApiKey]}/{propertyNames[connectionDto.SecretKey]}", 
+                    $"{_propertyNames[nameof(ConnectionDto.ApiKey)]}/{_propertyNames[nameof(ConnectionDto.ApiKey)]}", 
                     "Futures trading must be enabled."));
 
                 return false;
@@ -143,7 +141,7 @@ internal class ConnectionDtoValidation : AbstractValidator<ConnectionDto>
             if (!apiKeyPermissionsRequest.Data.EnableSpotAndMarginTrading)
             {
                 propertyContext.AddFailure(new ValidationFailure(
-                    $"{propertyNames[connectionDto.ApiKey]}/{propertyNames[connectionDto.SecretKey]}", 
+                    $"{_propertyNames[nameof(ConnectionDto.ApiKey)]}/{_propertyNames[nameof(ConnectionDto.ApiKey)]}", 
                     "Spot and Margin trading must be enabled."));
 
                 return false;
@@ -156,7 +154,7 @@ internal class ConnectionDtoValidation : AbstractValidator<ConnectionDto>
             _logger.LogCritical(exception, "In {Method}", nameof(CheckApiAndSecretKeysAsync));
             
             propertyContext.AddFailure(new ValidationFailure(
-                $"{propertyNames[connectionDto.ApiKey]}/{propertyNames[connectionDto.SecretKey]}", 
+                $"{_propertyNames[nameof(ConnectionDto.ApiKey)]}/{_propertyNames[nameof(ConnectionDto.ApiKey)]}", 
                 "Validation failed."));
             
             return false;

@@ -1,5 +1,8 @@
 using FluentValidation;
+using FluentValidation.Results;
+using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Base.Enums;
+using TradeHero.Contracts.Extensions;
 using TradeHero.Contracts.Repositories;
 using TradeHero.EntryPoint.Data.Dtos.Strategy;
 
@@ -7,57 +10,139 @@ namespace TradeHero.EntryPoint.Data.Validations;
 
 internal class PercentMoveStrategyDtoValidation : AbstractValidator<PercentMoveStrategyDto>
 {
+    private readonly ILogger<PercentMoveStrategyDtoValidation> _logger;
     private readonly IStrategyRepository _strategyRepository;
     
+    private ValidationRuleSet _validationRuleSet;
+    private readonly Dictionary<string, string> _propertyNames = typeof(PercentMoveStrategyDto).GetPropertyNameAndJsonPropertyName();
+    
     public PercentMoveStrategyDtoValidation(
+        ILogger<PercentMoveStrategyDtoValidation> logger,
         IStrategyRepository strategyRepository
         )
     {
+        _logger = logger;
         _strategyRepository = strategyRepository;
         
         RuleSet(ValidationRuleSet.Create.ToString(), () =>
         {
-            RuleFor(x => x.Name)
-                .MustAsync(CheckIsNameDoesNotExistInDatabaseForCreate)
-                .WithMessage(x => $"Strategy with name '{x.Name}' already exist.");
-            
+            _validationRuleSet = ValidationRuleSet.Create;
+
             GeneralRules();
+            
+            _validationRuleSet = ValidationRuleSet.Default;
         });
         
         RuleSet(ValidationRuleSet.Update.ToString(), () =>
         {
-            RuleFor(x => x.Name)
-                .MustAsync(CheckIsNameDoesNotExistInDatabaseForUpdate)
-                .WithMessage(x => $"Strategy with name '{x.Name}' already exist.");
+            _validationRuleSet = ValidationRuleSet.Update;
 
             GeneralRules();
+            
+            _validationRuleSet = ValidationRuleSet.Default;
         });
     }
 
     #region Private methods
 
-    private async Task<bool> CheckIsNameDoesNotExistInDatabaseForCreate(PercentMoveStrategyDto percentMoveStrategyDto, 
-        string name, CancellationToken cancellationToken)
-    {
-        return await _strategyRepository.IsNameExistInDatabaseForCreate(name);
-    }
-    
-    private async Task<bool> CheckIsNameDoesNotExistInDatabaseForUpdate(PercentMoveStrategyDto percentMoveStrategyDto, 
-        string name, CancellationToken cancellationToken)
-    {
-        return await _strategyRepository.IsNameExistInDatabaseForUpdate(percentMoveStrategyDto.Id, name);
-    }
-
     private void GeneralRules()
     {
         RuleFor(x => x.Name)
-            .MinimumLength(3)
-            .MaximumLength(40)
-            .NotEmpty();
+            .MustAsync(ValidateNameAsync);
         
         RuleFor(x => x.PricePercentMove)
-            .GreaterThanOrEqualTo(0.00m)
-            .LessThanOrEqualTo(1000.00m);
+            .MustAsync(ValidatePricePercentMoveAsync);
+    }
+    
+    private async Task<bool> ValidateNameAsync(PercentMoveStrategyDto percentMoveStrategyDto, 
+        string name, ValidationContext<PercentMoveStrategyDto> propertyContext, CancellationToken cancellationToken)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                propertyContext.AddFailure(new ValidationFailure(
+                    _propertyNames[nameof(PercentMoveStrategyDto.Name)], "Cannot be empty."));
+                
+                return false;
+            }
+
+            switch (name.Length)
+            {
+                case < 3:
+                    propertyContext.AddFailure(new ValidationFailure(
+                        _propertyNames[nameof(PercentMoveStrategyDto.Name)], "Minimum length 3."));
+                    return false;
+                case > 40:
+                    propertyContext.AddFailure(new ValidationFailure(
+                        _propertyNames[nameof(PercentMoveStrategyDto.Name)], "Maximum length 40."));
+                    return false;
+            }
+
+            var databaseCheckResult = false;
+            switch (_validationRuleSet)
+            {
+                case ValidationRuleSet.Create:
+                    databaseCheckResult = await _strategyRepository.IsNameExistInDatabaseForCreate(name);
+                    break;
+                case ValidationRuleSet.Update:
+                    databaseCheckResult = await _strategyRepository.IsNameExistInDatabaseForUpdate(percentMoveStrategyDto.Id, name);
+                    break;
+            }
+
+            if (databaseCheckResult)
+            {
+                propertyContext.AddFailure(new ValidationFailure(
+                    _propertyNames[nameof(PercentMoveStrategyDto.Name)], $"Strategy with name '{name}' already exist."));
+
+                return false;
+            }
+
+            return true;
+        }
+        catch (Exception exception)
+        {
+            _logger.LogCritical(exception, "In {Method}", nameof(ValidateNameAsync));
+            
+            propertyContext.AddFailure(new ValidationFailure(
+                $"{_propertyNames[nameof(PercentMoveStrategyDto.Name)]}", 
+                "Validation failed."));
+            
+            return false;
+        }
+    }
+    
+    private Task<bool> ValidatePricePercentMoveAsync(PercentMoveStrategyDto percentMoveStrategyDto, 
+        decimal pricePercentMove, ValidationContext<PercentMoveStrategyDto> propertyContext, CancellationToken cancellationToken)
+    {
+        try
+        {
+            switch (pricePercentMove)
+            {
+                case < 0.01m:
+                    propertyContext.AddFailure(new ValidationFailure(
+                        _propertyNames[nameof(PercentMoveStrategyDto.PricePercentMove)], 
+                        "Cannot be lower then 0.01."));
+                    return Task.FromResult(false);
+                case > 1000.00m:
+                    propertyContext.AddFailure(new ValidationFailure(
+                        _propertyNames[nameof(PercentMoveStrategyDto.PricePercentMove)], 
+                        "Cannot be higher then 1000.00."));
+                    return Task.FromResult(false);
+            }
+
+            return Task.FromResult(true);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogCritical(exception, "In {Method}", nameof(ValidatePricePercentMoveAsync));
+            
+            propertyContext.AddFailure(new ValidationFailure(
+                $"{_propertyNames[nameof(PercentMoveStrategyDto.PricePercentMove)]}", 
+                "Validation failed."));
+            
+            return Task.FromResult(false);
+        }
     }
     
     #endregion
