@@ -197,12 +197,19 @@ internal static class FirstRunScreen
                     Console.WriteLine();
                 }
             
-                Console.WriteLine("Write down name for current data (Minimum length 3 symbols, Maximum length 40 symbols):");
+                Console.WriteLine("Write down name for current data (Minimum length 3 symbols, Maximum length 40 symbols, Do not contain spaces):");
                 userName = Console.ReadLine();
             
                 if (string.IsNullOrWhiteSpace(userName))
                 {
                     errorMessage = "Name cannot be empty.";
+                    Console.Clear();
+                    continue;
+                }
+                
+                if (userName.Contains(" "))
+                {
+                    errorMessage = "Name contains spaces.";
                     Console.Clear();
                     continue;
                 }
