@@ -37,7 +37,7 @@ internal class DatabaseFileWorker
         }
 
         var data = JsonConvert.DeserializeObject<T[]>(stringData);
-        if (data == null || !data.Any())
+        if (data == null)
         {
             throw new Exception($"There is no object data for type {typeof(T)}");
         }
