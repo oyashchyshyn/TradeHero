@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Base.Models;
+using TradeHero.Contracts.Extensions;
 using TradeHero.Contracts.Services;
 using TradeHero.Core.ContractResolvers;
 
@@ -163,7 +164,8 @@ internal class JsonService : IJsonService
         }
     }
     
-    public GenericBaseResult<ExpandoObject> ConvertKeyValueStringDataToDictionary(string stringData)
+    public GenericBaseResult<ExpandoObject> ConvertKeyValueStringDataToDictionary(string stringData, 
+        JsonKeyTransformation jsonKeyTransformation = JsonKeyTransformation.Default)
     {
         try
         {
@@ -175,6 +177,11 @@ internal class JsonService : IJsonService
                 var key = sections[0].Trim();
                 var value = sections[1].Trim();
 
+                if (jsonKeyTransformation == JsonKeyTransformation.ToCapitaliseCase)
+                {
+                    key = key.CapitalizeFirstLetter();
+                }
+                
                 if (value.Contains('\r'))
                 {
                     value = value.Replace("\r", string.Empty);

@@ -10,12 +10,4 @@ internal class ThSocketBinanceClient : BinanceSocketClient, IThSocketBinanceClie
     public ThSocketBinanceClient(BinanceSocketClientOptions options) 
         : base(options)
     { }
-
-    public void SetCredentials(string key, string secret)
-    {
-        SetDefaultOptions(new BinanceSocketClientOptions
-        {
-            ApiCredentials = new ApiCredentials(key, secret)
-        });
-    }
 }

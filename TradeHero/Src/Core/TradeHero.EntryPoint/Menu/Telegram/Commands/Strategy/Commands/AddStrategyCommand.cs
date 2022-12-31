@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Telegram.Bot.Types.ReplyMarkups;
 using TradeHero.Contracts.Base.Enums;
+using TradeHero.Contracts.Extensions;
 using TradeHero.Contracts.Menu;
 using TradeHero.Contracts.Repositories;
 using TradeHero.Contracts.Repositories.Models;
@@ -9,7 +10,6 @@ using TradeHero.Contracts.Services;
 using TradeHero.EntryPoint.Data;
 using TradeHero.EntryPoint.Data.Dtos.Base;
 using TradeHero.EntryPoint.Dictionary;
-using TradeHero.EntryPoint.Menu.Telegram.Helpers;
 
 namespace TradeHero.EntryPoint.Menu.Telegram.Commands.Strategy.Commands;
 
@@ -51,11 +51,11 @@ internal class AddStrategyCommand : IMenuCommand
             _telegramMenuStore.LastCommandId = Id;
 
             var listStrategyInlineKeyboard = 
-                from strategyType in Enum.GetValues<StrategyType>().OrderByDescending(x => x) 
-                where strategyType != StrategyType.NoStrategy 
+                from strategyType in Enum.GetValues<TradeLogicType>().OrderByDescending(x => x) 
+                where strategyType != TradeLogicType.NoTradeLogic 
                 select new List<InlineKeyboardButton>
                 {
-                    new(_enumDictionary.GetStrategyTypeUserFriendlyName(strategyType))
+                    new(_enumDictionary.GetTradeLogicTypeUserFriendlyName(strategyType))
                     {
                         CallbackData = strategyType.ToString()
                     }
@@ -143,7 +143,7 @@ internal class AddStrategyCommand : IMenuCommand
                         _jsonService.SerializeObject(validationResult.Errors).Data, nameof(HandleIncomeDataAsync));
                 
                     await _telegramService.SendTextMessageToUserAsync(
-                        MessageGenerator.GenerateValidationErrorMessage(validationResult.Errors, instanceType),
+                        _dtoValidator.GenerateValidationErrorMessage(validationResult.Errors, instanceType.GetPropertyNameAndJsonPropertyName()),
                         cancellationToken: cancellationToken
                     );
                     
@@ -180,7 +180,7 @@ internal class AddStrategyCommand : IMenuCommand
                 return;
             }
             
-            if (_telegramMenuStore.StrategyData.StrategyType != StrategyType.NoStrategy)
+            if (_telegramMenuStore.StrategyData.TradeLogicType != TradeLogicType.NoTradeLogic)
             {
                 var jsonExpandoObject = _jsonService.ConvertKeyValueStringDataToDictionary(data);
                 if (jsonExpandoObject.ActionResult != ActionResult.Success)
@@ -204,7 +204,7 @@ internal class AddStrategyCommand : IMenuCommand
                     return;
                 }
 
-                var strategyType = _dtoValidator.GetDtoTypeByStrategyType(_telegramMenuStore.StrategyData.StrategyType);
+                var strategyType = _dtoValidator.GetDtoTypeByStrategyType(_telegramMenuStore.StrategyData.TradeLogicType);
                 
                 var strategyObjectResult = _jsonService.Deserialize(jsonExpandoString.Data, strategyType);
                 if (strategyObjectResult.ActionResult != ActionResult.Success)
@@ -238,7 +238,7 @@ internal class AddStrategyCommand : IMenuCommand
                         _jsonService.SerializeObject(validationResult.Errors).Data, nameof(HandleIncomeDataAsync));
                 
                     await _telegramService.SendTextMessageToUserAsync(
-                        MessageGenerator.GenerateValidationErrorMessage(validationResult.Errors, strategyType),
+                        _dtoValidator.GenerateValidationErrorMessage(validationResult.Errors, strategyType.GetPropertyNameAndJsonPropertyName()),
                         cancellationToken: cancellationToken
                     );
                     
@@ -310,9 +310,9 @@ internal class AddStrategyCommand : IMenuCommand
     {
         try
         {
-            if (Enum.TryParse(callbackData, out StrategyType strategyType))
+            if (Enum.TryParse(callbackData, out TradeLogicType strategyType))
             {
-                _telegramMenuStore.StrategyData.StrategyType = strategyType;
+                _telegramMenuStore.StrategyData.TradeLogicType = strategyType;
 
                 await _telegramService.SendTextMessageToUserAsync(
                     $"Example how to fill properties:{Environment.NewLine}{Environment.NewLine}" +
@@ -362,9 +362,9 @@ internal class AddStrategyCommand : IMenuCommand
         var savingResult = await _strategyRepository.AddStrategyAsync(new StrategyDto
         {
             Name = _telegramMenuStore.StrategyData.StrategyName,
-            StrategyType = _telegramMenuStore.StrategyData.StrategyType,
+            TradeLogicType = _telegramMenuStore.StrategyData.TradeLogicType,
             InstanceType = _telegramMenuStore.StrategyData.InstanceType,
-            StrategyJson = _telegramMenuStore.StrategyData.StrategyJson,
+            TradeLogicJson = _telegramMenuStore.StrategyData.StrategyJson,
             InstanceJson = _telegramMenuStore.StrategyData.InstanceJson,
             IsActive = false
         });

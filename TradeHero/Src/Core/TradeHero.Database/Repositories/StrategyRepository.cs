@@ -52,30 +52,14 @@ internal class StrategyRepository : IStrategyRepository
         }
     }
 
-    public StrategyDto? GetActiveStrategy()
-    {
-        try
-        {
-            var activeStrategySettings = _database.Strategies.AsNoTracking().SingleOrDefault(x => x.IsActive);
-
-            return activeStrategySettings != null ? GenerateStrategyDto(activeStrategySettings) : null;
-        }
-        catch (Exception exception)
-        {
-            _logger.LogCritical(exception, "In {Method}", nameof(GetActiveStrategy));
-
-            return null;
-        }
-    }
-    
     public async Task<StrategyDto?> GetActiveStrategyAsync()
     {
         try
         {
-            var activeStrategySettings = await _database.Strategies.AsNoTracking()
+            var activeStrategy = await _database.Strategies.AsNoTracking()
                 .SingleOrDefaultAsync(x => x.IsActive);
 
-            return activeStrategySettings != null ? GenerateStrategyDto(activeStrategySettings) : null;
+            return activeStrategy != null ? GenerateStrategyDto(activeStrategy) : null;
         }
         catch (Exception exception)
         {
@@ -113,9 +97,9 @@ internal class StrategyRepository : IStrategyRepository
             var newStrategy = new Strategy
             {
                 Name = strategyDto.Name,
-                StrategyType = strategyDto.StrategyType,
+                TradeLogicType = strategyDto.TradeLogicType,
                 InstanceType = strategyDto.InstanceType,
-                StrategyJson = strategyDto.StrategyJson,
+                TradeLogicJson = strategyDto.TradeLogicJson,
                 InstanceJson = strategyDto.InstanceJson,
                 IsActive = strategyDto.IsActive
             };
@@ -139,10 +123,10 @@ internal class StrategyRepository : IStrategyRepository
             var strategy = await _database.Strategies.SingleAsync(x => x.Id == strategyDto.Id);
         
             strategy.Name = strategyDto.Name;
-            strategy.StrategyType = strategyDto.StrategyType;
+            strategy.TradeLogicType = strategyDto.TradeLogicType;
             strategy.InstanceType = strategyDto.InstanceType;
             strategy.InstanceJson = strategyDto.InstanceJson;
-            strategy.StrategyJson = strategyDto.StrategyJson;
+            strategy.TradeLogicJson = strategyDto.TradeLogicJson;
             strategy.IsActive = strategyDto.IsActive;
 
             return await _database.SaveChangesAsync() >= 0;
@@ -191,9 +175,9 @@ internal class StrategyRepository : IStrategyRepository
         {
             Id = strategy.Id,
             Name = strategy.Name,
-            StrategyType = strategy.StrategyType,
+            TradeLogicType = strategy.TradeLogicType,
             InstanceType = strategy.InstanceType,
-            StrategyJson = strategy.StrategyJson,
+            TradeLogicJson = strategy.TradeLogicJson,
             InstanceJson = strategy.InstanceJson,
             IsActive = strategy.IsActive
         };

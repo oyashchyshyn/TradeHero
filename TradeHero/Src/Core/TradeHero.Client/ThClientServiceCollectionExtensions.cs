@@ -8,6 +8,8 @@ using TradeHero.Contracts.Repositories;
 using TradeHero.Contracts.Repositories.Models;
 using TradeHero.Contracts.Settings;
 using TradeHero.Client.Clients;
+using TradeHero.Client.Resolvers;
+using TradeHero.Contracts.Client.Resolvers;
 
 namespace TradeHero.Client;
 
@@ -38,6 +40,8 @@ public static class ThClientServiceCollectionExtensions
 
             return new ThSocketBinanceClient(socketClientOptions);
         });
+
+        serviceCollection.AddSingleton<IBinanceResolver, BinanceResolver>();
     }
 
     #region Private methods

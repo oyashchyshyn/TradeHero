@@ -1,9 +1,10 @@
 ﻿using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using TradeHero.Contracts.EntryPoint;
+using TradeHero.Contracts.Repositories.Models;
 using TradeHero.EntryPoint.Data;
 using TradeHero.EntryPoint.Data.Dtos.Instance;
-using TradeHero.EntryPoint.Data.Dtos.Strategy;
+using TradeHero.EntryPoint.Data.Dtos.TradeLogic;
 using TradeHero.EntryPoint.Data.Validations;
 using TradeHero.EntryPoint.Dictionary;
 using TradeHero.EntryPoint.Init;
@@ -11,9 +12,10 @@ using TradeHero.EntryPoint.Menu.Telegram;
 using TradeHero.EntryPoint.Menu.Telegram.Commands;
 using TradeHero.EntryPoint.Menu.Telegram.Commands.Bot;
 using TradeHero.EntryPoint.Menu.Telegram.Commands.Bot.Commands;
+using TradeHero.EntryPoint.Menu.Telegram.Commands.Connection;
+using TradeHero.EntryPoint.Menu.Telegram.Commands.Connection.Commands;
 using TradeHero.EntryPoint.Menu.Telegram.Commands.Positions;
 using TradeHero.EntryPoint.Menu.Telegram.Commands.Positions.Commands;
-using TradeHero.EntryPoint.Menu.Telegram.Commands.StartStop;
 using TradeHero.EntryPoint.Menu.Telegram.Commands.Strategy;
 using TradeHero.EntryPoint.Menu.Telegram.Commands.Strategy.Commands;
 
@@ -55,10 +57,18 @@ public static class ThLogicServiceCollectionExtensions
         serviceCollection.AddTransient<ShowStrategiesPropertiesCommand>();
         serviceCollection.AddTransient<DeleteStrategyCommand>();
         
+        // Connection settings
+        serviceCollection.AddTransient<ConnectionCommand>();
+        serviceCollection.AddTransient<AddConnectionCommand>();
+        serviceCollection.AddTransient<SetActiveConnectionCommand>();
+        serviceCollection.AddTransient<ShowConnectionsCommand>();
+        serviceCollection.AddTransient<DeleteConnectionCommand>();
+        
         // Data validation
-        serviceCollection.AddTransient<IValidator<PercentLimitStrategyDto>, PercentLimitStrategyDtoValidation>();
-        serviceCollection.AddTransient<IValidator<PercentMoveStrategyDto>, PercentMoveStrategyDtoValidation>();
-        serviceCollection.AddTransient<IValidator<ClusterVolumeInstanceDto>, ClusterVolumeOptionsDtoValidation>();
+        serviceCollection.AddTransient<IValidator<ConnectionDto>, ConnectionDtoValidation>();
+        serviceCollection.AddTransient<IValidator<PercentLimitTradeLogicDto>, PercentLimitStrategyDtoValidation>();
+        serviceCollection.AddTransient<IValidator<PercentMoveTradeLogicDto>, PercentMoveStrategyDtoValidation>();
+        serviceCollection.AddTransient<IValidator<SpotClusterVolumeOptionsDto>, SpotClusterVolumeOptionsDtoValidation>();
         serviceCollection.AddSingleton<DtoValidator>();
     }
 }

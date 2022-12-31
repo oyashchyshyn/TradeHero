@@ -6,12 +6,13 @@ using TradeHero.Contracts.Repositories;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.Services.Models.Telegram;
 using TradeHero.Contracts.Store;
-using TradeHero.Contracts.Strategy;
+using TradeHero.Contracts.StrategyRunner;
 using TradeHero.EntryPoint.Menu.Telegram.Commands;
 using TradeHero.EntryPoint.Menu.Telegram.Commands.Bot;
 using TradeHero.EntryPoint.Menu.Telegram.Commands.Bot.Commands;
+using TradeHero.EntryPoint.Menu.Telegram.Commands.Connection;
+using TradeHero.EntryPoint.Menu.Telegram.Commands.Connection.Commands;
 using TradeHero.EntryPoint.Menu.Telegram.Commands.Positions;
-using TradeHero.EntryPoint.Menu.Telegram.Commands.StartStop;
 using TradeHero.EntryPoint.Menu.Telegram.Commands.Strategy;
 using TradeHero.EntryPoint.Menu.Telegram.Commands.Strategy.Commands;
 
@@ -23,7 +24,7 @@ internal class TelegramMenu : IMenuService
     private readonly IStore _store;
     private readonly ITelegramService _telegramService;
     private readonly IInternetConnectionService _internetConnectionService;
-    private readonly IStrategyFactory _strategyFactory;
+    private readonly ITradeLogicFactory _tradeLogicFactory;
     private readonly IStrategyRepository _strategyRepository;
     private readonly IJsonService _jsonService;
 
@@ -37,7 +38,7 @@ internal class TelegramMenu : IMenuService
         IStore store,
         ITelegramService telegramService, 
         IInternetConnectionService internetConnectionService,
-        IStrategyFactory strategyFactory,
+        ITradeLogicFactory tradeLogicFactory,
         IStrategyRepository strategyRepository,
         IJsonService jsonService,
         TelegramMenuStore telegramMenuStore
@@ -47,7 +48,7 @@ internal class TelegramMenu : IMenuService
         _store = store;
         _telegramService = telegramService;
         _internetConnectionService = internetConnectionService;
-        _strategyFactory = strategyFactory;
+        _tradeLogicFactory = tradeLogicFactory;
         _strategyRepository = strategyRepository;
         _jsonService = jsonService;
         _telegramMenuStore = telegramMenuStore;
@@ -67,7 +68,12 @@ internal class TelegramMenu : IMenuService
             serviceProvider.GetRequiredService<AddStrategyCommand>(),
             serviceProvider.GetRequiredService<UpdateStrategyCommand>(),
             serviceProvider.GetRequiredService<SetActiveStrategyCommand>(),
-            serviceProvider.GetRequiredService<DeleteStrategyCommand>()
+            serviceProvider.GetRequiredService<DeleteStrategyCommand>(),
+            serviceProvider.GetRequiredService<ConnectionCommand>(),
+            serviceProvider.GetRequiredService<AddConnectionCommand>(),
+            serviceProvider.GetRequiredService<SetActiveConnectionCommand>(),
+            serviceProvider.GetRequiredService<ShowConnectionsCommand>(),
+            serviceProvider.GetRequiredService<DeleteConnectionCommand>()
         });
     }
 
@@ -109,10 +115,10 @@ internal class TelegramMenu : IMenuService
             _telegramService.OnTelegramBotUserChatUpdate -= TelegramServiceOnOnTelegramBotUserChatUpdate;
             _telegramMenuStore.LastCommandId = string.Empty;
             
-            if (_store.Bot.Strategy != null)
+            if (_store.Bot.TradeLogic != null)
             {
-                await _store.Bot.Strategy.FinishAsync(false);
-                _store.Bot.SetStrategy(null, StrategyStatus.Idle);
+                await _store.Bot.TradeLogic.FinishAsync(false);
+                _store.Bot.SetTradeLogic(null, TradeLogicStatus.Idle);
             }
 
             if (cancellationToken.IsCancellationRequested)
@@ -147,13 +153,13 @@ internal class TelegramMenu : IMenuService
 
     public async Task OnDisconnectFromInternetAsync()
     {
-        if (_store.Bot.Strategy != null)
+        if (_store.Bot.TradeLogic != null)
         {
             _internetConnectionService.SetPauseInternetConnectionChecking(true);
             
-            await _store.Bot.Strategy.FinishAsync(true);
+            await _store.Bot.TradeLogic.FinishAsync(true);
             
-            _store.Bot.SetStrategy(null, StrategyStatus.Running);
+            _store.Bot.SetTradeLogic(null, TradeLogicStatus.Running);
             
             _internetConnectionService.SetPauseInternetConnectionChecking(false);
         }
@@ -197,7 +203,7 @@ internal class TelegramMenu : IMenuService
                 );
             }
 
-            if (_store.Bot.Strategy != null)
+            if (_store.Bot.TradeLogic != null)
             {
                 await _telegramService.SendTextMessageToUserAsync(
                     "Waiting for closing previous strategy...", 
@@ -205,7 +211,7 @@ internal class TelegramMenu : IMenuService
                     cancellationToken: cancellationToken
                 );
                 
-                while (_store.Bot.Strategy != null) { }
+                while (_store.Bot.TradeLogic != null) { }
                 
                 await _telegramService.SendTextMessageToUserAsync(
                     "Previous strategy closed.", 
@@ -214,7 +220,7 @@ internal class TelegramMenu : IMenuService
                 );
             }
 
-            if (_store.Bot.StrategyStatus == StrategyStatus.Running)
+            if (_store.Bot.TradeLogicStatus == TradeLogicStatus.Running)
             {
                 var activeStrategy = await _strategyRepository.GetActiveStrategyAsync();
                 if (activeStrategy == null)
@@ -228,7 +234,7 @@ internal class TelegramMenu : IMenuService
                     return;
                 }
                 
-                var strategy = _strategyFactory.GetStrategy(activeStrategy.StrategyType);
+                var strategy = _tradeLogicFactory.GetTradeLogicRunner(activeStrategy.TradeLogicType);
                 if (strategy == null)
                 {
                     await _telegramService.SendTextMessageToUserAsync(
@@ -262,7 +268,7 @@ internal class TelegramMenu : IMenuService
                     continue;
                 }
                 
-                _store.Bot.SetStrategy(strategy, StrategyStatus.Running);
+                _store.Bot.SetTradeLogic(strategy, TradeLogicStatus.Running);
                 
                 await _telegramService.SendTextMessageToUserAsync(
                     "Strategy started! Enjoy lazy pidor", 

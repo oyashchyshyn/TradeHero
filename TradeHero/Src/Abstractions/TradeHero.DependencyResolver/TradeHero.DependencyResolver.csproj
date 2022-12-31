@@ -15,7 +15,7 @@
       <ProjectReference Include="..\..\Core\TradeHero.Core\TradeHero.Core.csproj" />
       <ProjectReference Include="..\..\Core\TradeHero.Database\TradeHero.Database.csproj" />
       <ProjectReference Include="..\..\Core\TradeHero.EntryPoint\TradeHero.EntryPoint.csproj" />
-      <ProjectReference Include="..\..\Core\TradeHero.Strategy\TradeHero.Strategy.csproj" />
+      <ProjectReference Include="..\..\Core\TradeHero.StrategyRunner\TradeHero.StrategyRunner.csproj" />
     </ItemGroup>
 
 </Project>

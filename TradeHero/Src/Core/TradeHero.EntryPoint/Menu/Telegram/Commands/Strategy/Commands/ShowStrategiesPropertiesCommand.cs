@@ -1,10 +1,13 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Text;
+using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types.ReplyMarkups;
 using TradeHero.Contracts.Base.Enums;
+using TradeHero.Contracts.Extensions;
 using TradeHero.Contracts.Menu;
 using TradeHero.Contracts.Services;
+using TradeHero.EntryPoint.Data.Dtos.Instance;
+using TradeHero.EntryPoint.Data.Dtos.TradeLogic;
 using TradeHero.EntryPoint.Dictionary;
-using TradeHero.EntryPoint.Menu.Telegram.Helpers;
 
 namespace TradeHero.EntryPoint.Menu.Telegram.Commands.Strategy.Commands;
 
@@ -37,11 +40,11 @@ internal class ShowStrategiesPropertiesCommand : IMenuCommand
             _telegramMenuStore.LastCommandId = Id;
 
             var listStrategyInlineKeyboard = 
-                from strategyType in Enum.GetValues<StrategyType>().OrderByDescending(x => x) 
-                where strategyType != StrategyType.NoStrategy 
+                from strategyType in Enum.GetValues<TradeLogicType>().OrderByDescending(x => x) 
+                where strategyType != TradeLogicType.NoTradeLogic 
                 select new List<InlineKeyboardButton>
                 {
-                    new(_enumDictionary.GetStrategyTypeUserFriendlyName(strategyType))
+                    new(_enumDictionary.GetTradeLogicTypeUserFriendlyName(strategyType))
                     {
                         CallbackData = strategyType.ToString()
                     }
@@ -93,11 +96,26 @@ internal class ShowStrategiesPropertiesCommand : IMenuCommand
     {
         try
         {
-            if (Enum.TryParse(callbackData, out StrategyType strategyType))
+            if (Enum.TryParse(callbackData, out TradeLogicType strategyType))
             {
+                var propertyNamesWithDescription = strategyType switch
+                {
+                    TradeLogicType.PercentLimit => typeof(PercentLimitTradeLogicDto).GetJsonPropertyNameAndDescriptionFromType(),
+                    TradeLogicType.PercentMove => typeof(PercentMoveTradeLogicDto).GetJsonPropertyNameAndDescriptionFromType(),
+                    TradeLogicType.NoTradeLogic => throw new ArgumentOutOfRangeException(nameof(strategyType), strategyType, null),
+                    _ => throw new ArgumentOutOfRangeException(nameof(strategyType), strategyType, null)
+                };
+
+                var stringBuilder = new StringBuilder();
+        
+                foreach (var propertyNameWithDescription in propertyNamesWithDescription)
+                {
+                    stringBuilder.Append($"<b>{propertyNameWithDescription.Key}</b> - <i>{propertyNameWithDescription.Value}</i>{Environment.NewLine}");
+                }
+
                 var message =
-                    $"All properties for <b>{_enumDictionary.GetStrategyTypeUserFriendlyName(strategyType)}</b>:{Environment.NewLine}{Environment.NewLine}" +
-                    $"{MessageGenerator.GenerateCreateStrategyTypeMessage(strategyType)}{Environment.NewLine}";
+                    $"All properties for <b>{_enumDictionary.GetTradeLogicTypeUserFriendlyName(strategyType)}</b>:{Environment.NewLine}{Environment.NewLine}" +
+                    $"{stringBuilder}{Environment.NewLine}";
 
                 await SendMessageWithClearDataAsync(message, cancellationToken);
 
@@ -106,9 +124,23 @@ internal class ShowStrategiesPropertiesCommand : IMenuCommand
 
             if (Enum.TryParse(callbackData, out InstanceType instanceType))
             {
+                var propertyNamesWithDescription = instanceType switch
+                {
+                    InstanceType.SpotClusterVolume => typeof(SpotClusterVolumeOptionsDto).GetJsonPropertyNameAndDescriptionFromType(),
+                    InstanceType.NoInstance => throw new ArgumentOutOfRangeException(nameof(instanceType), instanceType, null),
+                    _ => throw new ArgumentOutOfRangeException(nameof(instanceType), instanceType, null)
+                };
+
+                var stringBuilder = new StringBuilder();
+        
+                foreach (var propertyNameWithDescription in propertyNamesWithDescription)
+                {
+                    stringBuilder.Append($"<b>{propertyNameWithDescription.Key}</b> - <i>{propertyNameWithDescription.Value}</i>{Environment.NewLine}");
+                }
+
                 var message = 
                     $"All properties for <b>{_enumDictionary.GetInstanceTypeUserFriendlyName(instanceType)}</b>:{Environment.NewLine}{Environment.NewLine}" +
-                    $"{MessageGenerator.GenerateCreateInstanceTypeMessage(instanceType)}{Environment.NewLine}";
+                    $"{stringBuilder}{Environment.NewLine}";
 
                 await SendMessageWithClearDataAsync(message, cancellationToken);
                 

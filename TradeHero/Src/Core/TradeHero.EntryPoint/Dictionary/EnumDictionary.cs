@@ -4,18 +4,18 @@ namespace TradeHero.EntryPoint.Dictionary;
 
 internal class EnumDictionary
 {
-    public string GetStrategyTypeUserFriendlyName(StrategyType strategyType)
+    public string GetTradeLogicTypeUserFriendlyName(TradeLogicType tradeLogicType)
     {
-        switch (strategyType)
+        switch (tradeLogicType)
         {
-            case StrategyType.NoStrategy:
+            case TradeLogicType.NoTradeLogic:
                 return "Do not add strategy";
-            case StrategyType.PercentLimit:
+            case TradeLogicType.PercentLimit:
                 return "Percent limit";
-            case StrategyType.PercentMove:
+            case TradeLogicType.PercentMove:
                 return "Percent move";
             default:
-                throw new ArgumentOutOfRangeException(nameof(strategyType), strategyType, null);
+                throw new ArgumentOutOfRangeException(nameof(tradeLogicType), tradeLogicType, null);
         }
     }
     
@@ -29,6 +29,21 @@ internal class EnumDictionary
                 return "Spot cluster volume";
             default:
                 throw new ArgumentOutOfRangeException(nameof(instanceType), instanceType, null);
+        }
+    }
+    
+    public string GetStrategyObjectUserFriendlyName(StrategyObject strategyObject)
+    {
+        switch (strategyObject)
+        {
+            case StrategyObject.None:
+                return "Do not add strategy";
+            case StrategyObject.TradeLogic:
+                return "Trade logic";
+            case StrategyObject.Instance:
+                return "Instance";
+            default:
+                throw new ArgumentOutOfRangeException(nameof(StrategyObject), strategyObject, null);
         }
     }
 }

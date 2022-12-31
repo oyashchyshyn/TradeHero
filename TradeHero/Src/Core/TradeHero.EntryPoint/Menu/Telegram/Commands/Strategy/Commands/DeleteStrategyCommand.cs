@@ -117,7 +117,7 @@ internal class DeleteStrategyCommand : IMenuCommand
             var result = await _strategyRepository.DeleteStrategyAsync(strategy.Id);
             if (result)
             {
-                _logger.LogInformation("Cannot delete active strategy. In {Method}", 
+                _logger.LogInformation("Cannot delete strategy. In {Method}", 
                     nameof(HandleCallbackDataAsync));
                 
                 await SendMessageWithClearDataAsync($"<b>{strategy.Name}</b> deleted successfully.", cancellationToken);

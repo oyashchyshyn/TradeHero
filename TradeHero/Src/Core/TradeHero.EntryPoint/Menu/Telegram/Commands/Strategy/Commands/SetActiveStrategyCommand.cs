@@ -40,9 +40,10 @@ internal class SetActiveStrategyCommand : IMenuCommand
             _telegramMenuStore.LastCommandId = Id;
             
             var strategies = await _strategyRepository.GetStrategiesAsync();
-
             if (!strategies.Any())
             {
+                _logger.LogError("There is no strategies. In {Method}", nameof(HandleCallbackDataAsync));
+                
                 await SendMessageWithClearDataAsync("There was an error during process, please, try later.", cancellationToken);
                 
                 return;
@@ -117,7 +118,7 @@ internal class SetActiveStrategyCommand : IMenuCommand
                 return;
             }
 
-            if (_store.Bot.StrategyStatus == StrategyStatus.Running)
+            if (_store.Bot.TradeLogicStatus == TradeLogicStatus.Running)
             {
                 await SendMessageWithClearDataAsync(
                     $"You cannot change strategy when bot in trading process.{Environment.NewLine}" +

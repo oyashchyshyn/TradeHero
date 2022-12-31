@@ -1,10 +1,11 @@
+using System.Text;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.EntryPoint.Data.Dtos.Instance;
-using TradeHero.EntryPoint.Data.Dtos.Strategy;
+using TradeHero.EntryPoint.Data.Dtos.TradeLogic;
 
 namespace TradeHero.EntryPoint.Data;
 
@@ -22,27 +23,13 @@ internal class DtoValidator
         _serviceProvider = serviceProvider;
     }
 
-    public Type GetDtoTypeByStrategyType(StrategyType strategyType)
+    public async Task<ValidationResult?> GetValidationResultAsync<T>(T instance, ValidationRuleSet validationRuleSet = ValidationRuleSet.Default)
     {
-        return strategyType switch
-        {
-            StrategyType.PercentLimit => typeof(PercentLimitStrategyDto),
-            StrategyType.PercentMove => typeof(PercentMoveStrategyDto),
-            StrategyType.NoStrategy => throw new ArgumentOutOfRangeException(),
-            _ => throw new ArgumentOutOfRangeException()
-        };
+        var validator = _serviceProvider.GetRequiredService<IValidator<T>>();
+        return await validator.ValidateAsync(instance, 
+            options => options.IncludeRuleSets(validationRuleSet.ToString()));
     }
-    
-    public Type GetDtoTypeByInstanceType(InstanceType instanceType)
-    {
-        return instanceType switch
-        {
-            InstanceType.SpotClusterVolume => typeof(ClusterVolumeInstanceDto),
-            InstanceType.NoInstance => throw new ArgumentOutOfRangeException(),
-            _ => throw new ArgumentOutOfRangeException()
-        };
-    }
-    
+
     public async Task<ValidationResult?> GetValidationResultAsync(Type type, object instance, 
         ValidationRuleSet validationRuleSet = ValidationRuleSet.Default)
     {
@@ -50,22 +37,22 @@ internal class DtoValidator
         {
             ValidationResult? validationResult = null;
         
-            if (type == typeof(ClusterVolumeInstanceDto))
+            if (type == typeof(SpotClusterVolumeOptionsDto))
             {
-                var validator = _serviceProvider.GetRequiredService<IValidator<ClusterVolumeInstanceDto>>();
-                validationResult = await validator.ValidateAsync((ClusterVolumeInstanceDto)instance, 
+                var validator = _serviceProvider.GetRequiredService<IValidator<SpotClusterVolumeOptionsDto>>();
+                validationResult = await validator.ValidateAsync((SpotClusterVolumeOptionsDto)instance, 
                     options => options.IncludeRuleSets(validationRuleSet.ToString()));
             }
-            else if (type == typeof(PercentLimitStrategyDto))
+            else if (type == typeof(PercentLimitTradeLogicDto))
             {
-                var validator = _serviceProvider.GetRequiredService<IValidator<PercentLimitStrategyDto>>();
-                validationResult = await validator.ValidateAsync((PercentLimitStrategyDto)instance,
+                var validator = _serviceProvider.GetRequiredService<IValidator<PercentLimitTradeLogicDto>>();
+                validationResult = await validator.ValidateAsync((PercentLimitTradeLogicDto)instance,
                     options => options.IncludeRuleSets(validationRuleSet.ToString()));
             }
-            else if (type == typeof(PercentMoveStrategyDto))
+            else if (type == typeof(PercentMoveTradeLogicDto))
             {
-                var validator = _serviceProvider.GetRequiredService<IValidator<PercentMoveStrategyDto>>();
-                validationResult = await validator.ValidateAsync((PercentMoveStrategyDto)instance,
+                var validator = _serviceProvider.GetRequiredService<IValidator<PercentMoveTradeLogicDto>>();
+                validationResult = await validator.ValidateAsync((PercentMoveTradeLogicDto)instance,
                     options => options.IncludeRuleSets(validationRuleSet.ToString()));
             }
 
@@ -77,5 +64,54 @@ internal class DtoValidator
 
             return null;
         }
+    }
+    
+    public Type GetDtoTypeByStrategyType(TradeLogicType tradeLogicType)
+    {
+        return tradeLogicType switch
+        {
+            TradeLogicType.PercentLimit => typeof(PercentLimitTradeLogicDto),
+            TradeLogicType.PercentMove => typeof(PercentMoveTradeLogicDto),
+            TradeLogicType.NoTradeLogic => throw new ArgumentOutOfRangeException(),
+            _ => throw new ArgumentOutOfRangeException()
+        };
+    }
+    
+    public Type GetDtoTypeByInstanceType(InstanceType instanceType)
+    {
+        return instanceType switch
+        {
+            InstanceType.SpotClusterVolume => typeof(SpotClusterVolumeOptionsDto),
+            InstanceType.NoInstance => throw new ArgumentOutOfRangeException(),
+            _ => throw new ArgumentOutOfRangeException()
+        };
+    }
+
+    public string GenerateValidationErrorMessage(List<ValidationFailure> validationFailures, Dictionary<string, string>? propertyNames = null)
+    {
+        var stringBuilder = new StringBuilder();
+        
+        stringBuilder.Append($"There was an error during data validation. Check errors:{Environment.NewLine}{Environment.NewLine}");
+
+        if (propertyNames == null || !propertyNames.Any())
+        {
+            foreach (var validationFailure in validationFailures)
+            {
+                stringBuilder.Append(
+                    $"<b>{validationFailure.PropertyName}</b> - {validationFailure.ErrorMessage}{Environment.NewLine}"
+                );
+            }   
+        }
+        else
+        {
+            foreach (var validationFailure in validationFailures)
+            {
+                stringBuilder.Append(
+                    $"<b>{propertyNames[validationFailure.PropertyName]}</b> - {validationFailure.ErrorMessage}{Environment.NewLine}"
+                );
+            }
+        }
+
+        return stringBuilder.ToString();
     }
 }
