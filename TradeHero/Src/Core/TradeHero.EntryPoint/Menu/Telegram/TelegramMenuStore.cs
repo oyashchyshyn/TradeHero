@@ -40,7 +40,7 @@ internal class TelegramMenuStore
     {
         if (telegramMenuId == TelegramButtons.Bot)
         {
-            return _telegramKeyboards.GetBotKeyboard(_store.Bot.Strategy == null);
+            return _telegramKeyboards.GetBotKeyboard(_store.Bot.TradeLogic == null);
         }
         
         return _keyboards.ContainsKey(telegramMenuId) 

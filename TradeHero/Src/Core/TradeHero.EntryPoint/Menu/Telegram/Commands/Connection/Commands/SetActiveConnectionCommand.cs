@@ -118,7 +118,7 @@ internal class SetActiveConnectionCommand : IMenuCommand
                 return;
             }
 
-            if (_store.Bot.StrategyStatus == StrategyStatus.Running)
+            if (_store.Bot.TradeLogicStatus == TradeLogicStatus.Running)
             {
                 await SendMessageWithClearDataAsync(
                     $"You cannot change connection when bot in trading process.{Environment.NewLine}" +

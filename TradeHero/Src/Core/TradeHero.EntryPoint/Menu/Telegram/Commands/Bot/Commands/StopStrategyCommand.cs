@@ -34,7 +34,7 @@ internal class StopStrategyCommand : IMenuCommand
         {
             _telegramMenuStore.LastCommandId = Id;
         
-            if (_store.Bot.Strategy == null)
+            if (_store.Bot.TradeLogic == null)
             {
                 await ErrorMessageAsync("Cannot stop strategy because it does not running.", cancellationToken);
 
@@ -47,7 +47,7 @@ internal class StopStrategyCommand : IMenuCommand
                 cancellationToken: cancellationToken
             );
 
-            var stopResult = await _store.Bot.Strategy.FinishAsync(true);
+            var stopResult = await _store.Bot.TradeLogic.FinishAsync(true);
             if (stopResult != ActionResult.Success)
             {
                 await ErrorMessageAsync("Error during stopping strategy.", cancellationToken);
@@ -55,7 +55,7 @@ internal class StopStrategyCommand : IMenuCommand
                 return;
             }
             
-            _store.Bot.SetStrategy(null, StrategyStatus.Idle);
+            _store.Bot.SetTradeLogic(null, TradeLogicStatus.Idle);
 
             await _telegramService.SendTextMessageToUserAsync(
                 "Strategy stopped.", 

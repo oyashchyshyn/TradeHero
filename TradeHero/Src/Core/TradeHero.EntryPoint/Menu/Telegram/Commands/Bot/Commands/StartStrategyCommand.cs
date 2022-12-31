@@ -4,7 +4,7 @@ using TradeHero.Contracts.Menu;
 using TradeHero.Contracts.Repositories;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.Store;
-using TradeHero.Contracts.Strategy;
+using TradeHero.Contracts.StrategyRunner;
 
 namespace TradeHero.EntryPoint.Menu.Telegram.Commands.Bot.Commands;
 
@@ -13,7 +13,7 @@ internal class StartStrategyCommand : IMenuCommand
     private readonly ILogger<StartStrategyCommand> _logger;
     private readonly ITelegramService _telegramService;
     private readonly IStrategyRepository _strategyRepository;
-    private readonly IStrategyFactory _strategyFactory;
+    private readonly ITradeLogicFactory _tradeLogicFactory;
     private readonly IStore _store;
     private readonly TelegramMenuStore _telegramMenuStore;
 
@@ -21,7 +21,7 @@ internal class StartStrategyCommand : IMenuCommand
         ILogger<StartStrategyCommand> logger,
         ITelegramService telegramService, 
         IStrategyRepository strategyRepository, 
-        IStrategyFactory strategyFactory, 
+        ITradeLogicFactory tradeLogicFactory, 
         IStore store, 
         TelegramMenuStore telegramMenuStore
         )
@@ -29,7 +29,7 @@ internal class StartStrategyCommand : IMenuCommand
         _logger = logger;
         _telegramService = telegramService;
         _strategyRepository = strategyRepository;
-        _strategyFactory = strategyFactory;
+        _tradeLogicFactory = tradeLogicFactory;
         _store = store;
         _telegramMenuStore = telegramMenuStore;
     }
@@ -50,7 +50,7 @@ internal class StartStrategyCommand : IMenuCommand
                 return;
             }
             
-            var strategy = _strategyFactory.GetStrategy(activeStrategy.TradeLogicType);
+            var strategy = _tradeLogicFactory.GetTradeLogicRunner(activeStrategy.TradeLogicType);
             if (strategy == null)
             {
                 await ErrorMessageAsync("Strategy does not exist.", cancellationToken);
@@ -74,7 +74,7 @@ internal class StartStrategyCommand : IMenuCommand
                 return;
             }
         
-            _store.Bot.SetStrategy(strategy, StrategyStatus.Running);
+            _store.Bot.SetTradeLogic(strategy, TradeLogicStatus.Running);
         
             await _telegramService.SendTextMessageToUserAsync(
                 "Strategy started! Enjoy lazy pidor.", 

@@ -35,7 +35,7 @@ internal class WatchingPositionsCommand : IMenuCommand
         {
             _telegramMenuStore.LastCommandId = Id;
         
-            var positions = _store.Bot.Strategy?.Store.Positions;
+            var positions = _store.Bot.TradeLogic?.Store.Positions;
 
             if (positions == null || !positions.Any())
             {

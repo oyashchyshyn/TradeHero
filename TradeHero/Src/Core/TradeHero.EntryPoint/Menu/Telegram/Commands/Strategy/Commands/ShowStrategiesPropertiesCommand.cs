@@ -6,7 +6,7 @@ using TradeHero.Contracts.Extensions;
 using TradeHero.Contracts.Menu;
 using TradeHero.Contracts.Services;
 using TradeHero.EntryPoint.Data.Dtos.Instance;
-using TradeHero.EntryPoint.Data.Dtos.Strategy;
+using TradeHero.EntryPoint.Data.Dtos.TradeLogic;
 using TradeHero.EntryPoint.Dictionary;
 
 namespace TradeHero.EntryPoint.Menu.Telegram.Commands.Strategy.Commands;
@@ -41,10 +41,10 @@ internal class ShowStrategiesPropertiesCommand : IMenuCommand
 
             var listStrategyInlineKeyboard = 
                 from strategyType in Enum.GetValues<TradeLogicType>().OrderByDescending(x => x) 
-                where strategyType != TradeLogicType.NoStrategy 
+                where strategyType != TradeLogicType.NoTradeLogic 
                 select new List<InlineKeyboardButton>
                 {
-                    new(_enumDictionary.GetStrategyTypeUserFriendlyName(strategyType))
+                    new(_enumDictionary.GetTradeLogicTypeUserFriendlyName(strategyType))
                     {
                         CallbackData = strategyType.ToString()
                     }
@@ -102,7 +102,7 @@ internal class ShowStrategiesPropertiesCommand : IMenuCommand
                 {
                     TradeLogicType.PercentLimit => typeof(PercentLimitTradeLogicDto).GetJsonPropertyNameAndDescriptionFromType(),
                     TradeLogicType.PercentMove => typeof(PercentMoveTradeLogicDto).GetJsonPropertyNameAndDescriptionFromType(),
-                    TradeLogicType.NoStrategy => throw new ArgumentOutOfRangeException(nameof(strategyType), strategyType, null),
+                    TradeLogicType.NoTradeLogic => throw new ArgumentOutOfRangeException(nameof(strategyType), strategyType, null),
                     _ => throw new ArgumentOutOfRangeException(nameof(strategyType), strategyType, null)
                 };
 
@@ -114,7 +114,7 @@ internal class ShowStrategiesPropertiesCommand : IMenuCommand
                 }
 
                 var message =
-                    $"All properties for <b>{_enumDictionary.GetStrategyTypeUserFriendlyName(strategyType)}</b>:{Environment.NewLine}{Environment.NewLine}" +
+                    $"All properties for <b>{_enumDictionary.GetTradeLogicTypeUserFriendlyName(strategyType)}</b>:{Environment.NewLine}{Environment.NewLine}" +
                     $"{stringBuilder}{Environment.NewLine}";
 
                 await SendMessageWithClearDataAsync(message, cancellationToken);

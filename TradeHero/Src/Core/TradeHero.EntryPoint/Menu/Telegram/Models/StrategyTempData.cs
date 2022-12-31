@@ -17,7 +17,7 @@ internal class StrategyTempData
         StrategyId = string.Empty;
         StrategyJson = string.Empty;
         InstanceJson = string.Empty;
-        TradeLogicType = TradeLogicType.NoStrategy;
+        TradeLogicType = TradeLogicType.NoTradeLogic;
         InstanceType = InstanceType.NoInstance;
         StrategyObjectToUpdate = StrategyObject.None;
     }

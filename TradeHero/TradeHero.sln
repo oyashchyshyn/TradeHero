@@ -16,7 +16,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeHero.Core", "Src\Core\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeHero.Database", "Src\Core\TradeHero.Database\TradeHero.Database.csproj", "{BE97871C-9E72-42B3-ABA3-DF8DC3634BC5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeHero.Strategy", "Src\Core\TradeHero.Strategy\TradeHero.Strategy.csproj", "{E36CA1BE-F668-4616-94C1-688A2A1287C2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeHero.StrategyRunner", "Src\Core\TradeHero.StrategyRunner\TradeHero.StrategyRunner.csproj", "{E36CA1BE-F668-4616-94C1-688A2A1287C2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Abstractions", "Abstractions", "{8D1011DF-D680-4EF3-AF69-F15DEAFFF4AA}"
 EndProject

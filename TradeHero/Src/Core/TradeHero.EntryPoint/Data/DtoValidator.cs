@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.EntryPoint.Data.Dtos.Instance;
-using TradeHero.EntryPoint.Data.Dtos.Strategy;
+using TradeHero.EntryPoint.Data.Dtos.TradeLogic;
 
 namespace TradeHero.EntryPoint.Data;
 
@@ -72,7 +72,7 @@ internal class DtoValidator
         {
             TradeLogicType.PercentLimit => typeof(PercentLimitTradeLogicDto),
             TradeLogicType.PercentMove => typeof(PercentMoveTradeLogicDto),
-            TradeLogicType.NoStrategy => throw new ArgumentOutOfRangeException(),
+            TradeLogicType.NoTradeLogic => throw new ArgumentOutOfRangeException(),
             _ => throw new ArgumentOutOfRangeException()
         };
     }

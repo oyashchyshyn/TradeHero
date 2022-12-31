@@ -4,7 +4,7 @@ using TradeHero.Contracts.EntryPoint;
 using TradeHero.Contracts.Repositories.Models;
 using TradeHero.EntryPoint.Data;
 using TradeHero.EntryPoint.Data.Dtos.Instance;
-using TradeHero.EntryPoint.Data.Dtos.Strategy;
+using TradeHero.EntryPoint.Data.Dtos.TradeLogic;
 using TradeHero.EntryPoint.Data.Validations;
 using TradeHero.EntryPoint.Dictionary;
 using TradeHero.EntryPoint.Init;

@@ -199,7 +199,7 @@ internal class UpdateStrategyCommand : IMenuCommand
             
             switch (_telegramMenuStore.StrategyData.StrategyObjectToUpdate)
             {
-                case StrategyObject.Strategy:
+                case StrategyObject.TradeLogic:
                     jObject = _jsonService.GetJObject(strategy.TradeLogicJson).Data;
                     jObject.Add(new JProperty(nameof(BaseStrategyDto.Name), strategy.Name));
                     validationRuleSet = ValidationRuleSet.Update;
@@ -330,7 +330,7 @@ internal class UpdateStrategyCommand : IMenuCommand
 
             switch (_telegramMenuStore.StrategyData.StrategyObjectToUpdate)
             {
-                case StrategyObject.Strategy:
+                case StrategyObject.TradeLogic:
                     strategy.TradeLogicJson = updatedDataData;
                     break;
                 case StrategyObject.Instance:
@@ -390,7 +390,7 @@ internal class UpdateStrategyCommand : IMenuCommand
                 
                 switch (strategyObject)
                 {
-                    case StrategyObject.Strategy:
+                    case StrategyObject.TradeLogic:
                         await _telegramService.SendTextMessageToUserAsync(
                             $"Example how to fill properties:{Environment.NewLine}{Environment.NewLine}" +
                             $"key:value{Environment.NewLine}key1:value1{Environment.NewLine}{Environment.NewLine}" +
@@ -464,12 +464,11 @@ internal class UpdateStrategyCommand : IMenuCommand
             var listInlineKeyboard = 
                 from strategyObjectValue in Enum.GetValues<StrategyObject>() 
                 where strategyObjectValue != StrategyObject.None 
-                select strategyObjectValue.ToString() into strategyObjectValueString 
                 select new List<InlineKeyboardButton>
                 {
-                    new(strategyObjectValueString)
+                    new(_enumDictionary.GetStrategyObjectUserFriendlyName(strategyObjectValue))
                     {
-                        CallbackData = strategyObjectValueString
+                        CallbackData = strategyObjectValue.ToString()
                     }
                 };
 
@@ -505,7 +504,7 @@ internal class UpdateStrategyCommand : IMenuCommand
             cancellationToken: cancellationToken
         );
 
-        if (_store.Bot is { StrategyStatus: StrategyStatus.Running, Strategy: { } } && strategyDto.IsActive)
+        if (_store.Bot is { TradeLogicStatus: TradeLogicStatus.Running, TradeLogic: { } } && strategyDto.IsActive)
         {
             await _telegramService.SendTextMessageToUserAsync(
                 "Applying new data for running strategy...",
@@ -513,7 +512,7 @@ internal class UpdateStrategyCommand : IMenuCommand
                 cancellationToken: cancellationToken
             );
                     
-            await _store.Bot.Strategy.UpdateTradeSettingsAsync(strategyDto);
+            await _store.Bot.TradeLogic.UpdateTradeSettingsAsync(strategyDto);
                     
             await _telegramService.SendTextMessageToUserAsync(
                 "Data applied.",

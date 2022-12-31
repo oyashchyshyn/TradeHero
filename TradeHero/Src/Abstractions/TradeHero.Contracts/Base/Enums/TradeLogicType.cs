@@ -2,7 +2,7 @@ namespace TradeHero.Contracts.Base.Enums;
 
 public enum TradeLogicType
 {
-    NoStrategy,
+    NoTradeLogic,
     PercentLimit,
     PercentMove
 }

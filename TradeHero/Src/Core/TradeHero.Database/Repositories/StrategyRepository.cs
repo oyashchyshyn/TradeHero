@@ -56,10 +56,10 @@ internal class StrategyRepository : IStrategyRepository
     {
         try
         {
-            var activeStrategySettings = await _database.Strategies.AsNoTracking()
+            var activeStrategy = await _database.Strategies.AsNoTracking()
                 .SingleOrDefaultAsync(x => x.IsActive);
 
-            return activeStrategySettings != null ? GenerateStrategyDto(activeStrategySettings) : null;
+            return activeStrategy != null ? GenerateStrategyDto(activeStrategy) : null;
         }
         catch (Exception exception)
         {

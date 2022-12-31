@@ -52,10 +52,10 @@ internal class AddStrategyCommand : IMenuCommand
 
             var listStrategyInlineKeyboard = 
                 from strategyType in Enum.GetValues<TradeLogicType>().OrderByDescending(x => x) 
-                where strategyType != TradeLogicType.NoStrategy 
+                where strategyType != TradeLogicType.NoTradeLogic 
                 select new List<InlineKeyboardButton>
                 {
-                    new(_enumDictionary.GetStrategyTypeUserFriendlyName(strategyType))
+                    new(_enumDictionary.GetTradeLogicTypeUserFriendlyName(strategyType))
                     {
                         CallbackData = strategyType.ToString()
                     }
@@ -180,7 +180,7 @@ internal class AddStrategyCommand : IMenuCommand
                 return;
             }
             
-            if (_telegramMenuStore.StrategyData.TradeLogicType != TradeLogicType.NoStrategy)
+            if (_telegramMenuStore.StrategyData.TradeLogicType != TradeLogicType.NoTradeLogic)
             {
                 var jsonExpandoObject = _jsonService.ConvertKeyValueStringDataToDictionary(data);
                 if (jsonExpandoObject.ActionResult != ActionResult.Success)
