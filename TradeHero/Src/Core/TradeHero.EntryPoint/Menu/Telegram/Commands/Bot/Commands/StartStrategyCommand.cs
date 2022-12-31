@@ -13,6 +13,7 @@ internal class StartStrategyCommand : IMenuCommand
     private readonly ILogger<StartStrategyCommand> _logger;
     private readonly ITelegramService _telegramService;
     private readonly IStrategyRepository _strategyRepository;
+    private readonly IConnectionRepository _connectionRepository;
     private readonly ITradeLogicFactory _tradeLogicFactory;
     private readonly IStore _store;
     private readonly TelegramMenuStore _telegramMenuStore;
@@ -21,6 +22,7 @@ internal class StartStrategyCommand : IMenuCommand
         ILogger<StartStrategyCommand> logger,
         ITelegramService telegramService, 
         IStrategyRepository strategyRepository, 
+        IConnectionRepository connectionRepository,
         ITradeLogicFactory tradeLogicFactory, 
         IStore store, 
         TelegramMenuStore telegramMenuStore
@@ -29,6 +31,7 @@ internal class StartStrategyCommand : IMenuCommand
         _logger = logger;
         _telegramService = telegramService;
         _strategyRepository = strategyRepository;
+        _connectionRepository = connectionRepository;
         _tradeLogicFactory = tradeLogicFactory;
         _store = store;
         _telegramMenuStore = telegramMenuStore;
@@ -46,6 +49,14 @@ internal class StartStrategyCommand : IMenuCommand
             if (activeStrategy == null)
             {
                 await ErrorMessageAsync("There is no active strategy.", cancellationToken);
+                
+                return;
+            }
+            
+            var connection = await _connectionRepository.GetActiveConnectionAsync();
+            if (connection == null)
+            {
+                await ErrorMessageAsync("There is no active connection to exchanger.", cancellationToken);
                 
                 return;
             }

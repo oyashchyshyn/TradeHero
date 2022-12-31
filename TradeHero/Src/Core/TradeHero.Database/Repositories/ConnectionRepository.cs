@@ -60,9 +60,34 @@ internal class ConnectionRepository : IConnectionRepository
     
     public ConnectionDto? GetActiveConnection()
     {
-        var activeConnection = _database.Connections.AsNoTracking().SingleOrDefault(x => x.IsActive);
+        try
+        {
+            var activeConnection = _database.Connections.AsNoTracking().SingleOrDefault(x => x.IsActive);
 
-        return activeConnection == null ? null : GenerateConnectionDto(activeConnection);
+            return activeConnection == null ? null : GenerateConnectionDto(activeConnection);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogCritical(exception, "In {Method}", nameof(GetActiveConnection));
+
+            return null;
+        }
+    }
+
+    public async Task<ConnectionDto?> GetActiveConnectionAsync()
+    {
+        try
+        {
+            var activeConnection = await _database.Connections.AsNoTracking().SingleOrDefaultAsync(x => x.IsActive);
+
+            return activeConnection == null ? null : GenerateConnectionDto(activeConnection);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogCritical(exception, "In {Method}", nameof(GetActiveConnectionAsync));
+
+            return null;
+        }
     }
 
     public async Task<bool> SetActiveConnectionAsync(Guid connectionId)
