@@ -21,15 +21,15 @@ internal class StrategyFactory : IStrategyFactory
         _serviceProvider = serviceProvider;
     }
     
-    public IStrategy? GetStrategy(StrategyType strategyType)
+    public IStrategy? GetStrategy(TradeLogicType tradeLogicType)
     {
         try
         {
-            IStrategy? strategy = strategyType switch
+            IStrategy? strategy = tradeLogicType switch
             {
-                StrategyType.PercentLimit => _serviceProvider.GetRequiredService<PlsStrategy>(),
-                StrategyType.PercentMove => _serviceProvider.GetRequiredService<PmsStrategy>(),
-                StrategyType.NoStrategy => null,
+                TradeLogicType.PercentLimit => _serviceProvider.GetRequiredService<PlsStrategy>(),
+                TradeLogicType.PercentMove => _serviceProvider.GetRequiredService<PmsStrategy>(),
+                TradeLogicType.NoStrategy => null,
                 _ => null
             };
 

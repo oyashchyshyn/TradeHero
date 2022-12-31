@@ -97,9 +97,9 @@ internal class StrategyRepository : IStrategyRepository
             var newStrategy = new Strategy
             {
                 Name = strategyDto.Name,
-                StrategyType = strategyDto.StrategyType,
+                TradeLogicType = strategyDto.TradeLogicType,
                 InstanceType = strategyDto.InstanceType,
-                StrategyJson = strategyDto.StrategyJson,
+                TradeLogicJson = strategyDto.TradeLogicJson,
                 InstanceJson = strategyDto.InstanceJson,
                 IsActive = strategyDto.IsActive
             };
@@ -123,10 +123,10 @@ internal class StrategyRepository : IStrategyRepository
             var strategy = await _database.Strategies.SingleAsync(x => x.Id == strategyDto.Id);
         
             strategy.Name = strategyDto.Name;
-            strategy.StrategyType = strategyDto.StrategyType;
+            strategy.TradeLogicType = strategyDto.TradeLogicType;
             strategy.InstanceType = strategyDto.InstanceType;
             strategy.InstanceJson = strategyDto.InstanceJson;
-            strategy.StrategyJson = strategyDto.StrategyJson;
+            strategy.TradeLogicJson = strategyDto.TradeLogicJson;
             strategy.IsActive = strategyDto.IsActive;
 
             return await _database.SaveChangesAsync() >= 0;
@@ -175,9 +175,9 @@ internal class StrategyRepository : IStrategyRepository
         {
             Id = strategy.Id,
             Name = strategy.Name,
-            StrategyType = strategy.StrategyType,
+            TradeLogicType = strategy.TradeLogicType,
             InstanceType = strategy.InstanceType,
-            StrategyJson = strategy.StrategyJson,
+            TradeLogicJson = strategy.TradeLogicJson,
             InstanceJson = strategy.InstanceJson,
             IsActive = strategy.IsActive
         };

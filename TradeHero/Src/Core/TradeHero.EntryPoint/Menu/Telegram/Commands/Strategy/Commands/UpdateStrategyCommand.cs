@@ -200,10 +200,10 @@ internal class UpdateStrategyCommand : IMenuCommand
             switch (_telegramMenuStore.StrategyData.StrategyObjectToUpdate)
             {
                 case StrategyObject.Strategy:
-                    jObject = _jsonService.GetJObject(strategy.StrategyJson).Data;
+                    jObject = _jsonService.GetJObject(strategy.TradeLogicJson).Data;
                     jObject.Add(new JProperty(nameof(BaseStrategyDto.Name), strategy.Name));
                     validationRuleSet = ValidationRuleSet.Update;
-                    type = _dtoValidator.GetDtoTypeByStrategyType(strategy.StrategyType);
+                    type = _dtoValidator.GetDtoTypeByStrategyType(strategy.TradeLogicType);
                     break;
                 case StrategyObject.Instance:
                     jObject = _jsonService.GetJObject(strategy.InstanceJson).Data;
@@ -331,7 +331,7 @@ internal class UpdateStrategyCommand : IMenuCommand
             switch (_telegramMenuStore.StrategyData.StrategyObjectToUpdate)
             {
                 case StrategyObject.Strategy:
-                    strategy.StrategyJson = updatedDataData;
+                    strategy.TradeLogicJson = updatedDataData;
                     break;
                 case StrategyObject.Instance:
                     strategy.InstanceJson = updatedDataData;

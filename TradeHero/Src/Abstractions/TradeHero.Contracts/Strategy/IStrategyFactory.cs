@@ -4,5 +4,5 @@ namespace TradeHero.Contracts.Strategy;
 
 public interface IStrategyFactory
 {
-    IStrategy? GetStrategy(StrategyType strategyType);
+    IStrategy? GetStrategy(TradeLogicType tradeLogicType);
 }

@@ -34,7 +34,7 @@ internal class PlsEndpoints
     }
 
     public async Task<ActionResult> CreateBuyMarketOrderAsync(SymbolMarketInfo symbolMarketInfo, decimal lastPrice, BinanceFuturesUsdtSymbol symbolInfo, 
-        BinancePositionDetailsUsdt positionInfo, BinanceFuturesAccountBalance balance, PlsTradeOptions tradeOptions, int maxRetries = 5, 
+        BinancePositionDetailsUsdt positionInfo, BinanceFuturesAccountBalance balance, PlsTradeLogicOptions tradeLogicOptions, int maxRetries = 5, 
         CancellationToken cancellationToken = default)
     {
         try
@@ -60,12 +60,12 @@ internal class PlsEndpoints
                 return ActionResult.Error;
             }
 
-            var initialMargin = tradeOptions.PercentFromDepositForOpen != 0 
-                ? Math.Round(balance.AvailableBalance * tradeOptions.PercentFromDepositForOpen / 100, 2) * positionInfo.Leverage
+            var initialMargin = tradeLogicOptions.PercentFromDepositForOpen != 0 
+                ? Math.Round(balance.AvailableBalance * tradeLogicOptions.PercentFromDepositForOpen / 100, 2) * positionInfo.Leverage
                 : symbolInfo.MinNotionalFilter.MinNotional; 
                 
             _logger.LogInformation("{Symbol} | {Side}. Percent from deposit is {Percent}%. Margin with leverage is {Margin}. In {Method}",
-                symbolMarketInfo.FuturesUsdName, symbolMarketInfo.KlinePositionSignal, tradeOptions.PercentFromDepositForOpen, 
+                symbolMarketInfo.FuturesUsdName, symbolMarketInfo.KlinePositionSignal, tradeLogicOptions.PercentFromDepositForOpen, 
                 initialMargin, nameof(CreateBuyMarketOrderAsync));
 
             var orderQuantity = _calculatorService.GetOrderQuantity(
@@ -94,13 +94,13 @@ internal class PlsEndpoints
                 marginForOrder
             );
             
-            if (100.0m - availableBalancePercent > tradeOptions.AvailableDepositPercentForTrading)
+            if (100.0m - availableBalancePercent > tradeLogicOptions.AvailableDepositPercentForTrading)
             {
                 _logger.LogWarning("{Symbol} | {Side}. Margin is not available. Margin percent for trading is {MarginPercentIsSettings}. " +
                                 "Current balance percent in use with future order is {BalancePercentInUse}. " +
                                 "Current balance: {Balance}. Available balance: {AvailableBalance}. In {Method}",
                     symbolMarketInfo.FuturesUsdName, symbolMarketInfo.KlinePositionSignal, 
-                    tradeOptions.AvailableDepositPercentForTrading, 100.0m - availableBalancePercent, 
+                    tradeLogicOptions.AvailableDepositPercentForTrading, 100.0m - availableBalancePercent, 
                     balance.WalletBalance, balance.AvailableBalance, nameof(CreateMarketAverageBuyOrderAsync));
                 
                 return ActionResult.Error;
@@ -178,7 +178,7 @@ internal class PlsEndpoints
     } 
     
     public async Task<ActionResult> CreateMarketAverageBuyOrderAsync(Position openedPosition, decimal lastPrice, BinanceFuturesUsdtSymbol symbolInfo, 
-        BinanceFuturesAccountBalance balance, PlsTradeOptions tradeOptions, int maxRetries = 5, CancellationToken cancellationToken = default)
+        BinanceFuturesAccountBalance balance, PlsTradeLogicOptions tradeLogicOptions, int maxRetries = 5, CancellationToken cancellationToken = default)
     {
         var positionString = openedPosition.ToString();
 
@@ -212,7 +212,7 @@ internal class PlsEndpoints
                 TotalQuantity = openedPosition.TotalQuantity,
                 Leverage = openedPosition.Leverage,
                 LastPrice = lastPrice,
-                MinRoePercent = tradeOptions.AverageToRoe
+                MinRoePercent = tradeLogicOptions.AverageToRoe
             });
             
             if (orderQuantity <= 0)
@@ -242,12 +242,12 @@ internal class PlsEndpoints
                 marginForOrder
             );
                     
-            if (100.0m - availableBalancePercent > tradeOptions.AvailableDepositPercentForTrading)
+            if (100.0m - availableBalancePercent > tradeLogicOptions.AvailableDepositPercentForTrading)
             {
                 _logger.LogWarning("{Position}. Margin is not available. Margin percent for trading is {MarginPercentIsSettings}." +
                                    "Current balance percent in use with future order is {BalancePercentInUse}. " +
                                    "Current balance: {Balance}. Available balance: {AvailableBalance}. In {Method}",
-                    positionString, tradeOptions.AvailableDepositPercentForTrading, 100.0m - availableBalancePercent, 
+                    positionString, tradeLogicOptions.AvailableDepositPercentForTrading, 100.0m - availableBalancePercent, 
                     balance.WalletBalance, balance.AvailableBalance, nameof(CreateMarketAverageBuyOrderAsync));
                         
                 return ActionResult.Error;

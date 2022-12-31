@@ -7,7 +7,7 @@ using TradeHero.EntryPoint.Data.Dtos.Base;
 
 namespace TradeHero.EntryPoint.Data.Dtos.Strategy;
 
-internal class PercentLimitStrategyDto : BaseStrategyDto
+internal class PercentLimitTradeLogicDto : BaseStrategyDto
 {
     [Description("Name for instance. Must be unique. Minimum length 3, Maximum lenght 40.")]
     [JsonProperty("name")]

@@ -9,7 +9,7 @@ namespace TradeHero.Strategies.Strategies.PercentMoveStrategy.Flow;
 
 internal class PmsStore : BaseStrategyStore
 {
-    public PmsStrategyOptions StrategyOptions { get; private set; } = null!;
+    public PmsTradeLogicOptions TradeLogicOptions { get; private set; } = null!;
 
     public PmsStore(
         ILogger<PmsStore> logger, 
@@ -21,31 +21,31 @@ internal class PmsStore : BaseStrategyStore
     public Dictionary<string, bool> SymbolStatus { get; } = new();
     public Dictionary<string, decimal> SymbolLastOrderPrice { get; } = new();
 
-    public override ActionResult AddStrategyOptions(StrategyDto strategyDto)
+    public override ActionResult AddTradeLogicOptions(StrategyDto strategyDto)
     {
         try
         {
-            Logger.LogInformation("Trade options from database: {Data}. In {Method}", 
-                strategyDto.StrategyJson, nameof(AddStrategyOptions));
+            Logger.LogInformation("Trade logic options from database: {Data}. In {Method}", 
+                strategyDto.TradeLogicJson, nameof(AddTradeLogicOptions));
             
-            var tradeOptionsConvertedData = JsonService.Deserialize<PmsStrategyOptions>(strategyDto.StrategyJson);
+            var tradeOptionsConvertedData = JsonService.Deserialize<PmsTradeLogicOptions>(strategyDto.TradeLogicJson);
             if (tradeOptionsConvertedData.ActionResult != ActionResult.Success)
             {
-                Logger.LogError("Cannot deserialize TradeOptions. In {Method}", nameof(AddStrategyOptions));
+                Logger.LogError("Cannot deserialize Trade logic options. In {Method}", nameof(AddTradeLogicOptions));
                 
                 return ActionResult.Error;
             }
         
-            StrategyOptions = tradeOptionsConvertedData.Data;
+            TradeLogicOptions = tradeOptionsConvertedData.Data;
 
-            Logger.LogInformation("Trade options after converting: {Data}. In {Method}", 
-                JsonService.SerializeObject(StrategyOptions).Data, nameof(AddStrategyOptions));
+            Logger.LogInformation("Trade logic options after converting: {Data}. In {Method}", 
+                JsonService.SerializeObject(TradeLogicOptions).Data, nameof(AddTradeLogicOptions));
             
             return ActionResult.Success;
         }
         catch (Exception exception)
         {
-            Logger.LogCritical(exception, "In {Method}", nameof(AddStrategyOptions));
+            Logger.LogCritical(exception, "In {Method}", nameof(AddTradeLogicOptions));
                 
             return ActionResult.Error;
         }
@@ -65,7 +65,7 @@ internal class PmsStore : BaseStrategyStore
             
             SymbolStatus.Clear();
             SymbolLastOrderPrice.Clear();
-            StrategyOptions = new PmsStrategyOptions();
+            TradeLogicOptions = new PmsTradeLogicOptions();
 
             return ActionResult.Success;
         }

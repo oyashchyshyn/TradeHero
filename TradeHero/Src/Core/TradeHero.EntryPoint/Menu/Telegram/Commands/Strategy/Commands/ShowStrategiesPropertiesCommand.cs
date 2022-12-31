@@ -40,8 +40,8 @@ internal class ShowStrategiesPropertiesCommand : IMenuCommand
             _telegramMenuStore.LastCommandId = Id;
 
             var listStrategyInlineKeyboard = 
-                from strategyType in Enum.GetValues<StrategyType>().OrderByDescending(x => x) 
-                where strategyType != StrategyType.NoStrategy 
+                from strategyType in Enum.GetValues<TradeLogicType>().OrderByDescending(x => x) 
+                where strategyType != TradeLogicType.NoStrategy 
                 select new List<InlineKeyboardButton>
                 {
                     new(_enumDictionary.GetStrategyTypeUserFriendlyName(strategyType))
@@ -96,13 +96,13 @@ internal class ShowStrategiesPropertiesCommand : IMenuCommand
     {
         try
         {
-            if (Enum.TryParse(callbackData, out StrategyType strategyType))
+            if (Enum.TryParse(callbackData, out TradeLogicType strategyType))
             {
                 var propertyNamesWithDescription = strategyType switch
                 {
-                    StrategyType.PercentLimit => typeof(PercentLimitStrategyDto).GetJsonPropertyNameAndDescriptionFromType(),
-                    StrategyType.PercentMove => typeof(PercentMoveStrategyDto).GetJsonPropertyNameAndDescriptionFromType(),
-                    StrategyType.NoStrategy => throw new ArgumentOutOfRangeException(nameof(strategyType), strategyType, null),
+                    TradeLogicType.PercentLimit => typeof(PercentLimitTradeLogicDto).GetJsonPropertyNameAndDescriptionFromType(),
+                    TradeLogicType.PercentMove => typeof(PercentMoveTradeLogicDto).GetJsonPropertyNameAndDescriptionFromType(),
+                    TradeLogicType.NoStrategy => throw new ArgumentOutOfRangeException(nameof(strategyType), strategyType, null),
                     _ => throw new ArgumentOutOfRangeException(nameof(strategyType), strategyType, null)
                 };
 

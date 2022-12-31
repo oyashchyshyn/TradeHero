@@ -4,7 +4,7 @@ using TradeHero.Strategies.Base;
 
 namespace TradeHero.Strategies.Strategies.PercentLimitsStrategy.Options;
 
-internal class PlsTradeOptions : BaseTradeOptions
+internal class PlsTradeLogicOptions : BaseTradeOptions
 {
     public int Leverage { get; set; }
     public FuturesMarginType MarginType { get; set; }

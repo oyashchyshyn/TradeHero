@@ -19,7 +19,7 @@ internal class PmsFilters
         _calculatorService = calculatorService;
     }
     
-    public bool IsNeedToPlaceOrder(string symbol, decimal lastPrice, decimal lastOrderPrice, BinanceFuturesUsdtSymbol symbolInfo, PmsStrategyOptions strategyOptions)
+    public bool IsNeedToPlaceOrder(string symbol, decimal lastPrice, decimal lastOrderPrice, BinanceFuturesUsdtSymbol symbolInfo, PmsTradeLogicOptions tradeLogicOptions)
     {
         try
         {
@@ -38,7 +38,7 @@ internal class PmsFilters
                 )
             );
             
-            return percentBetweenLastOrderAndLastPrice >= strategyOptions.PricePercentMove;
+            return percentBetweenLastOrderAndLastPrice >= tradeLogicOptions.PricePercentMove;
         }
         catch (Exception exception)
         {

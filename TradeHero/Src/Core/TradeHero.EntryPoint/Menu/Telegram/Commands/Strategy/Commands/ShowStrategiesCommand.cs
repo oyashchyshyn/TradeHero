@@ -110,8 +110,8 @@ internal class ShowStrategiesCommand : IMenuCommand
 
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
 
-            var strategyObject = _jsonService.Deserialize(strategy.StrategyJson, 
-                _dtoValidator.GetDtoTypeByStrategyType(strategy.StrategyType), 
+            var strategyObject = _jsonService.Deserialize(strategy.TradeLogicJson, 
+                _dtoValidator.GetDtoTypeByStrategyType(strategy.TradeLogicType), 
                 JsonSerializationSettings.IgnoreJsonPropertyName);
 
             var strategyExpandoObject = GetExpandObject(strategyObject.Data);

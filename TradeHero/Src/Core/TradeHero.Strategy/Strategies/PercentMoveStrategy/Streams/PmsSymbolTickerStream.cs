@@ -48,7 +48,7 @@ internal class PmsSymbolTickerStream : BaseFuturesUsdSymbolTickerStream
                 var lastOrderPrice = _pmsStore.SymbolLastOrderPrice[ticker.Symbol];
                 
                 var isNeedToPlaceOrder = _pmsFilters.IsNeedToPlaceOrder(ticker.Symbol, ticker.LastPrice, 
-                    lastOrderPrice, symbolInfo, _pmsStore.StrategyOptions);
+                    lastOrderPrice, symbolInfo, _pmsStore.TradeLogicOptions);
                 
                 if (!isNeedToPlaceOrder)
                 {

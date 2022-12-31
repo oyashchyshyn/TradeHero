@@ -32,7 +32,7 @@ internal class PlsSymbolTickerStream : BaseFuturesUsdSymbolTickerStream
     {
         try
         {
-            if (!_plsStore.StrategyOptions.EnableTrailingStops && !_plsStore.StrategyOptions.EnableMarketStopToExit)
+            if (!_plsStore.TradeLogicOptions.EnableTrailingStops && !_plsStore.TradeLogicOptions.EnableMarketStopToExit)
             {
                 return Task.CompletedTask;
             }
@@ -72,7 +72,7 @@ internal class PlsSymbolTickerStream : BaseFuturesUsdSymbolTickerStream
                         ticker.LastPrice,
                         _plsStore.PositionsInfo[key],
                         balance,
-                        _plsStore.StrategyOptions
+                        _plsStore.TradeLogicOptions
                     );
 
                     switch (orderToPlace)
@@ -92,7 +92,7 @@ internal class PlsSymbolTickerStream : BaseFuturesUsdSymbolTickerStream
                             var stopLimitToSafeResult = await _plsEndpoints.CreateMarketStopOrderAsync(
                                 position,
                                 ticker.LastPrice,
-                                _plsStore.StrategyOptions.MarketStopSafePriceFromLastPricePercent,
+                                _plsStore.TradeLogicOptions.MarketStopSafePriceFromLastPricePercent,
                                 symbolInfo,
                                 cancellationToken: cancellationToken
                             );
@@ -105,7 +105,7 @@ internal class PlsSymbolTickerStream : BaseFuturesUsdSymbolTickerStream
                             var stopLimitToCloseResult = await _plsEndpoints.CreateMarketStopOrderAsync(
                                 position,
                                 ticker.LastPrice,
-                                _plsStore.StrategyOptions.MarketStopExitPriceFromLastPricePercent,
+                                _plsStore.TradeLogicOptions.MarketStopExitPriceFromLastPricePercent,
                                 symbolInfo,
                                 cancellationToken: cancellationToken
                             );

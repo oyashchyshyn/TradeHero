@@ -73,7 +73,7 @@ internal abstract class BaseFuturesUsdStrategy : IStrategy
                 return ActionResult.CancellationTokenRequested;
             }
 
-            var actionResult = ((BaseStrategyStore)Store).AddStrategyOptions(strategyDto);
+            var actionResult = ((BaseStrategyStore)Store).AddTradeLogicOptions(strategyDto);
             if (actionResult != ActionResult.Success)
             {
                 return actionResult;
@@ -178,7 +178,7 @@ internal abstract class BaseFuturesUsdStrategy : IStrategy
 
             await ((BaseStrategyStore)Store).ClearInstanceOptionsAsync();
             
-            var actionResult = ((BaseStrategyStore)Store).AddStrategyOptions(strategyDto);
+            var actionResult = ((BaseStrategyStore)Store).AddTradeLogicOptions(strategyDto);
             if (actionResult != ActionResult.Success)
             {
                 return actionResult;

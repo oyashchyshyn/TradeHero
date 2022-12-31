@@ -82,7 +82,7 @@ internal class PlsStrategy : BaseFuturesUsdStrategy
                 instanceResult.Data.LongSignals.Count, instanceResult.Data.ShortSignals.Count, 
                 nameof(RunInstanceAsync));
 
-            if (_plsStore.StrategyOptions.EnableAveraging)
+            if (_plsStore.TradeLogicOptions.EnableAveraging)
             {
                 Logger.LogInformation("Averaging is enabled. In {Method}", 
                     nameof(RunInstanceAsync));
@@ -90,7 +90,7 @@ internal class PlsStrategy : BaseFuturesUsdStrategy
                 await ManageAverageOrdersAsync(instanceResult.Data, cancellationToken);
             }
 
-            if (_plsStore.StrategyOptions.EnableOpenPositions)
+            if (_plsStore.TradeLogicOptions.EnableOpenPositions)
             {
                 Logger.LogInformation("Open positions is enabled. In {Method}", 
                     nameof(RunInstanceAsync));
@@ -125,7 +125,7 @@ internal class PlsStrategy : BaseFuturesUsdStrategy
         {
             var changeLeverageResult = await FuturesUsdEndpoints.ChangeLeverageToAllPositionsAsync(
                 _plsStore,
-                _plsStore.StrategyOptions.Leverage, 
+                _plsStore.TradeLogicOptions.Leverage, 
                 cancellationToken: CancellationTokenSource.Token
             );
 
@@ -136,7 +136,7 @@ internal class PlsStrategy : BaseFuturesUsdStrategy
             
             changeLeverageResult = await FuturesUsdEndpoints.ChangeMarginTypeToAllPositionsAsync(
                 _plsStore,
-                _plsStore.StrategyOptions.MarginType, 
+                _plsStore.TradeLogicOptions.MarginType, 
                 cancellationToken: CancellationTokenSource.Token
             );
             
@@ -220,7 +220,7 @@ internal class PlsStrategy : BaseFuturesUsdStrategy
                 var lastPrice = _plsStore.MarketLastPrices[openedPosition.Name];
                 
                 var isAverageNeeded = await _plsFilters.IsNeedToPlaceMarketAverageOrderAsync(instanceResult, openedPosition, lastPrice, 
-                    marketSignals, symbolInfo, _plsStore.StrategyOptions);
+                    marketSignals, symbolInfo, _plsStore.TradeLogicOptions);
                 if (!isAverageNeeded)
                 {
                     continue;
@@ -234,7 +234,7 @@ internal class PlsStrategy : BaseFuturesUsdStrategy
                     lastPrice,
                     symbolInfo,
                     balance,
-                    _plsStore.StrategyOptions,
+                    _plsStore.TradeLogicOptions,
                     cancellationToken: cancellationToken
                 );
             }
@@ -264,13 +264,13 @@ internal class PlsStrategy : BaseFuturesUsdStrategy
             }
             
             //TODO: Swap this variable with if after testing
-            var filteredPositions = await _plsFilters.GetFilteredOrdersForOpenPositionAsync(instanceResult, _plsStore.StrategyOptions, 
+            var filteredPositions = await _plsFilters.GetFilteredOrdersForOpenPositionAsync(instanceResult, _plsStore.TradeLogicOptions, 
                 _plsStore.Positions, _plsStore.FuturesUsd.AccountData.Positions.ToList());
             
-            if (_plsStore.Positions.Count >= _plsStore.StrategyOptions.MaximumPositions)
+            if (_plsStore.Positions.Count >= _plsStore.TradeLogicOptions.MaximumPositions)
             {
                 Logger.LogWarning("Cannot open new positions. Opened positions: {OpenedPositions}, available: {AvailablePositions}. In {Method}",
-                    _plsStore.Positions.Count, _plsStore.StrategyOptions.MaximumPositions, nameof(ManageMarketBuyOrdersAsync));
+                    _plsStore.Positions.Count, _plsStore.TradeLogicOptions.MaximumPositions, nameof(ManageMarketBuyOrdersAsync));
                 
                 return;
             }
@@ -293,7 +293,7 @@ internal class PlsStrategy : BaseFuturesUsdStrategy
                     symbolInfo,
                     positionInfo,
                     balance,
-                    _plsStore.StrategyOptions,
+                    _plsStore.TradeLogicOptions,
                     cancellationToken: cancellationToken
                 );
             }

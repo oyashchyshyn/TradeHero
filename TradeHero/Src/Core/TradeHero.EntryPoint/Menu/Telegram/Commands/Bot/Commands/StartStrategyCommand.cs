@@ -50,7 +50,7 @@ internal class StartStrategyCommand : IMenuCommand
                 return;
             }
             
-            var strategy = _strategyFactory.GetStrategy(activeStrategy.StrategyType);
+            var strategy = _strategyFactory.GetStrategy(activeStrategy.TradeLogicType);
             if (strategy == null)
             {
                 await ErrorMessageAsync("Strategy does not exist.", cancellationToken);

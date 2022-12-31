@@ -234,7 +234,7 @@ internal class TelegramMenu : IMenuService
                     return;
                 }
                 
-                var strategy = _strategyFactory.GetStrategy(activeStrategy.StrategyType);
+                var strategy = _strategyFactory.GetStrategy(activeStrategy.TradeLogicType);
                 if (strategy == null)
                 {
                     await _telegramService.SendTextMessageToUserAsync(

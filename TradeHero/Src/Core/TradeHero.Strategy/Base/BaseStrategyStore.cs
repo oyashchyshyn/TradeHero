@@ -32,19 +32,19 @@ internal abstract class BaseStrategyStore : IStrategyStore
         JsonService = jsonService;
     }
 
-    public abstract ActionResult AddStrategyOptions(StrategyDto strategyDto);
+    public abstract ActionResult AddTradeLogicOptions(StrategyDto strategyDto);
 
     public ActionResult AddInstanceOptions(StrategyDto strategyDto, Type type)
     {
         try
         {
             Logger.LogInformation("Trade options from database: {Data}. In {Method}", 
-                strategyDto.StrategyJson, nameof(AddStrategyOptions));
+                strategyDto.TradeLogicJson, nameof(AddTradeLogicOptions));
             
             var strategyOptionsJObject = JsonService.Deserialize<JObject>(strategyDto.InstanceJson);
             if (strategyOptionsJObject.ActionResult != ActionResult.Success)
             {
-                Logger.LogError("Cannot deserialize StrategyOptions. In {Method}", nameof(AddStrategyOptions));
+                Logger.LogError("Cannot deserialize StrategyOptions. In {Method}", nameof(AddTradeLogicOptions));
                 
                 return ActionResult.Error;
             }
@@ -52,7 +52,7 @@ internal abstract class BaseStrategyStore : IStrategyStore
             var jObjectStrategyOptionsResult = strategyOptionsJObject.Data.ToObject(type);
             if (jObjectStrategyOptionsResult == null)
             {
-                Logger.LogError("JObject of instance is null. In {Method}", nameof(AddStrategyOptions));
+                Logger.LogError("JObject of instance is null. In {Method}", nameof(AddTradeLogicOptions));
                 
                 return ActionResult.Error;
             }

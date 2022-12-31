@@ -4,7 +4,6 @@ using FluentValidation.Results;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Base.Enums;
-using TradeHero.Contracts.Extensions;
 using TradeHero.EntryPoint.Data.Dtos.Instance;
 using TradeHero.EntryPoint.Data.Dtos.Strategy;
 
@@ -44,16 +43,16 @@ internal class DtoValidator
                 validationResult = await validator.ValidateAsync((ClusterVolumeInstanceDto)instance, 
                     options => options.IncludeRuleSets(validationRuleSet.ToString()));
             }
-            else if (type == typeof(PercentLimitStrategyDto))
+            else if (type == typeof(PercentLimitTradeLogicDto))
             {
-                var validator = _serviceProvider.GetRequiredService<IValidator<PercentLimitStrategyDto>>();
-                validationResult = await validator.ValidateAsync((PercentLimitStrategyDto)instance,
+                var validator = _serviceProvider.GetRequiredService<IValidator<PercentLimitTradeLogicDto>>();
+                validationResult = await validator.ValidateAsync((PercentLimitTradeLogicDto)instance,
                     options => options.IncludeRuleSets(validationRuleSet.ToString()));
             }
-            else if (type == typeof(PercentMoveStrategyDto))
+            else if (type == typeof(PercentMoveTradeLogicDto))
             {
-                var validator = _serviceProvider.GetRequiredService<IValidator<PercentMoveStrategyDto>>();
-                validationResult = await validator.ValidateAsync((PercentMoveStrategyDto)instance,
+                var validator = _serviceProvider.GetRequiredService<IValidator<PercentMoveTradeLogicDto>>();
+                validationResult = await validator.ValidateAsync((PercentMoveTradeLogicDto)instance,
                     options => options.IncludeRuleSets(validationRuleSet.ToString()));
             }
 
@@ -67,13 +66,13 @@ internal class DtoValidator
         }
     }
     
-    public Type GetDtoTypeByStrategyType(StrategyType strategyType)
+    public Type GetDtoTypeByStrategyType(TradeLogicType tradeLogicType)
     {
-        return strategyType switch
+        return tradeLogicType switch
         {
-            StrategyType.PercentLimit => typeof(PercentLimitStrategyDto),
-            StrategyType.PercentMove => typeof(PercentMoveStrategyDto),
-            StrategyType.NoStrategy => throw new ArgumentOutOfRangeException(),
+            TradeLogicType.PercentLimit => typeof(PercentLimitTradeLogicDto),
+            TradeLogicType.PercentMove => typeof(PercentMoveTradeLogicDto),
+            TradeLogicType.NoStrategy => throw new ArgumentOutOfRangeException(),
             _ => throw new ArgumentOutOfRangeException()
         };
     }

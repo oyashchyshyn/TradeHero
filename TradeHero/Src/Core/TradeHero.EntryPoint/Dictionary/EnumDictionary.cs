@@ -4,18 +4,18 @@ namespace TradeHero.EntryPoint.Dictionary;
 
 internal class EnumDictionary
 {
-    public string GetStrategyTypeUserFriendlyName(StrategyType strategyType)
+    public string GetStrategyTypeUserFriendlyName(TradeLogicType tradeLogicType)
     {
-        switch (strategyType)
+        switch (tradeLogicType)
         {
-            case StrategyType.NoStrategy:
+            case TradeLogicType.NoStrategy:
                 return "Do not add strategy";
-            case StrategyType.PercentLimit:
+            case TradeLogicType.PercentLimit:
                 return "Percent limit";
-            case StrategyType.PercentMove:
+            case TradeLogicType.PercentMove:
                 return "Percent move";
             default:
-                throw new ArgumentOutOfRangeException(nameof(strategyType), strategyType, null);
+                throw new ArgumentOutOfRangeException(nameof(tradeLogicType), tradeLogicType, null);
         }
     }
     

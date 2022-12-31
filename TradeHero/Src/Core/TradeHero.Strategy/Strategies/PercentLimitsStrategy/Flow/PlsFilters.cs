@@ -36,26 +36,26 @@ internal class PlsFilters
         _environmentService = environmentService;
     }
 
-    public async Task<IEnumerable<SymbolMarketInfo>> GetFilteredOrdersForOpenPositionAsync(InstanceResult instanceResult, PlsTradeOptions tradeOptions, 
+    public async Task<IEnumerable<SymbolMarketInfo>> GetFilteredOrdersForOpenPositionAsync(InstanceResult instanceResult, PlsTradeLogicOptions tradeLogicOptions, 
         List<Position> openedPositions, List<BinancePositionDetailsUsdt> positionsInfo)
     {
         try
         {
             var topShortKlines = instanceResult.ShortSignals
-                .Where(x => GetKlineActionsFromKlineActionSignal(tradeOptions.KlineActionForOpen, x.KlinePositionSignal).Contains(x.KlineAction))
-                .Where(x => GetKlinePowersFromKlinePowerSignal(tradeOptions.KlinePowerForOpen, x.KlinePositionSignal).Contains(x.Power))
-                .Where(x => x.TotalOrders >= tradeOptions.MinTradesForOpen)
-                .Where(x => x.KlineAverageTradeQuoteVolume >= tradeOptions.MinQuoteVolumeForOpen)
+                .Where(x => GetKlineActionsFromKlineActionSignal(tradeLogicOptions.KlineActionForOpen, x.KlinePositionSignal).Contains(x.KlineAction))
+                .Where(x => GetKlinePowersFromKlinePowerSignal(tradeLogicOptions.KlinePowerForOpen, x.KlinePositionSignal).Contains(x.Power))
+                .Where(x => x.TotalOrders >= tradeLogicOptions.MinTradesForOpen)
+                .Where(x => x.KlineAverageTradeQuoteVolume >= tradeLogicOptions.MinQuoteVolumeForOpen)
                 .Where(x => x.Asks.Sum(y => y.Quantity) > x.Bids.Sum(y => y.Quantity))
                 .OrderByDescending(x => x.AsksBidsCoefficient)
                 .ThenByDescending(x => x.PocOrdersCoefficient)
                 .ToArray();
         
             var topLongKlines = instanceResult.LongSignals
-                .Where(x => GetKlineActionsFromKlineActionSignal(tradeOptions.KlineActionForOpen, x.KlinePositionSignal).Contains(x.KlineAction))
-                .Where(x => GetKlinePowersFromKlinePowerSignal(tradeOptions.KlinePowerForOpen, x.KlinePositionSignal).Contains(x.Power))
-                .Where(x => x.TotalOrders >= tradeOptions.MinTradesForOpen)
-                .Where(x => x.KlineAverageTradeQuoteVolume >= tradeOptions.MinQuoteVolumeForOpen)
+                .Where(x => GetKlineActionsFromKlineActionSignal(tradeLogicOptions.KlineActionForOpen, x.KlinePositionSignal).Contains(x.KlineAction))
+                .Where(x => GetKlinePowersFromKlinePowerSignal(tradeLogicOptions.KlinePowerForOpen, x.KlinePositionSignal).Contains(x.Power))
+                .Where(x => x.TotalOrders >= tradeLogicOptions.MinTradesForOpen)
+                .Where(x => x.KlineAverageTradeQuoteVolume >= tradeLogicOptions.MinQuoteVolumeForOpen)
                 .Where(x => x.Bids.Sum(y => y.Quantity) > x.Asks.Sum(y => y.Quantity))
                 .OrderByDescending(x => x.AsksBidsCoefficient)
                 .ThenByDescending(x => x.PocOrdersCoefficient)
@@ -89,43 +89,43 @@ internal class PlsFilters
 
             if (instanceResult.ShortSignals.Count == instanceResult.LongSignals.Count)
             {
-                longsPositionsToOpen = tradeOptions.MaximumPositionsPerIteration / 2;
-                shortsPositionsToOpen = tradeOptions.MaximumPositionsPerIteration / 2;
+                longsPositionsToOpen = tradeLogicOptions.MaximumPositionsPerIteration / 2;
+                shortsPositionsToOpen = tradeLogicOptions.MaximumPositionsPerIteration / 2;
             }
             else if (instanceResult.ShortSignals.Count > instanceResult.LongSignals.Count)
             {
                 var ration = (instanceResult.ShortSignals.Count == 0 ? 1 : instanceResult.ShortSignals.Count) 
                              / (instanceResult.LongSignals.Count == 0 ? 1 : instanceResult.LongSignals.Count);
-                if (ration >= tradeOptions.MaximumPositionsPerIteration)
+                if (ration >= tradeLogicOptions.MaximumPositionsPerIteration)
                 {
-                    shortsPositionsToOpen = tradeOptions.MaximumPositionsPerIteration;
+                    shortsPositionsToOpen = tradeLogicOptions.MaximumPositionsPerIteration;
                 }
                 else
                 {
                     shortsPositionsToOpen = ration;
-                    longsPositionsToOpen = tradeOptions.MaximumPositionsPerIteration - ration;
+                    longsPositionsToOpen = tradeLogicOptions.MaximumPositionsPerIteration - ration;
                 }
             }
             else
             {
                 var ration = (instanceResult.LongSignals.Count == 0 ? 1 : instanceResult.LongSignals.Count) 
                              / (instanceResult.ShortSignals.Count == 0 ? 1 : instanceResult.ShortSignals.Count);
-                if (ration >= tradeOptions.MaximumPositionsPerIteration)
+                if (ration >= tradeLogicOptions.MaximumPositionsPerIteration)
                 {
-                    longsPositionsToOpen = tradeOptions.MaximumPositionsPerIteration;
+                    longsPositionsToOpen = tradeLogicOptions.MaximumPositionsPerIteration;
                 }
                 else
                 {
                     longsPositionsToOpen = ration;
-                    shortsPositionsToOpen = tradeOptions.MaximumPositionsPerIteration - ration;
+                    shortsPositionsToOpen = tradeLogicOptions.MaximumPositionsPerIteration - ration;
                 }
             }
 
             _logger.LogInformation("Maximum positions per iteration {IterCount}. Longs to check: {LongsCount}. Shorts to check: {ShortsCount}. In {Method}",
-                tradeOptions.MaximumPositionsPerIteration, longsPositionsToOpen, shortsPositionsToOpen, nameof(GetFilteredOrdersForOpenPositionAsync));
+                tradeLogicOptions.MaximumPositionsPerIteration, longsPositionsToOpen, shortsPositionsToOpen, nameof(GetFilteredOrdersForOpenPositionAsync));
             
-            var shortsToOpen = GetPositions(shortsPositionsToOpen, topShortKlines, openedPositions, positionsInfo, tradeOptions);
-            var longsToOpen = GetPositions(longsPositionsToOpen, topLongKlines, openedPositions, positionsInfo, tradeOptions);
+            var shortsToOpen = GetPositions(shortsPositionsToOpen, topShortKlines, openedPositions, positionsInfo, tradeLogicOptions);
+            var longsToOpen = GetPositions(longsPositionsToOpen, topLongKlines, openedPositions, positionsInfo, tradeLogicOptions);
             
             _logger.LogInformation("Longs to open: {LongsCount}. Shorts to open: {ShortsCount}. In {Method}",
                 longsToOpen.Count, shortsToOpen.Count, nameof(GetFilteredOrdersForOpenPositionAsync));
@@ -141,11 +141,11 @@ internal class PlsFilters
     }
 
     public Task<bool> IsNeedToPlaceMarketAverageOrderAsync(InstanceResult instanceResult, Position openedPosition, decimal lastPrice, SymbolMarketInfo symbolMarketInfo, 
-        BinanceFuturesUsdtSymbol symbolInfo, PlsTradeOptions tradeOptions)
+        BinanceFuturesUsdtSymbol symbolInfo, PlsTradeLogicOptions tradeLogicOptions)
     {
         try
         {
-            if (!tradeOptions.EnableAveraging)
+            if (!tradeLogicOptions.EnableAveraging)
             {
                 _logger.LogError("{Position}. Averaging is disabled. In {Method}",
                     openedPosition.ToString(), nameof(IsNeedToPlaceMarketAverageOrderAsync));
@@ -169,39 +169,39 @@ internal class PlsFilters
                 return Task.FromResult(false);
             }
 
-            if (tradeOptions.MinTradesForAverage > symbolMarketInfo.TotalOrders)
+            if (tradeLogicOptions.MinTradesForAverage > symbolMarketInfo.TotalOrders)
             {
                 _logger.LogInformation("{Position}. Not valid total trades. Kline trades is {KlineTrades}. Accepted trades in options. {TradesInOptions}. In {Method}", 
-                    openedPosition.ToString(), symbolMarketInfo.TotalOrders, tradeOptions.MinTradesForAverage, nameof(IsNeedToPlaceMarketAverageOrderAsync));
+                    openedPosition.ToString(), symbolMarketInfo.TotalOrders, tradeLogicOptions.MinTradesForAverage, nameof(IsNeedToPlaceMarketAverageOrderAsync));
                     
                 return Task.FromResult(false);
             }
             
-            if (tradeOptions.MinQuoteVolumeForAverage > symbolMarketInfo.KlineAverageTradeQuoteVolume)
+            if (tradeLogicOptions.MinQuoteVolumeForAverage > symbolMarketInfo.KlineAverageTradeQuoteVolume)
             {
                 _logger.LogInformation("{Position}. Not valid trade quote volume. Kline trade asset volume is {TradeQuoteVolumeKline}. " +
                                        "Accepted trade quote volume in options. {TradeQuoteVolumeInOptions}. In {Method}", 
-                    openedPosition.ToString(), symbolMarketInfo.KlineAverageTradeQuoteVolume, tradeOptions.MinQuoteVolumeForAverage, 
+                    openedPosition.ToString(), symbolMarketInfo.KlineAverageTradeQuoteVolume, tradeLogicOptions.MinQuoteVolumeForAverage, 
                     nameof(IsNeedToPlaceMarketAverageOrderAsync));
                     
                 return Task.FromResult(false);
             }
             
-            if (!GetKlineActionsFromKlineActionSignal(tradeOptions.KlineActionForAverage, openedPosition.PositionSide).Contains(symbolMarketInfo.KlineAction))
+            if (!GetKlineActionsFromKlineActionSignal(tradeLogicOptions.KlineActionForAverage, openedPosition.PositionSide).Contains(symbolMarketInfo.KlineAction))
             {
                 _logger.LogInformation("{Position}. Not valid kline action. Current kline action is {KlineAction}. " +
                                        "Kline action signal for average is {KlineActionSignal}. In {Method}", 
-                    openedPosition.ToString(), symbolMarketInfo.KlineAction, tradeOptions.KlineActionForAverage, 
+                    openedPosition.ToString(), symbolMarketInfo.KlineAction, tradeLogicOptions.KlineActionForAverage, 
                     nameof(IsNeedToPlaceMarketAverageOrderAsync));
                     
                 return Task.FromResult(false);
             }
             
-            if (!GetKlinePowersFromKlinePowerSignal(tradeOptions.KlinePowerForAverage, openedPosition.PositionSide).Contains(symbolMarketInfo.Power))
+            if (!GetKlinePowersFromKlinePowerSignal(tradeLogicOptions.KlinePowerForAverage, openedPosition.PositionSide).Contains(symbolMarketInfo.Power))
             {
                 _logger.LogInformation("{Position}. Not valid kline power. Current kline power is {KlinePower}. " +
                                        "Kline power signal for average is {KlinePowerSignal}. In {Method}", 
-                    openedPosition.ToString(), symbolMarketInfo.Power, tradeOptions.KlinePowerForAverage, 
+                    openedPosition.ToString(), symbolMarketInfo.Power, tradeLogicOptions.KlinePowerForAverage, 
                     nameof(IsNeedToPlaceMarketAverageOrderAsync));
                     
                 return Task.FromResult(false);
@@ -223,7 +223,7 @@ internal class PlsFilters
             var roePercent = _calculatorService.CalculateRoe(openedPosition.PositionSide, openedPosition.EntryPrice, 
                 lastPrice, openedPosition.Leverage);
 
-            if (roePercent > tradeOptions.AverageFromRoe)
+            if (roePercent > tradeLogicOptions.AverageFromRoe)
             {
                 _logger.LogInformation("{Position}. Roe percent is invalid. ROE: {Roe}%. In {Method}",
                     openedPosition.ToString(), roePercent, nameof(IsNeedToPlaceMarketAverageOrderAsync));
@@ -255,7 +255,7 @@ internal class PlsFilters
     }
 
     public OrderToPlace IsNeedToActivateOrders(Position openedPosition, decimal lastPrice, PositionInfo positionInfo, 
-        BinanceFuturesAccountBalance balance, PlsTradeOptions tradeOptions)
+        BinanceFuturesAccountBalance balance, PlsTradeLogicOptions tradeLogicOptions)
     {
         try
         {
@@ -275,7 +275,7 @@ internal class PlsFilters
                     return OrderToPlace.None;
                 }
                 
-                var callBackRateFromHighestRoe = positionInfo.HighestRoe - tradeOptions.CallbackRate * openedPosition.Leverage;
+                var callBackRateFromHighestRoe = positionInfo.HighestRoe - tradeLogicOptions.CallbackRate * openedPosition.Leverage;
                 if (roePercent > callBackRateFromHighestRoe)
                 {
                     return OrderToPlace.None;
@@ -289,11 +289,11 @@ internal class PlsFilters
             }
 
             // Market Stop logic
-            if (tradeOptions.EnableMarketStopToExit && roePercent >= tradeOptions.MarketStopExitRoeActivation && positionInfo.IsNeedToPlaceMarketStop)
+            if (tradeLogicOptions.EnableMarketStopToExit && roePercent >= tradeLogicOptions.MarketStopExitRoeActivation && positionInfo.IsNeedToPlaceMarketStop)
             {
                 // By balance percent
-                if (tradeOptions.MarketStopExitActivationFromAvailableBalancePercent.HasValue 
-                    && openedPosition.InitialMargin >= balance.AvailableBalance * tradeOptions.MarketStopExitActivationFromAvailableBalancePercent / 100)
+                if (tradeLogicOptions.MarketStopExitActivationFromAvailableBalancePercent.HasValue 
+                    && openedPosition.InitialMargin >= balance.AvailableBalance * tradeLogicOptions.MarketStopExitActivationFromAvailableBalancePercent / 100)
                 {
                     _logger.LogInformation("{Position}. Market Stop to close by balance. ROE is valid and order will be placed. ROE: {Roe}%. In {Method}", 
                         openedPosition.ToString(), roePercent, nameof(IsNeedToActivateOrders));
@@ -302,12 +302,12 @@ internal class PlsFilters
                 }
                 
                 // By time
-                if (tradeOptions.MarketStopExitActivationAfterTime.HasValue 
-                    && openedPosition.LastUpdateTime.AddMilliseconds(tradeOptions.MarketStopExitActivationAfterTime.Value.TotalMilliseconds) 
+                if (tradeLogicOptions.MarketStopExitActivationAfterTime.HasValue 
+                    && openedPosition.LastUpdateTime.AddMilliseconds(tradeLogicOptions.MarketStopExitActivationAfterTime.Value.TotalMilliseconds) 
                     < _dateTimeService.GetUtcDateTime())
                 {
                     var timeAfterAdding = openedPosition.LastUpdateTime.AddMilliseconds(
-                        tradeOptions.MarketStopExitActivationAfterTime.Value.TotalMilliseconds
+                        tradeLogicOptions.MarketStopExitActivationAfterTime.Value.TotalMilliseconds
                         );
 
                     _logger.LogInformation("{Position}. Market Stop to close by time. ROE is valid and order will be placed. " +
@@ -320,7 +320,7 @@ internal class PlsFilters
             }
 
             // When Trailing stop is not activated
-            if (tradeOptions.EnableTrailingStops && roePercent >= tradeOptions.TrailingStopRoe && !positionInfo.IsTrailingStopActivated)
+            if (tradeLogicOptions.EnableTrailingStops && roePercent >= tradeLogicOptions.TrailingStopRoe && !positionInfo.IsTrailingStopActivated)
             {
                 positionInfo.IsTrailingStopActivated = true;
                 
@@ -329,7 +329,7 @@ internal class PlsFilters
                 _logger.LogInformation("{Position}. Trailing stop check activated. ROE: {Roe}%. In {Method}",
                     openedPosition.ToString(), roePercent, nameof(IsNeedToActivateOrders));
 
-                if (!positionInfo.IsNeedToPlaceMarketStop || !tradeOptions.MarketStopSafePriceFromLastPricePercent.HasValue)
+                if (!positionInfo.IsNeedToPlaceMarketStop || !tradeLogicOptions.MarketStopSafePriceFromLastPricePercent.HasValue)
                 {
                     return OrderToPlace.None;
                 }
@@ -353,7 +353,7 @@ internal class PlsFilters
     #region Private methods
 
     private List<SymbolMarketInfo> GetPositions(int toOpen, IEnumerable<SymbolMarketInfo> klineInfos, IReadOnlyCollection<Position> openedPositions, 
-        IReadOnlyCollection<BinancePositionDetailsUsdt> positionsInfo, PlsTradeOptions tradeOptions)
+        IReadOnlyCollection<BinancePositionDetailsUsdt> positionsInfo, PlsTradeLogicOptions tradeLogicOptions)
     {
         if (toOpen == 0)
         {
@@ -375,7 +375,7 @@ internal class PlsFilters
             }
 
             if (positionsInfo.Any(x => x.Symbol == position.FuturesUsdName 
-                && (x.Leverage != tradeOptions.Leverage || x.MarginType != tradeOptions.MarginType)))
+                && (x.Leverage != tradeLogicOptions.Leverage || x.MarginType != tradeLogicOptions.MarginType)))
             {
                 _logger.LogWarning("Skip to open position because leverage or margin types are different. In {Method}",
                     nameof(GetPositions));
