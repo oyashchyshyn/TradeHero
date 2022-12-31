@@ -1,5 +1,10 @@
 using FluentValidation;
+using FluentValidation.Results;
+using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Base.Enums;
+using TradeHero.Contracts.Client;
+using TradeHero.Contracts.Client.Resolvers;
+using TradeHero.Contracts.Extensions;
 using TradeHero.Contracts.Repositories;
 using TradeHero.Contracts.Repositories.Models;
 
@@ -7,59 +12,159 @@ namespace TradeHero.EntryPoint.Data.Validations;
 
 internal class ConnectionDtoValidation : AbstractValidator<ConnectionDto>
 {
+    private readonly ILogger<ConnectionDtoValidation> _logger;
     private readonly IConnectionRepository _strategyRepository;
+    private readonly IBinanceResolver _binanceResolver;
 
     public ConnectionDtoValidation(
-        IConnectionRepository strategyRepository
-    ) 
+        ILogger<ConnectionDtoValidation> logger,
+        IConnectionRepository strategyRepository, 
+        IBinanceResolver binanceResolver
+        )
     {
+        _logger = logger;
         _strategyRepository = strategyRepository;
+        _binanceResolver = binanceResolver;
 
-        RuleSet(ValidationRuleSet.Create.ToString(), () =>
+        RuleSet(ValidationRuleSet.Default.ToString(), () =>
         {
             RuleFor(x => x.Name)
-                .MustAsync(CheckIsNameDoesNotExistInDatabaseForCreateAsync)
-                .WithMessage(x => $"Strategy with name '{x.Name}' already exist.");
-            
-            GeneralRules();
-        });
-        
-        RuleSet(ValidationRuleSet.Update.ToString(), () =>
-        {
-            RuleFor(x => x.Name)
-                .MustAsync(CheckIsNameDoesNotExistInDatabaseForUpdateAsync)
-                .WithMessage(x => $"Strategy with name '{x.Name}' already exist.");
+                .MustAsync(CheckNameAsync);
 
-            GeneralRules();
+            RuleFor(x => x)
+                .MustAsync(CheckApiAndSecretKeysAsync);
         });
     }
     
     #region Private methods
 
-    private void GeneralRules()
+    private async Task<bool> CheckNameAsync(ConnectionDto connectionDto, 
+        string name, ValidationContext<ConnectionDto> propertyContext, CancellationToken cancellationToken)
     {
-        RuleFor(x => x.Name)
-            .NotEmpty()
-            .MinimumLength(3)
-            .MaximumLength(40);
+        var propertyNames = typeof(ConnectionDto).GetPropertyNameAndJsonPropertyName();
         
-        RuleFor(x => x.ApiKey)
-            .NotEmpty();
-        
-        RuleFor(x => x.SecretKey)
-            .NotEmpty();
+        try
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                propertyContext.AddFailure(new ValidationFailure(
+                    propertyNames[connectionDto.Name], "Cannot be empty."));
+                
+                return false;
+            }
+            
+            switch (name.Length)
+            {
+                case < 3:
+                    propertyContext.AddFailure(new ValidationFailure(
+                        propertyNames[connectionDto.Name], "Minimum length 3."));
+                    return false;
+                case > 40:
+                    propertyContext.AddFailure(new ValidationFailure(
+                        propertyNames[connectionDto.Name], "Maximum length 40."));
+                    return false;
+            }
+
+            if (!await _strategyRepository.IsNameExistInDatabaseForCreate(name))
+            {
+                propertyContext.AddFailure(new ValidationFailure(
+                    propertyNames[connectionDto.Name], $"Connection with name '{name}' already exist."));
+            }
+            
+            return true;
+        }
+        catch (Exception exception)
+        {
+            _logger.LogCritical(exception, "In {Method}", nameof(CheckNameAsync));
+            
+            propertyContext.AddFailure(new ValidationFailure(
+                $"{propertyNames[connectionDto.Name]}", 
+                "Validation failed."));
+            
+            return false;
+        }
     }
 
-    private async Task<bool> CheckIsNameDoesNotExistInDatabaseForCreateAsync(ConnectionDto percentLimitStrategyDto, 
-        string name, CancellationToken cancellationToken)
+    private async Task<bool> CheckApiAndSecretKeysAsync(ConnectionDto connectionDto, ConnectionDto connectionDtoFromRule, 
+        ValidationContext<ConnectionDto> propertyContext, CancellationToken cancellationToken)
     {
-        return !await _strategyRepository.IsNameExistInDatabaseForCreate(name);
-    }
-    
-    private async Task<bool> CheckIsNameDoesNotExistInDatabaseForUpdateAsync(ConnectionDto percentLimitStrategyDto, 
-        string name, CancellationToken cancellationToken)
-    {
-        return !await _strategyRepository.IsNameExistInDatabaseForUpdate(percentLimitStrategyDto.Id, name);
+        var propertyNames = typeof(ConnectionDto).GetPropertyNameAndJsonPropertyName();
+        
+        IThRestBinanceClient? restBinanceClient = null;
+        
+        try
+        {
+            if (string.IsNullOrWhiteSpace(connectionDto.ApiKey))
+            {
+                propertyContext.AddFailure(new ValidationFailure(
+                    propertyNames[connectionDto.ApiKey], "Cannot be empty."));
+                
+                return false;
+            }
+            
+            if (string.IsNullOrWhiteSpace(connectionDto.SecretKey))
+            {
+                propertyContext.AddFailure(new ValidationFailure(
+                    propertyNames[connectionDto.SecretKey], "Cannot be empty."));
+                
+                return false;
+            }
+            
+            restBinanceClient = _binanceResolver.GenerateBinanceClient(connectionDtoFromRule.ApiKey,
+                connectionDtoFromRule.SecretKey);
+            if (restBinanceClient == null)
+            {
+                propertyContext.AddFailure(new ValidationFailure(
+                    $"{propertyNames[connectionDto.ApiKey]}/{propertyNames[connectionDto.SecretKey]}", 
+                    "Cannot get client for this api/secret key combination."));
+
+                return false;
+            }
+            
+            var apiKeyPermissionsRequest = await restBinanceClient.SpotApi.Account.GetAPIKeyPermissionsAsync(ct: cancellationToken);
+            if (!apiKeyPermissionsRequest.Success)
+            {
+                propertyContext.AddFailure(new ValidationFailure(
+                    $"{propertyNames[connectionDto.ApiKey]}/{propertyNames[connectionDto.SecretKey]}", 
+                    "Cannot connect to exchanger by this api/secret key combination."));
+
+                return false;
+            }
+
+            if (!apiKeyPermissionsRequest.Data.EnableFutures)
+            {
+                propertyContext.AddFailure(new ValidationFailure(
+                    $"{propertyNames[connectionDto.ApiKey]}/{propertyNames[connectionDto.SecretKey]}", 
+                    "Futures trading must be enabled."));
+
+                return false;
+            }
+            
+            if (!apiKeyPermissionsRequest.Data.EnableSpotAndMarginTrading)
+            {
+                propertyContext.AddFailure(new ValidationFailure(
+                    $"{propertyNames[connectionDto.ApiKey]}/{propertyNames[connectionDto.SecretKey]}", 
+                    "Spot and Margin trading must be enabled."));
+
+                return false;
+            }
+
+            return true;
+        }
+        catch (Exception exception)
+        {
+            _logger.LogCritical(exception, "In {Method}", nameof(CheckApiAndSecretKeysAsync));
+            
+            propertyContext.AddFailure(new ValidationFailure(
+                $"{propertyNames[connectionDto.ApiKey]}/{propertyNames[connectionDto.SecretKey]}", 
+                "Validation failed."));
+            
+            return false;
+        }
+        finally
+        {
+            restBinanceClient?.Dispose();
+        }
     }
 
     #endregion

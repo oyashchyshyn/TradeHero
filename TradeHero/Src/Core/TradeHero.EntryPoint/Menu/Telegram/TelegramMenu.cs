@@ -70,7 +70,6 @@ internal class TelegramMenu : IMenuService
             serviceProvider.GetRequiredService<SetActiveStrategyCommand>(),
             serviceProvider.GetRequiredService<DeleteStrategyCommand>(),
             serviceProvider.GetRequiredService<ConnectionCommand>(),
-            serviceProvider.GetRequiredService<TestConnectionCommand>(),
             serviceProvider.GetRequiredService<AddConnectionCommand>(),
             serviceProvider.GetRequiredService<SetActiveConnectionCommand>(),
             serviceProvider.GetRequiredService<ShowConnectionsCommand>(),

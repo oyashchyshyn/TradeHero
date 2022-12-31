@@ -59,7 +59,6 @@ public static class ThLogicServiceCollectionExtensions
         
         // Connection settings
         serviceCollection.AddTransient<ConnectionCommand>();
-        serviceCollection.AddTransient<TestConnectionCommand>();
         serviceCollection.AddTransient<AddConnectionCommand>();
         serviceCollection.AddTransient<SetActiveConnectionCommand>();
         serviceCollection.AddTransient<ShowConnectionsCommand>();

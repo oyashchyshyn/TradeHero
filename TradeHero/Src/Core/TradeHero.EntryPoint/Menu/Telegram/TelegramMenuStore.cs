@@ -17,7 +17,6 @@ internal class TelegramMenuStore
     public readonly TelegramButtonIds TelegramButtons;
     
     public readonly StrategyTempData StrategyData = new();
-    public readonly ConnectionTempData ConnectionData = new();
     public string LastCommandId { get; set; } = string.Empty;
     public string GoBackCommandId { get; private set; } = string.Empty;
 
@@ -71,7 +70,6 @@ internal class TelegramMenuStore
         LastCommandId = string.Empty;
         GoBackCommandId = string.Empty;
         StrategyData.ClearData();
-        ConnectionData.ClearData();
     }
     
     #region Private methods
@@ -198,12 +196,11 @@ internal class TelegramMenuStore
                 },
                 new() 
                 {
-                    new KeyboardButton($"{_telegramButtonIds.ConnectionsTest}Test connection"),
-                    new KeyboardButton($"{_telegramButtonIds.ConnectionsAdd}Add connection")
+                    new KeyboardButton($"{_telegramButtonIds.ConnectionsAdd}Add connection"),
+                    new KeyboardButton($"{_telegramButtonIds.ConnectionsDelete}Delete connection")
                 },
                 new()
                 {
-                    new KeyboardButton($"{_telegramButtonIds.ConnectionsDelete}Delete connection"),
                     new KeyboardButton($"{_telegramButtonIds.MainMenu}Main menu")
                 }
             };
@@ -279,8 +276,7 @@ internal class TelegramMenuStore
         public readonly string ConnectionsAdd = $"\U0001F4DE{Add} ";
         public readonly string ConnectionsSetActive = $"\U0001F4DE{SetActive} ";
         public readonly string ConnectionsDelete = $"\U0001F4DE{Delete} ";
-        public readonly string ConnectionsTest = $"\U0001F4DE\U0001F7E4 ";
-        
+
         public readonly string GoBackKeyboard = "\U0001F519 ";
         
         // System helpers

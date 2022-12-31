@@ -12,7 +12,6 @@ using TradeHero.Contracts.Store;
 using TradeHero.EntryPoint.Data;
 using TradeHero.EntryPoint.Data.Dtos.Base;
 using TradeHero.EntryPoint.Dictionary;
-using TradeHero.EntryPoint.Menu.Telegram.Helpers;
 
 namespace TradeHero.EntryPoint.Menu.Telegram.Commands.Strategy.Commands;
 
@@ -180,7 +179,7 @@ internal class UpdateStrategyCommand : IMenuCommand
                 }
 
                 await _telegramService.SendTextMessageToUserAsync(
-                    MessageGenerator.GenerateValidationErrorMessage(instanceValidationResult.Errors, instanceType),
+                    _dtoValidator.GenerateValidationErrorMessage(instanceValidationResult.Errors, instanceType.GetPropertyNameAndJsonPropertyName()),
                     _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.GoBackKeyboard),
                     cancellationToken: cancellationToken
                 );
@@ -318,7 +317,7 @@ internal class UpdateStrategyCommand : IMenuCommand
                     _jsonService.SerializeObject(validationResult.Errors).Data, nameof(HandleIncomeDataAsync));
                 
                 await _telegramService.SendTextMessageToUserAsync(
-                    MessageGenerator.GenerateValidationErrorMessage(validationResult.Errors, type),
+                    _dtoValidator.GenerateValidationErrorMessage(validationResult.Errors, type.GetPropertyNameAndJsonPropertyName()),
                     _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.GoBackKeyboard),
                     cancellationToken: cancellationToken
                 );

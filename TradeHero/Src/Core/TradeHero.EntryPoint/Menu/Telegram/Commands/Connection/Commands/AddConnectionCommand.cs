@@ -1,11 +1,12 @@
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Base.Enums;
+using TradeHero.Contracts.Base.Exceptions;
+using TradeHero.Contracts.Client.Resolvers;
 using TradeHero.Contracts.Menu;
 using TradeHero.Contracts.Repositories;
 using TradeHero.Contracts.Repositories.Models;
 using TradeHero.Contracts.Services;
 using TradeHero.EntryPoint.Data;
-using TradeHero.EntryPoint.Menu.Telegram.Helpers;
 
 namespace TradeHero.EntryPoint.Menu.Telegram.Commands.Connection.Commands;
 
@@ -14,6 +15,7 @@ internal class AddConnectionCommand : IMenuCommand
     private readonly ILogger<AddConnectionCommand> _logger;
     private readonly ITelegramService _telegramService;
     private readonly IJsonService _jsonService;
+    private readonly IBinanceResolver _binanceResolver;
     private readonly IConnectionRepository _connectionRepository;
     private readonly DtoValidator _dtoValidator;
     private readonly TelegramMenuStore _telegramMenuStore;
@@ -22,6 +24,7 @@ internal class AddConnectionCommand : IMenuCommand
         ILogger<AddConnectionCommand> logger,
         ITelegramService telegramService,
         IJsonService jsonService,
+        IBinanceResolver binanceResolver,
         IConnectionRepository connectionRepository,
         DtoValidator dtoValidator,
         TelegramMenuStore telegramMenuStore
@@ -30,6 +33,7 @@ internal class AddConnectionCommand : IMenuCommand
         _logger = logger;
         _telegramService = telegramService;
         _jsonService = jsonService;
+        _binanceResolver = binanceResolver;
         _connectionRepository = connectionRepository;
         _dtoValidator = dtoValidator;
         _telegramMenuStore = telegramMenuStore;
@@ -46,9 +50,9 @@ internal class AddConnectionCommand : IMenuCommand
             await _telegramService.SendTextMessageToUserAsync(
                 $"Here you can create your connection to exchanger. Please, be attentive during filling in properties.{Environment.NewLine}" +
                 $"<b>Example how to fill properties for connection:</b>{Environment.NewLine}{Environment.NewLine}" +
-                $"name:<here name of connection>{Environment.NewLine}apiKey:<your api key>{Environment.NewLine}secretKey:<your secret key>" +
+                $"name: <here name of connection>{Environment.NewLine}apiKey: <your api key>{Environment.NewLine}secretKey: <your secret key>" +
                 $"{Environment.NewLine}{Environment.NewLine}" +
-                "Please, fill in all properties with values in a proper way. Use only existing properties for current strategy.", 
+                "Please, fill in all properties with values in a proper way. Use only existing properties.", 
                 _telegramMenuStore.GetGoBackKeyboard(_telegramMenuStore.TelegramButtons.Connections),
                 cancellationToken: cancellationToken
             );
@@ -105,14 +109,14 @@ internal class AddConnectionCommand : IMenuCommand
 
                 return;
             }
-            
+
             if (!validationResult.IsValid)
             {
                 _logger.LogError("There is an errors during validation. Errors: {Errors}. In {Method}", 
                     _jsonService.SerializeObject(validationResult.Errors).Data, nameof(HandleIncomeDataAsync));
                 
                 await _telegramService.SendTextMessageToUserAsync(
-                    MessageGenerator.GenerateValidationErrorMessage(validationResult.Errors),
+                    _dtoValidator.GenerateValidationErrorMessage(validationResult.Errors),
                     cancellationToken: cancellationToken
                 );
                     
@@ -123,6 +127,42 @@ internal class AddConnectionCommand : IMenuCommand
                     
                 return;
             }
+            
+            var binanceClient = _binanceResolver.GenerateBinanceClient(
+                connectionDto.ApiKey,
+                connectionDto.SecretKey
+            );
+
+            if (binanceClient == null)
+            {
+                _logger.LogError("{Property} is null. In {Method}", 
+                    nameof(binanceClient), nameof(HandleIncomeDataAsync));
+                    
+                await _telegramService.SendTextMessageToUserAsync(
+                    "Error during creating client, please try again.",
+                    cancellationToken: cancellationToken
+                );
+
+                return;
+            }
+
+            var apiKeyPermissionsRequest = await binanceClient.SpotApi.Account.GetAPIKeyPermissionsAsync(
+                ct: cancellationToken);
+            
+            if (!apiKeyPermissionsRequest.Success)
+            {
+                _logger.LogError(new ThException(apiKeyPermissionsRequest.Error), "In {Method}", 
+                    nameof(HandleIncomeDataAsync));
+                    
+                await _telegramService.SendTextMessageToUserAsync(
+                    "Error during making request to exchanger, please try again.",
+                    cancellationToken: cancellationToken
+                );
+
+                return;
+            }
+
+            connectionDto.CreationDateTime = apiKeyPermissionsRequest.Data.CreateTime;
             
             var savingResult = await _connectionRepository.AddConnectionAsync(connectionDto);
             if (!savingResult)

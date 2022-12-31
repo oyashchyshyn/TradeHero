@@ -1,8 +1,10 @@
+using System.Text;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Base.Enums;
+using TradeHero.Contracts.Extensions;
 using TradeHero.EntryPoint.Data.Dtos.Instance;
 using TradeHero.EntryPoint.Data.Dtos.Strategy;
 
@@ -84,5 +86,33 @@ internal class DtoValidator
             InstanceType.NoInstance => throw new ArgumentOutOfRangeException(),
             _ => throw new ArgumentOutOfRangeException()
         };
+    }
+
+    public string GenerateValidationErrorMessage(List<ValidationFailure> validationFailures, Dictionary<string, string>? propertyNames = null)
+    {
+        var stringBuilder = new StringBuilder();
+        
+        stringBuilder.Append($"There was an error during data validation. Check errors:{Environment.NewLine}{Environment.NewLine}");
+
+        if (propertyNames == null || !propertyNames.Any())
+        {
+            foreach (var validationFailure in validationFailures)
+            {
+                stringBuilder.Append(
+                    $"<b>{validationFailure.PropertyName}</b> - {validationFailure.ErrorMessage}{Environment.NewLine}"
+                );
+            }   
+        }
+        else
+        {
+            foreach (var validationFailure in validationFailures)
+            {
+                stringBuilder.Append(
+                    $"<b>{propertyNames[validationFailure.PropertyName]}</b> - {validationFailure.ErrorMessage}{Environment.NewLine}"
+                );
+            }
+        }
+
+        return stringBuilder.ToString();
     }
 }

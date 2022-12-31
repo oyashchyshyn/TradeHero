@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Telegram.Bot.Types.ReplyMarkups;
 using TradeHero.Contracts.Base.Enums;
+using TradeHero.Contracts.Extensions;
 using TradeHero.Contracts.Menu;
 using TradeHero.Contracts.Repositories;
 using TradeHero.Contracts.Repositories.Models;
@@ -9,7 +10,6 @@ using TradeHero.Contracts.Services;
 using TradeHero.EntryPoint.Data;
 using TradeHero.EntryPoint.Data.Dtos.Base;
 using TradeHero.EntryPoint.Dictionary;
-using TradeHero.EntryPoint.Menu.Telegram.Helpers;
 
 namespace TradeHero.EntryPoint.Menu.Telegram.Commands.Strategy.Commands;
 
@@ -143,7 +143,7 @@ internal class AddStrategyCommand : IMenuCommand
                         _jsonService.SerializeObject(validationResult.Errors).Data, nameof(HandleIncomeDataAsync));
                 
                     await _telegramService.SendTextMessageToUserAsync(
-                        MessageGenerator.GenerateValidationErrorMessage(validationResult.Errors, instanceType),
+                        _dtoValidator.GenerateValidationErrorMessage(validationResult.Errors, instanceType.GetPropertyNameAndJsonPropertyName()),
                         cancellationToken: cancellationToken
                     );
                     
@@ -238,7 +238,7 @@ internal class AddStrategyCommand : IMenuCommand
                         _jsonService.SerializeObject(validationResult.Errors).Data, nameof(HandleIncomeDataAsync));
                 
                     await _telegramService.SendTextMessageToUserAsync(
-                        MessageGenerator.GenerateValidationErrorMessage(validationResult.Errors, strategyType),
+                        _dtoValidator.GenerateValidationErrorMessage(validationResult.Errors, strategyType.GetPropertyNameAndJsonPropertyName()),
                         cancellationToken: cancellationToken
                     );
                     
