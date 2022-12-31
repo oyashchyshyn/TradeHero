@@ -37,10 +37,10 @@ internal class DtoValidator
         {
             ValidationResult? validationResult = null;
         
-            if (type == typeof(ClusterVolumeInstanceDto))
+            if (type == typeof(SpotClusterVolumeOptionsDto))
             {
-                var validator = _serviceProvider.GetRequiredService<IValidator<ClusterVolumeInstanceDto>>();
-                validationResult = await validator.ValidateAsync((ClusterVolumeInstanceDto)instance, 
+                var validator = _serviceProvider.GetRequiredService<IValidator<SpotClusterVolumeOptionsDto>>();
+                validationResult = await validator.ValidateAsync((SpotClusterVolumeOptionsDto)instance, 
                     options => options.IncludeRuleSets(validationRuleSet.ToString()));
             }
             else if (type == typeof(PercentLimitTradeLogicDto))
@@ -81,7 +81,7 @@ internal class DtoValidator
     {
         return instanceType switch
         {
-            InstanceType.SpotClusterVolume => typeof(ClusterVolumeInstanceDto),
+            InstanceType.SpotClusterVolume => typeof(SpotClusterVolumeOptionsDto),
             InstanceType.NoInstance => throw new ArgumentOutOfRangeException(),
             _ => throw new ArgumentOutOfRangeException()
         };

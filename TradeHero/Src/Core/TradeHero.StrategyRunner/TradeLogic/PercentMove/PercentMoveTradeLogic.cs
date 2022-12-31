@@ -166,7 +166,7 @@ internal class PercentMoveTradeLogic : BaseFuturesUsdTradeLogic
                 return;
             }
 
-            var statMessage = MessageGenerator.KlineResultMessage(instanceResult);
+            var statMessage = MessageGenerator.InstanceResultMessage(instanceResult);
             
             await TelegramService.SendTextMessageToChannelAsync(
                 channelId, 

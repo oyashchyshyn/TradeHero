@@ -14,15 +14,15 @@ using TradeHero.Strategies.Instances.Options;
 
 namespace TradeHero.Strategies.Instances;
 
-internal class ClusterVolumeInstance : IInstance
+internal class SpotClusterVolumeInstance : IInstance
 {
-    private readonly ILogger<ClusterVolumeInstance> _logger;
+    private readonly ILogger<SpotClusterVolumeInstance> _logger;
     private readonly IThRestBinanceClient _restBinanceClient;
     private readonly IDateTimeService _dateTimeService;
     private readonly ICalculatorService _calculatorService;
 
-    public ClusterVolumeInstance(
-        ILogger<ClusterVolumeInstance> logger,
+    public SpotClusterVolumeInstance(
+        ILogger<SpotClusterVolumeInstance> logger,
         IThRestBinanceClient restBinanceClient,
         IDateTimeService dateTimeService, 
         ICalculatorService calculatorService

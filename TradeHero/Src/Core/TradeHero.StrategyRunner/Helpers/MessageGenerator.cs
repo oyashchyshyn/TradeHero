@@ -5,17 +5,17 @@ namespace TradeHero.Strategies.Helpers;
 
 internal static class MessageGenerator
 {
-    public static string KlineResultMessage(InstanceResult clusterVolumeResult)
+    public static string InstanceResultMessage(InstanceResult instanceResult)
     {
         var message =
             $"----------------------------------{Environment.NewLine}" +
-            $"Interval: {clusterVolumeResult.Interval}{Environment.NewLine}" +
-            $"Market: {clusterVolumeResult.Market}{Environment.NewLine}" +
-            $"Side: {clusterVolumeResult.Side}{Environment.NewLine}" +
-            $"Shorts market mood: {clusterVolumeResult.ShortMarketMoodPercent}%{Environment.NewLine}" +
-            $"Longs market mood: {clusterVolumeResult.LongsMarketMoodPercent}%{Environment.NewLine}" +
-            $"Total shorts: {clusterVolumeResult.ShortSignals.Count}{Environment.NewLine}" +
-            $"Total longs: {clusterVolumeResult.LongSignals.Count}{Environment.NewLine}";
+            $"Interval: {instanceResult.Interval}{Environment.NewLine}" +
+            $"Market: {instanceResult.Market}{Environment.NewLine}" +
+            $"Side: {instanceResult.Side}{Environment.NewLine}" +
+            $"Shorts market mood: {instanceResult.ShortMarketMoodPercent}%{Environment.NewLine}" +
+            $"Longs market mood: {instanceResult.LongsMarketMoodPercent}%{Environment.NewLine}" +
+            $"Total shorts: {instanceResult.ShortSignals.Count}{Environment.NewLine}" +
+            $"Total longs: {instanceResult.LongSignals.Count}{Environment.NewLine}";
 
         return message;
     }

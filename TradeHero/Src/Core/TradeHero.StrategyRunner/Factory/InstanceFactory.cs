@@ -30,7 +30,7 @@ internal class InstanceFactory : IInstanceFactory
             {
                 InstanceType.SpotClusterVolume => new InstanceFactoryResponse
                 {
-                    Instance = _serviceProvider.GetRequiredService<ClusterVolumeInstance>(),
+                    Instance = _serviceProvider.GetRequiredService<SpotClusterVolumeInstance>(),
                     Type = typeof(SpotClusterVolumeOptions)
                 },
                 InstanceType.NoInstance => null,

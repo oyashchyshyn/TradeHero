@@ -68,7 +68,7 @@ public static class ThLogicServiceCollectionExtensions
         serviceCollection.AddTransient<IValidator<ConnectionDto>, ConnectionDtoValidation>();
         serviceCollection.AddTransient<IValidator<PercentLimitTradeLogicDto>, PercentLimitStrategyDtoValidation>();
         serviceCollection.AddTransient<IValidator<PercentMoveTradeLogicDto>, PercentMoveStrategyDtoValidation>();
-        serviceCollection.AddTransient<IValidator<ClusterVolumeInstanceDto>, ClusterVolumeOptionsDtoValidation>();
+        serviceCollection.AddTransient<IValidator<SpotClusterVolumeOptionsDto>, SpotClusterVolumeOptionsDtoValidation>();
         serviceCollection.AddSingleton<DtoValidator>();
     }
 }

@@ -126,7 +126,7 @@ internal class ShowStrategiesPropertiesCommand : IMenuCommand
             {
                 var propertyNamesWithDescription = instanceType switch
                 {
-                    InstanceType.SpotClusterVolume => typeof(ClusterVolumeInstanceDto).GetJsonPropertyNameAndDescriptionFromType(),
+                    InstanceType.SpotClusterVolume => typeof(SpotClusterVolumeOptionsDto).GetJsonPropertyNameAndDescriptionFromType(),
                     InstanceType.NoInstance => throw new ArgumentOutOfRangeException(nameof(instanceType), instanceType, null),
                     _ => throw new ArgumentOutOfRangeException(nameof(instanceType), instanceType, null)
                 };

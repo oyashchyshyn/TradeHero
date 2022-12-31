@@ -23,7 +23,7 @@ public static class ThStrategyRunnerServiceCollectionExtensions
     {
         // Instance
         serviceCollection.AddTransient<IInstanceFactory, InstanceFactory>();
-        serviceCollection.AddTransient<ClusterVolumeInstance>();
+        serviceCollection.AddTransient<SpotClusterVolumeInstance>();
 
         // Strategy
         serviceCollection.AddTransient<ITradeLogicFactory, TradeLogicFactory>();

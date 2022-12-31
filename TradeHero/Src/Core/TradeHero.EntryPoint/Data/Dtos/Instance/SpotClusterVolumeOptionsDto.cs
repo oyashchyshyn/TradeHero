@@ -6,7 +6,7 @@ using TradeHero.Contracts.Attributes;
 
 namespace TradeHero.EntryPoint.Data.Dtos.Instance;
 
-internal class ClusterVolumeInstanceDto
+internal class SpotClusterVolumeOptionsDto
 {
     [EnumDescription("Timeframe interval of Kline. Available values are '{0}'.", typeof(KlineInterval))]
     [JsonProperty("interval")]
