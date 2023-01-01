@@ -1,0 +1,123 @@
+name: Application release
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  RELEASE_VERSION: ${{ github.event.head_commit.message }}
+  HOST_PROJECT_PATH: TradeHero/Src/TradeHero.Runner/
+  PUBLISH_WIN_FILE_PATH: TradeHero/Src/TradeHero.Runner/publish/win-x64/trade_hero.exe
+  PUBLISH_LINUX_FILE_PATH: TradeHero/Src/TradeHero.Runner/publish/linux-x64/trade_hero
+  PUBLISH_OSX_FILE_PATH: TradeHero/Src/TradeHero.Runner/publish/osx-x64/trade_hero
+
+jobs:
+  build-publish-dotnet:
+    name: build-publish-dotnet
+    runs-on: windows-latest
+    steps:
+      - name: Checkout to git directory
+        uses: actions/checkout@v2
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 7.0.x
+      - name: Restore dependencies
+        working-directory: ${{ env.HOST_PROJECT_PATH }}
+        run: dotnet restore
+      - name: Build application
+        working-directory: ${{ env.HOST_PROJECT_PATH }}
+        run: dotnet build --configuration Release --no-restore
+      - name: Publish win-x86 application
+        working-directory: ${{ env.HOST_PROJECT_PATH }}
+        run: dotnet publish -r win-x64 --output ./publish/win-x64 --self-contained true -p:PublishTrimmed=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+      - name: Publish linux-x64 application
+        working-directory: ${{ env.HOST_PROJECT_PATH }}
+        run: dotnet publish -r linux-x64 --output ./publish/linux-x64 --self-contained true -p:PublishTrimmed=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+      - name: Publish osx-x64 application
+        working-directory: ${{ env.HOST_PROJECT_PATH }}
+        run: dotnet publish -r osx-x64 --output ./publish/osx-x64 --self-contained true -p:PublishTrimmed=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+      - name: Upload WIN applications
+        uses: actions/upload-artifact@v1
+        with:
+          name: win-application
+          path: ${{ env.PUBLISH_WIN_FILE_PATH }}
+      - name: Upload LINUX applications
+        uses: actions/upload-artifact@v1
+        with:
+          name: linux-application
+          path: ${{ env.PUBLISH_LINUX_FILE_PATH }}
+      - name: Upload OSX applications
+        uses: actions/upload-artifact@v1
+        with:
+          name: osx-application
+          path: ${{ env.PUBLISH_OSX_FILE_PATH }}
+      - run: echo "Finish 'build-publish-dotnet'"
+  create-release-and-upload-files:
+    name: create-release-and-upload-files
+    needs: build-publish-dotnet
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get current date time
+        id: current-time
+        uses: josStorer/get-current-time@v2
+        with:
+          format: YYYY.MM.DD HH:mm:ss
+          utcOffset: "+02:00"
+      - name: Creating release
+        id: create-release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.RELEASE_VERSION }}
+          release_name: ${{ env.RELEASE_VERSION }}
+          body: Release version on ${{ steps.current-time.outputs.formattedTime }}
+          draft: false
+          prerelease: false
+      - name: Download win application
+        uses: actions/download-artifact@v1
+        with:
+          name: win-application
+          path: ./win
+      - name: Download linux application
+        uses: actions/download-artifact@v1
+        with:
+          name: linux-application
+          path: ./linux
+      - name: Download osx application
+        uses: actions/download-artifact@v1
+        with:
+          name: osx-application
+          path: ./osx
+      - name: Upload WIN Asset
+        id: upload-win-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }} 
+          asset_path: ./win/trade_hero.exe
+          asset_name: trade_hero_win.exe
+          asset_content_type: application/vnd.microsoft.portable-executable
+      - name: Upload LINUX Asset
+        id: upload-linux-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }} 
+          asset_path: ./linux/trade_hero
+          asset_name: trade_hero_linux
+          asset_content_type: application/octet-stream
+      - name: Upload OSX Asset
+        id: upload-osx-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }} 
+          asset_path: ./osx/trade_hero
+          asset_name: trade_hero_osx
+          asset_content_type: application/octet-stream
+      - run: echo "Finish 'create-release-and-upload-files'" 
