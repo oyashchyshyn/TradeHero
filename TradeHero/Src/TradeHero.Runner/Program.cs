@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using TradeHero.Contracts.Base.Enums;
 using TradeHero.DependencyResolver;
 using TradeHero.Runner.Helpers;
 
@@ -14,9 +13,7 @@ internal static class Program
         
         try
         {
-            var environmentType = args.Any() 
-                ? (EnvironmentType)Enum.Parse(typeof(EnvironmentType), args[0]) 
-                : EnvironmentType.Production;
+            var environmentType = ArgumentsHelper.GetEnvironmentType(args);
 
             await FirstRunScreen.RunAsync(environmentType, baseDirectory);
             
