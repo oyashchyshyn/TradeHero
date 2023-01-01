@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Client;
 using TradeHero.Contracts.Repositories;
-using TradeHero.Contracts.Repositories.Models;
 using TradeHero.Contracts.Settings;
 using TradeHero.Client.Clients;
 using TradeHero.Client.Resolvers;
@@ -20,11 +19,20 @@ public static class ThClientServiceCollectionExtensions
         serviceCollection.AddTransient<IThRestBinanceClient, ThRestBinanceClient>(serviceProvider =>
         {
             var connectionRepository = serviceProvider.GetRequiredService<IConnectionRepository>();
-            var connection = connectionRepository.GetActiveConnection();
-            
             var appSettings = serviceProvider.GetRequiredService<AppSettings>();
             var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
-            var restClientOptions = GetBinanceClientOptions(appSettings, connection, loggerFactory.CreateLogger<ThRestBinanceClient>());
+            var connection = connectionRepository.GetActiveConnection();
+
+            var apiKey = "default";
+            var secretKey = "default";
+            
+            if (connection != null)
+            {
+                apiKey = connection.ApiKey;
+                secretKey = connection.SecretKey;
+            }
+            
+            var restClientOptions = GetBinanceClientOptions(appSettings, apiKey, secretKey, loggerFactory.CreateLogger<ThRestBinanceClient>());
             
             return new ThRestBinanceClient(restClientOptions, serviceProvider);
         });
@@ -32,11 +40,20 @@ public static class ThClientServiceCollectionExtensions
         serviceCollection.AddTransient<IThSocketBinanceClient, ThSocketBinanceClient>(serviceProvider =>
         {
             var connectionRepository = serviceProvider.GetRequiredService<IConnectionRepository>();
-            var connection = connectionRepository.GetActiveConnection();
-            
             var appSettings = serviceProvider.GetRequiredService<AppSettings>();
             var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
-            var socketClientOptions = GetBinanceSocketClientOptions(appSettings, connection, loggerFactory.CreateLogger<ThSocketBinanceClient>());
+            var connection = connectionRepository.GetActiveConnection();
+            
+            var apiKey = "default";
+            var secretKey = "default";
+            
+            if (connection != null)
+            {
+                apiKey = connection.ApiKey;
+                secretKey = connection.SecretKey;
+            }
+            
+            var socketClientOptions = GetBinanceSocketClientOptions(appSettings, apiKey, secretKey, loggerFactory.CreateLogger<ThSocketBinanceClient>());
 
             return new ThSocketBinanceClient(socketClientOptions);
         });
@@ -46,11 +63,11 @@ public static class ThClientServiceCollectionExtensions
 
     #region Private methods
 
-    private static BinanceClientOptions GetBinanceClientOptions(AppSettings appSettings, ConnectionDto connection, ILogger logger)
+    private static BinanceClientOptions GetBinanceClientOptions(AppSettings appSettings, string apiKey, string secretKey, ILogger logger)
     {
         var clientOptions = new BinanceClientOptions
         {
-            ApiCredentials = new ApiCredentials(connection.ApiKey, connection.SecretKey),
+            ApiCredentials = new ApiCredentials(apiKey, secretKey),
             LogLevel = appSettings.Logger.RestClientLogLevel
         };
         
@@ -78,11 +95,11 @@ public static class ThClientServiceCollectionExtensions
         return clientOptions;
     }
     
-    private static BinanceSocketClientOptions GetBinanceSocketClientOptions(AppSettings appSettings, ConnectionDto connection, ILogger logger)
+    private static BinanceSocketClientOptions GetBinanceSocketClientOptions(AppSettings appSettings, string apiKey, string secretKey, ILogger logger)
     {
         var clientOptions = new BinanceSocketClientOptions
         {
-            ApiCredentials = new ApiCredentials(connection.ApiKey, connection.SecretKey),
+            ApiCredentials = new ApiCredentials(apiKey, secretKey),
             LogLevel = appSettings.Logger.SocketClientLogLevel
         };
         

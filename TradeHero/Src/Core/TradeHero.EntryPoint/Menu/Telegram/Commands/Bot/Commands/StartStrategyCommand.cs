@@ -13,6 +13,7 @@ internal class StartStrategyCommand : IMenuCommand
     private readonly ILogger<StartStrategyCommand> _logger;
     private readonly ITelegramService _telegramService;
     private readonly IStrategyRepository _strategyRepository;
+    private readonly IConnectionRepository _connectionRepository;
     private readonly ITradeLogicFactory _tradeLogicFactory;
     private readonly IStore _store;
     private readonly TelegramMenuStore _telegramMenuStore;
@@ -21,6 +22,7 @@ internal class StartStrategyCommand : IMenuCommand
         ILogger<StartStrategyCommand> logger,
         ITelegramService telegramService, 
         IStrategyRepository strategyRepository, 
+        IConnectionRepository connectionRepository,
         ITradeLogicFactory tradeLogicFactory, 
         IStore store, 
         TelegramMenuStore telegramMenuStore
@@ -29,6 +31,7 @@ internal class StartStrategyCommand : IMenuCommand
         _logger = logger;
         _telegramService = telegramService;
         _strategyRepository = strategyRepository;
+        _connectionRepository = connectionRepository;
         _tradeLogicFactory = tradeLogicFactory;
         _store = store;
         _telegramMenuStore = telegramMenuStore;
@@ -50,8 +53,16 @@ internal class StartStrategyCommand : IMenuCommand
                 return;
             }
             
-            var strategy = _tradeLogicFactory.GetTradeLogicRunner(activeStrategy.TradeLogicType);
-            if (strategy == null)
+            var connection = await _connectionRepository.GetActiveConnectionAsync();
+            if (connection == null)
+            {
+                await ErrorMessageAsync("There is no active connection to exchanger.", cancellationToken);
+                
+                return;
+            }
+            
+            var tradeLogic = _tradeLogicFactory.GetTradeLogicRunner(activeStrategy.TradeLogicType);
+            if (tradeLogic == null)
             {
                 await ErrorMessageAsync("Strategy does not exist.", cancellationToken);
             
@@ -64,17 +75,17 @@ internal class StartStrategyCommand : IMenuCommand
                 cancellationToken: cancellationToken
             );
         
-            var strategyResult = await strategy.InitAsync(activeStrategy);
+            var strategyResult = await tradeLogic.InitAsync(activeStrategy);
             if (strategyResult != ActionResult.Success)
             {
-                await strategy.FinishAsync(true);
+                await tradeLogic.FinishAsync(true);
                 
                 await ErrorMessageAsync($"Cannot start '{activeStrategy.Name}' strategy. Error code: {strategyResult}", cancellationToken);
             
                 return;
             }
         
-            _store.Bot.SetTradeLogic(strategy, TradeLogicStatus.Running);
+            _store.Bot.SetTradeLogic(tradeLogic, TradeLogicStatus.Running);
         
             await _telegramService.SendTextMessageToUserAsync(
                 "Strategy started! Enjoy lazy pidor.", 

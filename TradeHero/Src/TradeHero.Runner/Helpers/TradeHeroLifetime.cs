@@ -4,7 +4,7 @@ using TradeHero.Contracts.EntryPoint;
 
 namespace TradeHero.Runner.Helpers;
 
-public class TradeHeroLifetime : IHostLifetime, IDisposable
+internal class TradeHeroLifetime : IHostLifetime, IDisposable
 {
     private readonly ManualResetEvent _shutdownBlock = new(false);
     private CancellationTokenRegistration _applicationStartedRegistration;

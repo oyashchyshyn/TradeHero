@@ -26,6 +26,7 @@ internal class TelegramMenu : IMenuService
     private readonly IInternetConnectionService _internetConnectionService;
     private readonly ITradeLogicFactory _tradeLogicFactory;
     private readonly IStrategyRepository _strategyRepository;
+    private readonly IConnectionRepository _connectionRepository;
     private readonly IJsonService _jsonService;
 
     private readonly TelegramMenuStore _telegramMenuStore;
@@ -40,6 +41,7 @@ internal class TelegramMenu : IMenuService
         IInternetConnectionService internetConnectionService,
         ITradeLogicFactory tradeLogicFactory,
         IStrategyRepository strategyRepository,
+        IConnectionRepository connectionRepository,
         IJsonService jsonService,
         TelegramMenuStore telegramMenuStore
         )
@@ -50,6 +52,7 @@ internal class TelegramMenu : IMenuService
         _internetConnectionService = internetConnectionService;
         _tradeLogicFactory = tradeLogicFactory;
         _strategyRepository = strategyRepository;
+        _connectionRepository = connectionRepository;
         _jsonService = jsonService;
         _telegramMenuStore = telegramMenuStore;
 
@@ -222,6 +225,18 @@ internal class TelegramMenu : IMenuService
 
             if (_store.Bot.TradeLogicStatus == TradeLogicStatus.Running)
             {
+                var connection = await _connectionRepository.GetActiveConnectionAsync();
+                if (connection == null)
+                {
+                    await _telegramService.SendTextMessageToUserAsync(
+                        "There is no active connection to exchanger.", 
+                        _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.MainMenu),
+                        cancellationToken: cancellationToken
+                    );
+                    
+                    return;
+                }
+                
                 var activeStrategy = await _strategyRepository.GetActiveStrategyAsync();
                 if (activeStrategy == null)
                 {

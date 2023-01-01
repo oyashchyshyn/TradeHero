@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using TradeHero.Contracts.Base.Enums;
 using TradeHero.DependencyResolver;
 using TradeHero.Runner.Helpers;
 
@@ -9,11 +10,19 @@ internal static class Program
 {
     private static async Task Main(string[] args)
     {
+        var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+        
         try
         {
+            var environmentType = args.Any() 
+                ? (EnvironmentType)Enum.Parse(typeof(EnvironmentType), args[0]) 
+                : EnvironmentType.Production;
+
+            await FirstRunScreen.RunAsync(environmentType, baseDirectory);
+            
             var host = Host.CreateDefaultBuilder(args)
-                .UseEnvironment(args.Any() ? args[0] : "Production")
-                .UseContentRoot(AppDomain.CurrentDomain.BaseDirectory)
+                .UseEnvironment(environmentType.ToString())
+                .UseContentRoot(baseDirectory)
                 .ConfigureServices((_, serviceCollection) =>
                 {
                     serviceCollection.AddThDependencyCollection();
@@ -25,7 +34,7 @@ internal static class Program
         }
         catch (Exception exception)
         {
-            await ExceptionHelper.WriteExceptionAsync(exception);
+            await ExceptionHelper.WriteExceptionAsync(exception, baseDirectory);
         }
     }
 }
