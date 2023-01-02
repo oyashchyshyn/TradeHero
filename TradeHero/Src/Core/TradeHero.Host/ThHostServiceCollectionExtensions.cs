@@ -18,6 +18,7 @@ using TradeHero.EntryPoint.Menu.Telegram.Commands.Positions;
 using TradeHero.EntryPoint.Menu.Telegram.Commands.Positions.Commands;
 using TradeHero.EntryPoint.Menu.Telegram.Commands.Strategy;
 using TradeHero.EntryPoint.Menu.Telegram.Commands.Strategy.Commands;
+using TradeHero.EntryPoint.Menu.Telegram.Store;
 
 namespace TradeHero.EntryPoint;
 

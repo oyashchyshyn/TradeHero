@@ -1,10 +1,9 @@
 using Telegram.Bot.Types.ReplyMarkups;
 using TradeHero.Contracts.Store;
-using TradeHero.EntryPoint.Menu.Telegram.Models;
 
 // ReSharper disable ConvertToConstant.Global
 
-namespace TradeHero.EntryPoint.Menu.Telegram;
+namespace TradeHero.EntryPoint.Menu.Telegram.Store;
 
 internal class TelegramMenuStore
 {

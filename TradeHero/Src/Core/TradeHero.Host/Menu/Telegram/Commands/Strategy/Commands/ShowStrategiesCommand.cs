@@ -9,6 +9,7 @@ using TradeHero.Contracts.Menu;
 using TradeHero.Contracts.Repositories;
 using TradeHero.Contracts.Services;
 using TradeHero.EntryPoint.Data;
+using TradeHero.EntryPoint.Menu.Telegram.Store;
 
 namespace TradeHero.EntryPoint.Menu.Telegram.Commands.Strategy.Commands;
 

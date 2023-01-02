@@ -5,6 +5,7 @@ using TradeHero.Contracts.Menu;
 using TradeHero.Contracts.Repositories;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.Store;
+using TradeHero.EntryPoint.Menu.Telegram.Store;
 
 namespace TradeHero.EntryPoint.Menu.Telegram.Commands.Connection.Commands;
 

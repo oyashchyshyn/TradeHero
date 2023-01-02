@@ -8,6 +8,7 @@ using TradeHero.Contracts.Services;
 using TradeHero.EntryPoint.Data.Dtos.Instance;
 using TradeHero.EntryPoint.Data.Dtos.TradeLogic;
 using TradeHero.EntryPoint.Dictionary;
+using TradeHero.EntryPoint.Menu.Telegram.Store;
 
 namespace TradeHero.EntryPoint.Menu.Telegram.Commands.Strategy.Commands;
 

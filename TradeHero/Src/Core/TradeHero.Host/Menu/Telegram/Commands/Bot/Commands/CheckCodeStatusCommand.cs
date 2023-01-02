@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Menu;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.Store;
+using TradeHero.EntryPoint.Menu.Telegram.Store;
 
 namespace TradeHero.EntryPoint.Menu.Telegram.Commands.Bot.Commands;
 
