@@ -1,7 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using TradeHero.DependencyResolver;
 using TradeHero.Runner.Helpers;
+using TradeHero.Runner.Screens;
 
 namespace TradeHero.Runner;
 
@@ -20,10 +21,13 @@ internal static class Program
             var host = Host.CreateDefaultBuilder(args)
                 .UseEnvironment(environmentType.ToString())
                 .UseContentRoot(baseDirectory)
+                .ConfigureAppConfiguration((_, config) =>
+                {
+                    config.AddConfiguration(ConfigurationHelper.GenerateConfiguration(args));
+                })
                 .ConfigureServices((_, serviceCollection) =>
                 {
                     serviceCollection.AddThDependencyCollection();
-                    serviceCollection.AddSingleton<IHostLifetime, TradeHeroLifetime>();
                 })
                 .Build();
 

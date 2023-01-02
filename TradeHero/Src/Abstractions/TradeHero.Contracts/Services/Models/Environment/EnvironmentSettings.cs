@@ -1,8 +1,6 @@
-using TradeHero.Contracts.Settings.Models;
+namespace TradeHero.Contracts.Services.Models.Environment;
 
-namespace TradeHero.Contracts.Settings;
-
-public class AppSettings
+public class EnvironmentSettings
 {
     public ClientSettings Client { get; set; } = new();
     public InternetConnectionSettings InternetConnection { get; set; } = new();

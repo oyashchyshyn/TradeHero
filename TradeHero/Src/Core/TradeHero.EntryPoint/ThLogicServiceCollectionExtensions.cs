@@ -1,13 +1,13 @@
 ﻿using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
-using TradeHero.Contracts.EntryPoint;
+using TradeHero.Contracts.Host;
 using TradeHero.Contracts.Repositories.Models;
 using TradeHero.EntryPoint.Data;
 using TradeHero.EntryPoint.Data.Dtos.Instance;
 using TradeHero.EntryPoint.Data.Dtos.TradeLogic;
 using TradeHero.EntryPoint.Data.Validations;
 using TradeHero.EntryPoint.Dictionary;
-using TradeHero.EntryPoint.Init;
+using TradeHero.EntryPoint.Host;
 using TradeHero.EntryPoint.Menu.Telegram;
 using TradeHero.EntryPoint.Menu.Telegram.Commands;
 using TradeHero.EntryPoint.Menu.Telegram.Commands.Bot;
@@ -25,8 +25,9 @@ public static class ThLogicServiceCollectionExtensions
 {
     public static void AddThLogic(this IServiceCollection serviceCollection)
     {
-        serviceCollection.AddTransient<IStartup, Startup>();
-        
+        // Host
+        serviceCollection.AddSingleton<IThHostLifeTime, ThHostLifeTime>();
+
         // Dictionary
         serviceCollection.AddSingleton<EnumDictionary>();
         

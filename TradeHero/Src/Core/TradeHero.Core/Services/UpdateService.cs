@@ -1,14 +1,15 @@
-using System.Diagnostics;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Logging;
 using Octokit;
 using TradeHero.Contracts.Base.Constants;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Base.Models;
+using TradeHero.Contracts.Extensions;
 using TradeHero.Contracts.Repositories;
 using TradeHero.Contracts.Services;
+using TradeHero.Contracts.Services.Models.Environment;
 using TradeHero.Contracts.Services.Models.Update;
-using TradeHero.Contracts.Settings;
+using FileMode = System.IO.FileMode;
 using ProductHeaderValue = Octokit.ProductHeaderValue;
 
 namespace TradeHero.Core.Services;
@@ -16,42 +17,45 @@ namespace TradeHero.Core.Services;
 internal class UpdateService : IUpdateService
 {
     private readonly ILogger<UpdateService> _logger;
-    private readonly AppSettings _appSettings;
     private readonly IEnvironmentService _environmentService;
-    private readonly ITerminalService _terminalService;
     private readonly IUserRepository _userRepository;
+    
+    private readonly EnvironmentSettings _environmentSettings;
 
     public UpdateService(
-        ILogger<UpdateService> logger, 
-        AppSettings appSettings,
+        ILogger<UpdateService> logger,
         IEnvironmentService environmentService,
-        ITerminalService terminalService, 
         IUserRepository userRepository
         )
     {
         _logger = logger;
-        _appSettings = appSettings;
         _environmentService = environmentService;
-        _terminalService = terminalService;
         _userRepository = userRepository;
+
+        _environmentSettings = _environmentService.GetEnvironmentSettings();
     }
 
-    public async Task<GenericBaseResult<ReleaseVersion>> IsNewVersionAvailableAsync()
+    public event EventHandler<decimal>? OnDownloadProgress;
+    public event EventHandler<Exception>? OnUpdateError;
+
+    public async Task<GenericBaseResult<ReleaseVersion>> GetLatestReleaseAsync()
     {
         try
         {
-            var client = new GitHubClient(new ProductHeaderValue(_appSettings.Github.Repository))
+            var client = new GitHubClient(new ProductHeaderValue(_environmentSettings.Github.Repository))
             {
-                Credentials = new Credentials(_appSettings.Github.Token)
+                Credentials = new Credentials(_environmentSettings.Github.Token)
             };
 
             var latestReleases = await client.Repository.Release.GetLatest(
-                _appSettings.Github.Owner, 
-                _appSettings.Github.Repository
+                _environmentSettings.Github.Owner, 
+                _environmentSettings.Github.Repository
             );
             
             if (latestReleases == null)
             {
+                _logger.LogInformation("There is no releases. In {Method}", nameof(UpdateApplicationAsync));
+                
                 return new GenericBaseResult<ReleaseVersion>(ActionResult.Null);
             }
 
@@ -70,6 +74,8 @@ internal class UpdateService : IUpdateService
                     break;
                 case OperationSystem.None:
                 default:
+                    _logger.LogError("Cannot get correct operation system. Current operation system is: {OperationSystem}. In {Method}", 
+                        _environmentService.GetCurrentOperationSystem(), nameof(UpdateApplicationAsync));
                     return new GenericBaseResult<ReleaseVersion>(ActionResult.Null);
             }
 
@@ -87,90 +93,94 @@ internal class UpdateService : IUpdateService
         }
         catch (Exception exception)
         {
-            _logger.LogCritical(exception, "In {Method}", nameof(IsNewVersionAvailableAsync));
+            _logger.LogCritical(exception, "In {Method}", nameof(GetLatestReleaseAsync));
 
             return new GenericBaseResult<ReleaseVersion>(ActionResult.Error);
         }
     }
 
-    public async Task UpdateApplicationAsync(ReleaseVersion releaseVersion)
+    public async Task UpdateApplicationAsync(ReleaseVersion releaseVersion, CancellationToken cancellationToken = default)
     {
         try
         {
-            _terminalService.ClearConsole();
-            
             var currentVersion = _environmentService.GetCurrentApplicationVersion();
 
             if (currentVersion.CompareTo(releaseVersion.Version) >= 0)
             {
                 _logger.LogWarning("Latest release version {ReleaseVersion} is not higher than current version {CurrentVersion}. In {Method}", 
-                    releaseVersion.Version.ToString(), currentVersion.ToString(), nameof(IsNewVersionAvailableAsync));
+                    releaseVersion.Version.ToString(), currentVersion.ToString(), nameof(UpdateApplicationAsync));
 
                 return;
             }
 
             var operationSystem = _environmentService.GetCurrentOperationSystem();
-            var getCurrentUser = await _userRepository.GetUserAsync();
-            var productName = $"TradeHero-{getCurrentUser.TelegramUserId}";
-            var productVersion = _environmentService.GetCurrentApplicationVersion().ToString();
-
-            using var httpClient = new HttpClient();
-            using var request = new HttpRequestMessage(HttpMethod.Get, releaseVersion.DownloadUri);
-            
-            request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
-            request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
-            request.Headers.Authorization = new AuthenticationHeaderValue("token", _appSettings.Github.Token);
-            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/octet-stream"));
-            request.Headers.UserAgent.Add(new ProductInfoHeaderValue(productName, productVersion));
-
-            var response = await httpClient.SendAsync(request);
-
-            var downloadedStream = await response.Content.ReadAsStreamAsync();
-            downloadedStream.Position = 0;
-
             var applicationName = GetApplicationNameByOperationSystem(operationSystem);
+            var downloadedApplicationName = $"new_{applicationName}";
             var mainApplicationPath = Path.Combine(_environmentService.GetBasePath(), applicationName);
             var updateFolder = Path.Combine(_environmentService.GetDataFolderPath(), FolderConstants.UpdateFolder);
-            var tempFolderApplicationName = Path.Combine(updateFolder, applicationName);
 
             if (!Directory.Exists(updateFolder))
             {
                 Directory.CreateDirectory(updateFolder);
             }
             
-            File.Move(mainApplicationPath, tempFolderApplicationName);
+            var getCurrentUser = await _userRepository.GetUserAsync();
+            var productName = $"TradeHero-{getCurrentUser.TelegramUserId}";
+            var productVersion = _environmentService.GetCurrentApplicationVersion().ToString();
 
-            var fileInfo = new FileInfo(mainApplicationPath);
-            await using (var fileStream = fileInfo.OpenWrite())
+            var progressIndicator = new Progress<decimal>();
+
+            progressIndicator.ProgressChanged += (sender, progress) =>
             {
-                await downloadedStream.CopyToAsync(fileStream);
+                OnDownloadProgress?.Invoke(sender, progress);
+            };
+
+            using (var client = new HttpClient()) 
+            {
+                client.Timeout = TimeSpan.FromMinutes(5);
+
+                using var request = new HttpRequestMessage(HttpMethod.Get, releaseVersion.DownloadUri);
+
+                request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
+                request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
+                request.Headers.Authorization = new AuthenticationHeaderValue("token", _environmentSettings.Github.Token);
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/octet-stream"));
+                request.Headers.UserAgent.Add(new ProductInfoHeaderValue(productName, productVersion));
+                
+                await using (var file = new FileStream(Path.Combine(updateFolder, downloadedApplicationName), 
+                                 FileMode.Create, FileAccess.Write, FileShare.None)) 
+                {
+                    // Use the custom extension method below to download the data.
+                    // The passed progress-instance will receive the download status updates.
+                    await client.DownloadAsync(request, file, progressIndicator, cancellationToken);
+                }
             }
 
-            await downloadedStream.DisposeAsync();
+            File.Move(mainApplicationPath, Path.Combine(updateFolder, applicationName));
+            
+            File.Move(Path.Combine(updateFolder, downloadedApplicationName), mainApplicationPath);
 
             if (!File.Exists(mainApplicationPath))
             {
                 _logger.LogWarning(null, "Cannot create new application. In {Method}", 
-                    nameof(IsNewVersionAvailableAsync));
+                    nameof(UpdateApplicationAsync));
 
-                return;
+                throw new Exception("Cannot find download application by main path.");
             }
 
-            if (File.Exists(tempFolderApplicationName))
+            if (Directory.Exists(updateFolder))
             {
-                File.Delete(tempFolderApplicationName);
+                Directory.Delete(updateFolder, true);
                 
-                _logger.LogInformation("{FilePath} deleted. In {Method}", tempFolderApplicationName, 
-                    nameof(IsNewVersionAvailableAsync));
+                _logger.LogInformation("{DirectoryPath} deleted. In {Method}", updateFolder, 
+                    nameof(UpdateApplicationAsync));
             }
-
-            Environment.Exit(0);
-            
-            Process.Start(mainApplicationPath);
         }
         catch (Exception exception)
         {
             _logger.LogError(exception, "Error in {Method}", nameof(UpdateApplicationAsync));
+            
+            OnUpdateError?.Invoke(this, exception);
         }
     }
 

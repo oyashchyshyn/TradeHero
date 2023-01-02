@@ -28,6 +28,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeHero.EntryPoint", "Src
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeHero.UnitTest.Core", "Test\TradeHero.UnitTest.Core\TradeHero.UnitTest.Core.csproj", "{1E0363ED-69BE-47DB-B1AD-7247FE41FBA1}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Items", "Items", "{F12CCC6D-8DD6-4898-8AD3-E953460BBA6D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

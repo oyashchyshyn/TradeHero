@@ -1,24 +1,36 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using TradeHero.Contracts.Base.Constants;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Services;
+using TradeHero.Contracts.Services.Models.Environment;
 
 namespace TradeHero.Core.Services;
 
 internal class EnvironmentService : IEnvironmentService
 {
     private readonly IHostEnvironment _hostingEnvironment;
+    private readonly IConfiguration _configuration;
 
-    public EnvironmentService(IHostEnvironment hostingEnvironment)
+    public EnvironmentService(
+        IHostEnvironment hostingEnvironment, 
+        IConfiguration configuration
+        )
     {
         _hostingEnvironment = hostingEnvironment;
+        _configuration = configuration;
+    }
+
+    public EnvironmentSettings GetEnvironmentSettings()
+    {
+        return _configuration.Get<EnvironmentSettings>() ?? new EnvironmentSettings();
     }
 
     public Version GetCurrentApplicationVersion()
     {
-        return Assembly.GetEntryAssembly()?.GetName().Version ?? new Version(0, 0, 0, 0);
+        return Assembly.GetEntryAssembly()?.GetName().Version ?? new Version(0, 0, 0);
     }
     
     public string GetBasePath()
@@ -39,6 +51,11 @@ internal class EnvironmentService : IEnvironmentService
     public string GetDatabaseFolderPath()
     {
         return Path.Combine(_hostingEnvironment.ContentRootPath, FolderConstants.DataFolder, FolderConstants.DatabaseFolder);
+    }
+    
+    public string GetUpdateFolderPath()
+    {
+        return Path.Combine(_hostingEnvironment.ContentRootPath, FolderConstants.DataFolder, FolderConstants.UpdateFolder);
     }
 
     public EnvironmentType GetEnvironmentType()

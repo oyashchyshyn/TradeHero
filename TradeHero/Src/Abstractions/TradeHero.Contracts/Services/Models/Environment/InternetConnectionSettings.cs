@@ -1,4 +1,4 @@
-namespace TradeHero.Contracts.Settings.Models;
+namespace TradeHero.Contracts.Services.Models.Environment;
 
 public class InternetConnectionSettings
 {

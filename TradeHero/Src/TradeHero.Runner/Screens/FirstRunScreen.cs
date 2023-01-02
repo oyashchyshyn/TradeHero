@@ -3,7 +3,7 @@ using Telegram.Bot;
 using TradeHero.Contracts.Base.Constants;
 using TradeHero.Contracts.Base.Enums;
 
-namespace TradeHero.Runner.Helpers;
+namespace TradeHero.Runner.Screens;
 
 internal static class FirstRunScreen
 {
