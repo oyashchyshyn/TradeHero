@@ -1,12 +1,12 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Host;
 using TradeHero.Contracts.Services;
 using TradeHero.EntryPoint.Menu.Telegram;
 
 namespace TradeHero.EntryPoint.Host;
 
-internal class ThHostLifeTime : IThHostLifeTime, IDisposable
+internal class ThHostLifeTime : IHostLifetime, IDisposable
 {
     private readonly ManualResetEvent _shutdownBlock = new(false);
     private CancellationTokenRegistration _applicationStartedRegistration;
@@ -18,6 +18,7 @@ internal class ThHostLifeTime : IThHostLifeTime, IDisposable
     private readonly IFileService _fileService;
     private readonly IEnvironmentService _environmentService;
     private readonly IHostApplicationLifetime _applicationLifetime;
+    private readonly IConfiguration _configuration;
 
     private readonly TelegramMenu _telegramMenu;
 
@@ -30,8 +31,7 @@ internal class ThHostLifeTime : IThHostLifeTime, IDisposable
         IInternetConnectionService internetConnectionService,
         IFileService fileService,
         IEnvironmentService environmentService,
-        TelegramMenu telegramMenu
-        )
+        TelegramMenu telegramMenu, IConfiguration configuration)
     {
         _logger = loggerFactory.CreateLogger("TradeHero");
         _jobService = jobService;
@@ -41,6 +41,7 @@ internal class ThHostLifeTime : IThHostLifeTime, IDisposable
         _applicationLifetime = applicationLifetime;
 
         _telegramMenu = telegramMenu;
+        _configuration = configuration;
     }
 
     public Task WaitForStartAsync(CancellationToken cancellationToken)
@@ -77,7 +78,7 @@ internal class ThHostLifeTime : IThHostLifeTime, IDisposable
         _logger.LogInformation("Application started. Press Ctrl+C to shut down");
         _logger.LogInformation("Application environment: {GetEnvironmentType}", _environmentService.GetEnvironmentType());
         _logger.LogInformation("Base path: {GetBasePath}", _environmentService.GetBasePath());
-        
+
         await _internetConnectionService.StartInternetConnectionCheckAsync();
 
         _internetConnectionService.OnInternetConnected += InternetConnectionServiceOnOnInternetConnected;
@@ -99,6 +100,7 @@ internal class ThHostLifeTime : IThHostLifeTime, IDisposable
         
         _applicationLifetime.StopApplication();
         _shutdownBlock.WaitOne();
+        
         Environment.ExitCode = 0;
     }
 

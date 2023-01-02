@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
-using TradeHero.Contracts.Host;
+using Microsoft.Extensions.Hosting;
 using TradeHero.Contracts.Repositories.Models;
 using TradeHero.EntryPoint.Data;
 using TradeHero.EntryPoint.Data.Dtos.Instance;
@@ -23,11 +23,8 @@ namespace TradeHero.EntryPoint;
 
 public static class ThLogicServiceCollectionExtensions
 {
-    public static void AddThLogic(this IServiceCollection serviceCollection)
+    public static void AddThHost(this IServiceCollection serviceCollection)
     {
-        // Host
-        serviceCollection.AddSingleton<IThHostLifeTime, ThHostLifeTime>();
-
         // Dictionary
         serviceCollection.AddSingleton<EnumDictionary>();
         
@@ -71,5 +68,8 @@ public static class ThLogicServiceCollectionExtensions
         serviceCollection.AddTransient<IValidator<PercentMoveTradeLogicDto>, PercentMoveStrategyDtoValidation>();
         serviceCollection.AddTransient<IValidator<SpotClusterVolumeOptionsDto>, SpotClusterVolumeOptionsDtoValidation>();
         serviceCollection.AddSingleton<DtoValidator>();
+        
+        // Host
+        serviceCollection.AddSingleton<IHostLifetime, ThHostLifeTime>();
     }
 }

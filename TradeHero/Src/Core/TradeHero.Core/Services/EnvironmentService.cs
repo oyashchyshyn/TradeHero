@@ -27,6 +27,11 @@ internal class EnvironmentService : IEnvironmentService
     {
         return _configuration.Get<EnvironmentSettings>() ?? new EnvironmentSettings();
     }
+    
+    public string? GetEnvironmentValueByKey(string key)
+    {
+        return _configuration.GetValue<string>(key);
+    }
 
     public Version GetCurrentApplicationVersion()
     {

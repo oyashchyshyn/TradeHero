@@ -1,7 +1,6 @@
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Logging;
 using Octokit;
-using TradeHero.Contracts.Base.Constants;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Base.Models;
 using TradeHero.Contracts.Extensions;
@@ -117,11 +116,10 @@ internal class UpdateService : IUpdateService
             var applicationName = GetApplicationNameByOperationSystem(operationSystem);
             var downloadedApplicationName = $"new_{applicationName}";
             var mainApplicationPath = Path.Combine(_environmentService.GetBasePath(), applicationName);
-            var updateFolder = Path.Combine(_environmentService.GetDataFolderPath(), FolderConstants.UpdateFolder);
 
-            if (!Directory.Exists(updateFolder))
+            if (!Directory.Exists(_environmentService.GetUpdateFolderPath()))
             {
-                Directory.CreateDirectory(updateFolder);
+                Directory.CreateDirectory(_environmentService.GetUpdateFolderPath());
             }
             
             var getCurrentUser = await _userRepository.GetUserAsync();
@@ -147,7 +145,7 @@ internal class UpdateService : IUpdateService
                 request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/octet-stream"));
                 request.Headers.UserAgent.Add(new ProductInfoHeaderValue(productName, productVersion));
                 
-                await using (var file = new FileStream(Path.Combine(updateFolder, downloadedApplicationName), 
+                await using (var file = new FileStream(Path.Combine(_environmentService.GetUpdateFolderPath(), downloadedApplicationName), 
                                  FileMode.Create, FileAccess.Write, FileShare.None)) 
                 {
                     // Use the custom extension method below to download the data.
@@ -156,9 +154,9 @@ internal class UpdateService : IUpdateService
                 }
             }
 
-            File.Move(mainApplicationPath, Path.Combine(updateFolder, applicationName));
+            File.Move(mainApplicationPath, Path.Combine(_environmentService.GetUpdateFolderPath(), applicationName));
             
-            File.Move(Path.Combine(updateFolder, downloadedApplicationName), mainApplicationPath);
+            File.Move(Path.Combine(_environmentService.GetUpdateFolderPath(), downloadedApplicationName), mainApplicationPath);
 
             if (!File.Exists(mainApplicationPath))
             {
@@ -168,11 +166,11 @@ internal class UpdateService : IUpdateService
                 throw new Exception("Cannot find download application by main path.");
             }
 
-            if (Directory.Exists(updateFolder))
+            if (Directory.Exists(_environmentService.GetUpdateFolderPath()))
             {
-                Directory.Delete(updateFolder, true);
+                Directory.Delete(_environmentService.GetUpdateFolderPath(), true);
                 
-                _logger.LogInformation("{DirectoryPath} deleted. In {Method}", updateFolder, 
+                _logger.LogInformation("{DirectoryPath} deleted. In {Method}", _environmentService.GetUpdateFolderPath(), 
                     nameof(UpdateApplicationAsync));
             }
         }

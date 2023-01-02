@@ -236,21 +236,9 @@ internal abstract class BaseFuturesUsdTradeLogic : ITradeLogic
             _jobService.FinishJobByKey(JobKey.UpdateExchangeInfoInStore);
             _jobService.FinishJobByKey(JobKey.UpdateBalancesInfoInStore);
             _jobService.FinishJobByKey(JobKey.UpdatePositionsInfoInStore);
-            
-            if (((BaseTradeLogicStore)Store).UsdFuturesTickerStreams.Any())
-            {
-                foreach (var usdFuturesTickerStream in ((BaseTradeLogicStore)Store).UsdFuturesTickerStreams)
-                {
-                    await _binanceSocketClient.UnsubscribeAsync(usdFuturesTickerStream.Value.SocketSubscription);   
-                }
-                
-                Logger.LogInformation("Unsubscribed from ticker streams. In {Method}", 
-                    nameof(FinishAsync));
-            }
-            
-            await _binanceSocketClient.UnsubscribeAsync(_userAccountStreamStream.SocketSubscription);
-            await _binanceSocketClient.UnsubscribeAsync(_futuresUsdMarketTickerStream.SocketSubscription);
-            
+
+            await _binanceSocketClient.UnsubscribeAllAsync();
+
             await FuturesUsdEndpoints.DestroyStreamListerKeyAsync(Store, cancellationToken: CancellationTokenSource.Token);
 
             await ((BaseTradeLogicStore)Store).ClearDataAsync();
