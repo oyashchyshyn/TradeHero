@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Services;
@@ -18,7 +17,6 @@ internal class ThHostLifeTime : IHostLifetime, IDisposable
     private readonly IFileService _fileService;
     private readonly IEnvironmentService _environmentService;
     private readonly IHostApplicationLifetime _applicationLifetime;
-    private readonly IConfiguration _configuration;
 
     private readonly TelegramMenu _telegramMenu;
 
@@ -31,7 +29,8 @@ internal class ThHostLifeTime : IHostLifetime, IDisposable
         IInternetConnectionService internetConnectionService,
         IFileService fileService,
         IEnvironmentService environmentService,
-        TelegramMenu telegramMenu, IConfiguration configuration)
+        TelegramMenu telegramMenu
+        )
     {
         _logger = loggerFactory.CreateLogger("TradeHero");
         _jobService = jobService;
@@ -41,7 +40,6 @@ internal class ThHostLifeTime : IHostLifetime, IDisposable
         _applicationLifetime = applicationLifetime;
 
         _telegramMenu = telegramMenu;
-        _configuration = configuration;
     }
 
     public Task WaitForStartAsync(CancellationToken cancellationToken)

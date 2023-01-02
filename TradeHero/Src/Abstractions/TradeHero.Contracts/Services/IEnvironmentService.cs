@@ -15,4 +15,5 @@ public interface IEnvironmentService
     string GetUpdateFolderPath();
     EnvironmentType GetEnvironmentType();
     OperationSystem GetCurrentOperationSystem();
+    string GetApplicationNameByOperationSystem(OperationSystem operationSystem);
 }

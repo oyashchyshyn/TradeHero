@@ -85,4 +85,18 @@ internal class EnvironmentService : IEnvironmentService
         var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         return isWindows ? OperationSystem.Windows : OperationSystem.None;
     }
+    
+    public string GetApplicationNameByOperationSystem(OperationSystem operationSystem)
+    {
+        var applicationName = operationSystem switch
+        {
+            OperationSystem.Windows => "trade_hero.exe",
+            OperationSystem.Linux => "trade_hero",
+            OperationSystem.Osx => "trade_hero",
+            OperationSystem.None => string.Empty,
+            _ => string.Empty
+        };
+
+        return applicationName;
+    }
 }

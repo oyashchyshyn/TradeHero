@@ -111,9 +111,9 @@ internal class UpdateService : IUpdateService
 
                 return;
             }
-
-            var operationSystem = _environmentService.GetCurrentOperationSystem();
-            var applicationName = GetApplicationNameByOperationSystem(operationSystem);
+            
+            var applicationName = _environmentService.GetApplicationNameByOperationSystem(
+                _environmentService.GetCurrentOperationSystem());
             var downloadedApplicationName = $"new_{applicationName}";
             var mainApplicationPath = Path.Combine(_environmentService.GetBasePath(), applicationName);
 
@@ -181,22 +181,4 @@ internal class UpdateService : IUpdateService
             OnUpdateError?.Invoke(this, exception);
         }
     }
-
-    #region Private nethods
-
-    private static string GetApplicationNameByOperationSystem(OperationSystem operationSystem)
-    {
-        var applicationName = operationSystem switch
-        {
-            OperationSystem.Windows => "trade_hero.exe",
-            OperationSystem.Linux => "trade_hero",
-            OperationSystem.Osx => "trade_hero",
-            OperationSystem.None => string.Empty,
-            _ => string.Empty
-        };
-
-        return applicationName;
-    }
-
-    #endregion
 }
