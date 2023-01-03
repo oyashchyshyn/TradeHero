@@ -111,7 +111,16 @@ internal class UpdateService : IUpdateService
                 return false;
             }
             
-            var productName = "TradeHero";
+            var activeUser = await _userRepository.GetActiveUserAsync();
+            if (activeUser == null)
+            {
+                _logger.LogError("There is no active user. In {Method}", nameof(UpdateApplicationAsync));
+
+                return false;
+            }
+
+            var telegramUserId = activeUser.TelegramUserId;
+            var productName = $"TradeHero_{telegramUserId}";
             var productVersion = _environmentService.GetCurrentApplicationVersion().ToString();
             var applicationName = _environmentService.GetApplicationNameByOperationSystem(
                 _environmentService.GetCurrentOperationSystem());
@@ -122,14 +131,6 @@ internal class UpdateService : IUpdateService
             if (!Directory.Exists(_environmentService.GetUpdateFolderPath()))
             {
                 Directory.CreateDirectory(_environmentService.GetUpdateFolderPath());
-            }
-            
-            var activeUser = await _userRepository.GetActiveUserAsync();
-            if (activeUser == null)
-            {
-                _logger.LogError("There is no active user. In {Method}", nameof(UpdateApplicationAsync));
-
-                return false;
             }
 
             progressIndicator.ProgressChanged += (sender, progress) =>
@@ -157,16 +158,6 @@ internal class UpdateService : IUpdateService
                     await client.DownloadAsync(request, file, progressIndicator, cancellationToken);
                 }
             }
-
-            File.Move(
-                Path.Combine(_environmentService.GetBasePath(), applicationName), 
-                Path.Combine(_environmentService.GetBasePath(), applicationNameToDelete)
-            );
-            
-            File.Move(
-                Path.Combine(_environmentService.GetUpdateFolderPath(), downloadedApplicationName), 
-                Path.Combine(_environmentService.GetBasePath(), applicationName)
-            );
 
             return true;
         }

@@ -23,6 +23,9 @@ internal class ThHostLifeTime : IHostLifetime, IDisposable
     private readonly MenuFactory _menuFactory;
 
     private CancellationTokenSource _cancellationTokenSource = new();
+
+    private readonly Process _process = new();
+    private bool _isProcessNeedToBeDisposed = true;
     
     public ThHostLifeTime(
         ILoggerFactory loggerFactory,
@@ -60,7 +63,7 @@ internal class ThHostLifeTime : IHostLifetime, IDisposable
         return Task.CompletedTask;
     }
 
-    public async Task RestartAsync()
+    public async Task RestartForUpdateAsync()
     {
         await EndAsync();
         
@@ -72,7 +75,10 @@ internal class ThHostLifeTime : IHostLifetime, IDisposable
         
         _applicationLifetime.StopApplication();
 
-        Process.Start(applicationPath, $"--{ArgumentConstants.UpdateKey}=true");
+        _isProcessNeedToBeDisposed = false;
+        _process.StartInfo.FileName = applicationPath;
+        _process.StartInfo.Arguments = $"--{ArgumentConstants.UpdateKey}=true";
+        _process.Start();
     }
 
     public void Dispose()

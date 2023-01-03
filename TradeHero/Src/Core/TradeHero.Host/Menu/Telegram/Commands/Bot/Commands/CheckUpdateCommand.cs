@@ -185,7 +185,7 @@ internal class CheckUpdateCommand : IMenuCommand
                     cancellationToken: cancellationToken
                 );
 
-                await ((ThHostLifeTime)_hostLifetime).RestartAsync();
+                await ((ThHostLifeTime)_hostLifetime).RestartForUpdateAsync();
             }
 
             await SendMessageWithClearDataAsync("There was an error during process, please, try later.", cancellationToken);
