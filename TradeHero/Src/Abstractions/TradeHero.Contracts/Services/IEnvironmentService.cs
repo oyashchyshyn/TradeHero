@@ -16,4 +16,5 @@ public interface IEnvironmentService
     EnvironmentType GetEnvironmentType();
     OperationSystem GetCurrentOperationSystem();
     string GetApplicationNameByOperationSystem(OperationSystem operationSystem);
+    string GetCurrentApplicationName();
 }

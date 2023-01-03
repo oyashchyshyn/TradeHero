@@ -4,5 +4,8 @@ public class ReleaseVersion
 {
     public bool IsNewAvailable { get; init; }
     public Version Version { get; init; } = new();
-    public string DownloadUri { get; init; } = string.Empty;
+    public string AppName { get; init; } = string.Empty;
+    public string AppDownloadUri { get; init; } = string.Empty;
+    public string UpdaterName { get; init; } = string.Empty;
+    public string UpdaterDownloadUri { get; init; } = string.Empty;
 }

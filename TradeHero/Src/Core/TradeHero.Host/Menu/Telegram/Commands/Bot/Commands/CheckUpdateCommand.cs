@@ -17,6 +17,7 @@ internal class CheckUpdateCommand : IMenuCommand
     private readonly IUpdateService _updateService;
     private readonly IStore _store;
     private readonly IHostLifetime _hostLifetime;
+    private readonly IEnvironmentService _environmentService;
     private readonly TelegramMenuStore _telegramMenuStore;
 
     public CheckUpdateCommand(
@@ -24,14 +25,18 @@ internal class CheckUpdateCommand : IMenuCommand
         ITelegramService telegramService,
         IUpdateService updateService,
         IStore store,
-        TelegramMenuStore telegramMenuStore, IHostLifetime hostLifetime)
+        IHostLifetime hostLifetime,
+        IEnvironmentService environmentService,
+        TelegramMenuStore telegramMenuStore
+        )
     {
         _logger = logger;
         _telegramService = telegramService;
         _updateService = updateService;
         _store = store;
-        _telegramMenuStore = telegramMenuStore;
+        _environmentService = environmentService;
         _hostLifetime = hostLifetime;
+        _telegramMenuStore = telegramMenuStore;
     }
 
     public string Id => _telegramMenuStore.TelegramButtons.CheckUpdate;
@@ -168,12 +173,12 @@ internal class CheckUpdateCommand : IMenuCommand
                     // );
                 };
                 
-                var result = await _updateService.UpdateApplicationAsync(
+                var downloadResult = await _updateService.UpdateApplicationAsync(
                     _telegramMenuStore.CheckUpdateData.ReleaseVersion, 
                     cancellationToken
                 );
 
-                if (!result)
+                if (downloadResult.ActionResult != ActionResult.Success)
                 {
                     await SendMessageWithClearDataAsync("There was an error during update, please, check logs.", cancellationToken);
                     
@@ -184,8 +189,16 @@ internal class CheckUpdateCommand : IMenuCommand
                     "Update downloaded. Prepare for installing.",
                     cancellationToken: cancellationToken
                 );
-
-                await ((ThHostLifeTime)_hostLifetime).RestartForUpdateAsync();
+                
+                var args = $"--bfp={_environmentService.GetBasePath()} " +
+                           $"--ufp={_environmentService.GetUpdateFolderPath()}" +
+                           $"--man={_environmentService.GetCurrentApplicationName()}" +
+                           $"--dan={downloadResult.Data.AppFileName}";
+                
+                await ((ThHostLifeTime)_hostLifetime).RunUpdaterAsync(
+                    Path.Combine(_environmentService.GetUpdateFolderPath(), downloadResult.Data.UpdaterFileName),
+                    args
+                );
             }
 
             await SendMessageWithClearDataAsync("There was an error during process, please, try later.", cancellationToken);
