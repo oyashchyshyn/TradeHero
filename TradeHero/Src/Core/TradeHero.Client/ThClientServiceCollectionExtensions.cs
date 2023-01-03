@@ -5,9 +5,11 @@ using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Client;
 using TradeHero.Contracts.Repositories;
-using TradeHero.Contracts.Repositories.Models;
-using TradeHero.Contracts.Settings;
 using TradeHero.Client.Clients;
+using TradeHero.Client.Resolvers;
+using TradeHero.Contracts.Client.Resolvers;
+using TradeHero.Contracts.Services;
+using TradeHero.Contracts.Services.Models.Environment;
 
 namespace TradeHero.Client;
 
@@ -18,11 +20,21 @@ public static class ThClientServiceCollectionExtensions
         serviceCollection.AddTransient<IThRestBinanceClient, ThRestBinanceClient>(serviceProvider =>
         {
             var connectionRepository = serviceProvider.GetRequiredService<IConnectionRepository>();
-            var connection = connectionRepository.GetActiveConnection();
-            
-            var appSettings = serviceProvider.GetRequiredService<AppSettings>();
+            var environmentService = serviceProvider.GetRequiredService<IEnvironmentService>();
             var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
-            var restClientOptions = GetBinanceClientOptions(appSettings, connection, loggerFactory.CreateLogger<ThRestBinanceClient>());
+            var connection = connectionRepository.GetActiveConnection();
+
+            var apiKey = "default";
+            var secretKey = "default";
+            
+            if (connection != null)
+            {
+                apiKey = connection.ApiKey;
+                secretKey = connection.SecretKey;
+            }
+            
+            var restClientOptions = GetBinanceClientOptions(environmentService.GetEnvironmentSettings(), apiKey, 
+                secretKey, loggerFactory.CreateLogger<ThRestBinanceClient>());
             
             return new ThRestBinanceClient(restClientOptions, serviceProvider);
         });
@@ -30,27 +42,40 @@ public static class ThClientServiceCollectionExtensions
         serviceCollection.AddTransient<IThSocketBinanceClient, ThSocketBinanceClient>(serviceProvider =>
         {
             var connectionRepository = serviceProvider.GetRequiredService<IConnectionRepository>();
+            var environmentService = serviceProvider.GetRequiredService<IEnvironmentService>();
+            var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
             var connection = connectionRepository.GetActiveConnection();
             
-            var appSettings = serviceProvider.GetRequiredService<AppSettings>();
-            var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
-            var socketClientOptions = GetBinanceSocketClientOptions(appSettings, connection, loggerFactory.CreateLogger<ThSocketBinanceClient>());
+            var apiKey = "default";
+            var secretKey = "default";
+            
+            if (connection != null)
+            {
+                apiKey = connection.ApiKey;
+                secretKey = connection.SecretKey;
+            }
+            
+            var socketClientOptions = GetBinanceSocketClientOptions(environmentService.GetEnvironmentSettings(), apiKey, 
+                secretKey, loggerFactory.CreateLogger<ThSocketBinanceClient>());
 
             return new ThSocketBinanceClient(socketClientOptions);
         });
+
+        serviceCollection.AddSingleton<IBinanceResolver, BinanceResolver>();
     }
 
     #region Private methods
 
-    private static BinanceClientOptions GetBinanceClientOptions(AppSettings appSettings, ConnectionDto connection, ILogger logger)
+    private static BinanceClientOptions GetBinanceClientOptions(EnvironmentSettings environmentSettings, 
+        string apiKey, string secretKey, ILogger logger)
     {
         var clientOptions = new BinanceClientOptions
         {
-            ApiCredentials = new ApiCredentials(connection.ApiKey, connection.SecretKey),
-            LogLevel = appSettings.Logger.RestClientLogLevel
+            ApiCredentials = new ApiCredentials(apiKey, secretKey),
+            LogLevel = environmentSettings.Logger.RestClientLogLevel
         };
         
-        if (appSettings.Client.Server == ClientServer.TestNet)
+        if (environmentSettings.Client.Server == ClientServer.TestNet)
         {
             clientOptions = new BinanceClientOptions
             {
@@ -60,11 +85,13 @@ public static class ThClientServiceCollectionExtensions
                 },
                 UsdFuturesApiOptions =
                 {
-                    BaseAddress = BinanceApiAddresses.TestNet.UsdFuturesRestClientAddress ?? BinanceApiAddresses.TestNet.RestClientAddress 
+                    BaseAddress = BinanceApiAddresses.TestNet.UsdFuturesRestClientAddress 
+                                  ?? BinanceApiAddresses.TestNet.RestClientAddress 
                 },
                 CoinFuturesApiOptions =
                 {
-                    BaseAddress = BinanceApiAddresses.TestNet.CoinFuturesRestClientAddress ?? BinanceApiAddresses.TestNet.RestClientAddress
+                    BaseAddress = BinanceApiAddresses.TestNet.CoinFuturesRestClientAddress 
+                                  ?? BinanceApiAddresses.TestNet.RestClientAddress
                 }
             };
         }
@@ -74,15 +101,16 @@ public static class ThClientServiceCollectionExtensions
         return clientOptions;
     }
     
-    private static BinanceSocketClientOptions GetBinanceSocketClientOptions(AppSettings appSettings, ConnectionDto connection, ILogger logger)
+    private static BinanceSocketClientOptions GetBinanceSocketClientOptions(EnvironmentSettings environmentSettings, 
+        string apiKey, string secretKey, ILogger logger)
     {
         var clientOptions = new BinanceSocketClientOptions
         {
-            ApiCredentials = new ApiCredentials(connection.ApiKey, connection.SecretKey),
-            LogLevel = appSettings.Logger.SocketClientLogLevel
+            ApiCredentials = new ApiCredentials(apiKey, secretKey),
+            LogLevel = environmentSettings.Logger.SocketClientLogLevel
         };
         
-        if (appSettings.Client.Server == ClientServer.TestNet)
+        if (environmentSettings.Client.Server == ClientServer.TestNet)
         {
             clientOptions = new BinanceSocketClientOptions
             {
@@ -92,11 +120,13 @@ public static class ThClientServiceCollectionExtensions
                 },
                 UsdFuturesStreamsOptions =
                 {
-                    BaseAddress = BinanceApiAddresses.TestNet.UsdFuturesSocketClientAddress ?? BinanceApiAddresses.TestNet.SocketClientAddress
+                    BaseAddress = BinanceApiAddresses.TestNet.UsdFuturesSocketClientAddress 
+                                  ?? BinanceApiAddresses.TestNet.SocketClientAddress
                 },
                 CoinFuturesStreamsOptions =
                 {
-                    BaseAddress = BinanceApiAddresses.TestNet.CoinFuturesSocketClientAddress ?? BinanceApiAddresses.TestNet.SocketClientAddress
+                    BaseAddress = BinanceApiAddresses.TestNet.CoinFuturesSocketClientAddress 
+                                  ?? BinanceApiAddresses.TestNet.SocketClientAddress
                 }
             };
         }

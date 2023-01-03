@@ -1,9 +1,11 @@
 using System.Dynamic;
+using CryptoExchange.Net.Converters;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Base.Models;
+using TradeHero.Contracts.Extensions;
 using TradeHero.Contracts.Services;
 using TradeHero.Core.ContractResolvers;
 
@@ -28,6 +30,8 @@ internal class JsonService : IJsonService
                 Formatting = formatting
             };
 
+            serializerSettings.Converters.Add(new EnumConverter());
+            
             if (serializationSettings == JsonSerializationSettings.IgnoreJsonPropertyName)
             {
                 serializerSettings.ContractResolver = new IgnoreJsonPropertyNameContractResolver();
@@ -50,6 +54,8 @@ internal class JsonService : IJsonService
         try
         {
             var serializerSettings = new JsonSerializerSettings();
+            
+            serializerSettings.Converters.Add(new EnumConverter());
 
             if (serializationSettings == JsonSerializationSettings.IgnoreJsonPropertyName)
             {
@@ -84,6 +90,8 @@ internal class JsonService : IJsonService
         try
         {
             var serializerSettings = new JsonSerializerSettings();
+            
+            serializerSettings.Converters.Add(new EnumConverter());
 
             if (serializationSettings == JsonSerializationSettings.IgnoreJsonPropertyName)
             {
@@ -135,6 +143,8 @@ internal class JsonService : IJsonService
         try
         {
             var serializerSettings = new JsonSerializer();
+            
+            serializerSettings.Converters.Add(new EnumConverter());
 
             if (serializationSettings == JsonSerializationSettings.IgnoreJsonPropertyName)
             {
@@ -154,7 +164,8 @@ internal class JsonService : IJsonService
         }
     }
     
-    public GenericBaseResult<ExpandoObject> ConvertKeyValueStringDataToDictionary(string stringData)
+    public GenericBaseResult<ExpandoObject> ConvertKeyValueStringDataToDictionary(string stringData, 
+        JsonKeyTransformation jsonKeyTransformation = JsonKeyTransformation.Default)
     {
         try
         {
@@ -166,6 +177,11 @@ internal class JsonService : IJsonService
                 var key = sections[0].Trim();
                 var value = sections[1].Trim();
 
+                if (jsonKeyTransformation == JsonKeyTransformation.ToCapitaliseCase)
+                {
+                    key = key.CapitalizeFirstLetter();
+                }
+                
                 if (value.Contains('\r'))
                 {
                     value = value.Replace("\r", string.Empty);

@@ -14,5 +14,10 @@
         "SocketClientLogLevel": "Warning",
         "FileName": "logs.txt",
         "LogTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext}: {Message}{NewLine}{Exception}"
+    },
+    "Github": {
+        "Owner": "oyashchyshyn",
+        "Repository": "TradeHero",
+        "Token": "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"
     }
 }

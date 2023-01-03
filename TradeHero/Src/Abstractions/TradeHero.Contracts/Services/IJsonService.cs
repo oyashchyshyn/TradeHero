@@ -13,5 +13,5 @@ public interface IJsonService
     GenericBaseResult<object> Deserialize(string json, Type type, JsonSerializationSettings serializationSettings = JsonSerializationSettings.None);
     GenericBaseResult<JObject> GetJObject(string json);
     GenericBaseResult<JObject> GetJObject(object obj, JsonSerializationSettings serializationSettings = JsonSerializationSettings.None);
-    GenericBaseResult<ExpandoObject> ConvertKeyValueStringDataToDictionary(string stringData);
+    GenericBaseResult<ExpandoObject> ConvertKeyValueStringDataToDictionary(string stringData, JsonKeyTransformation jsonKeyTransformation = JsonKeyTransformation.Default);
 }

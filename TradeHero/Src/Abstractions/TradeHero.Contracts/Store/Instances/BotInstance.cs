@@ -1,16 +1,16 @@
 using TradeHero.Contracts.Base.Enums;
-using TradeHero.Contracts.Strategy;
+using TradeHero.Contracts.StrategyRunner;
 
 namespace TradeHero.Contracts.Store.Instances;
 
 public class BotInstance
 {
-    public StrategyStatus StrategyStatus { get; private set; } = StrategyStatus.Idle;
-    public IStrategy? Strategy { get; private set; }
+    public TradeLogicStatus TradeLogicStatus { get; private set; } = TradeLogicStatus.Idle;
+    public ITradeLogic? TradeLogic { get; private set; }
 
-    public void SetStrategy(IStrategy? strategy, StrategyStatus strategyStatus)
+    public void SetTradeLogic(ITradeLogic? tradeLogic, TradeLogicStatus tradeLogicStatus)
     {
-        Strategy = strategy;
-        StrategyStatus = strategyStatus;
+        TradeLogic = tradeLogic;
+        TradeLogicStatus = tradeLogicStatus;
     }
 }

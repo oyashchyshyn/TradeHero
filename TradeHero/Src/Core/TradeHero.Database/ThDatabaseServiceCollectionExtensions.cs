@@ -37,7 +37,7 @@ public static class ThDatabaseServiceCollectionExtensions
 
             context.Connections.AddRange(connections);
             context.Strategies.AddRange(strategies);
-            context.User.AddRange(user);
+            context.Users.AddRange(user);
 
             context.SaveChanges();
             

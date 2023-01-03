@@ -1,11 +1,8 @@
-using System.Reflection;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using TradeHero.Contracts.Repositories;
 using TradeHero.Contracts.Services;
-using TradeHero.Contracts.Settings;
 using TradeHero.Contracts.Store;
 using TradeHero.Core.Logger;
 using TradeHero.Core.Services;
@@ -17,9 +14,6 @@ public static class ThCoreServiceCollectionExtensions
 {
     public static void AddThCore(this IServiceCollection serviceCollection)
     {
-        // AppSettings
-        serviceCollection.AddSingleton(GetAppSettings());
-        
         // Store
         serviceCollection.AddSingleton<IStore, ApplicationStore>();
 
@@ -32,13 +26,21 @@ public static class ThCoreServiceCollectionExtensions
         serviceCollection.AddSingleton<IInternetConnectionService, InternetConnectionService>();
         serviceCollection.AddSingleton<IEnvironmentService, EnvironmentService>();
         serviceCollection.AddSingleton<IFileService, FileService>();
+        serviceCollection.AddSingleton<IUpdateService, UpdateService>();
         serviceCollection.AddSingleton<ITerminalService, TerminalService>();
+        serviceCollection.AddSingleton<IStartupService, StartupService>();
         
         serviceCollection.AddHttpClient("TelegramBotClient")
             .AddTypedClient<ITelegramBotClient>((httpClient, serviceProvider) =>
             {
-                var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
-                var options = new TelegramBotClientOptions(userRepository.GetUser().TelegramBotToken);
+                var botToken = "default";
+                var activeUser = serviceProvider.GetRequiredService<IUserRepository>().GetActiveUser();
+                if (activeUser != null)
+                {
+                    botToken = activeUser.TelegramBotToken;
+                }
+                
+                var options = new TelegramBotClientOptions(botToken);
                 return new TelegramBotClient(options, httpClient);
             });
         
@@ -49,35 +51,4 @@ public static class ThCoreServiceCollectionExtensions
             loggingBuilder.AddThSerilog();
         });
     }
-
-    #region Private methods
-
-    private static AppSettings GetAppSettings()
-    {
-        var assembly = Assembly.GetEntryAssembly();
-        if (assembly == null)
-        {
-            throw new Exception("Cannot load main assembly");
-        }
-        
-        using var stream = assembly.GetManifestResourceStream("TradeHero.Runner.app.json");
-        if (stream == null)
-        {
-            throw new Exception("Cannot find app.json");
-        }
-
-        var appSettingsConfiguration = new ConfigurationBuilder()
-            .AddJsonStream(stream)
-            .Build();
-
-        var appSettings = appSettingsConfiguration.Get<AppSettings>();
-        if (appSettings == null)
-        {
-            throw new Exception("There is no app.json");
-        }
-
-        return appSettings;
-    }
-
-    #endregion
 }

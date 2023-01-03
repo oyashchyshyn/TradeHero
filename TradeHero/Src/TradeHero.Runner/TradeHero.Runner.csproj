@@ -7,8 +7,9 @@
         <Nullable>enable</Nullable>
         <AssemblyName>trade_hero</AssemblyName>
         <ApplicationIcon>trade_hero.ico</ApplicationIcon>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <FileVersion>1.0.0.0</FileVersion>
+        <AssemblyVersion>1.0.0</AssemblyVersion>
+        <FileVersion>1.0.0</FileVersion>
+        <NeutralLanguage>en-001</NeutralLanguage>
     </PropertyGroup>
     
     <ItemGroup>
@@ -22,6 +23,7 @@
       <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
       <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
       <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="7.0.0" />
+      <PackageReference Include="Telegram.Bot" Version="18.0.0" />
     </ItemGroup>
 
     <ItemGroup>

@@ -2,19 +2,18 @@
 
 namespace TradeHero.Runner.Helpers;
 
-public static class ExceptionHelper
+internal static class ExceptionHelper
 {
-    public static async Task WriteExceptionAsync(Exception exception)
+    public static async Task WriteExceptionAsync(Exception exception, string baseDirectory)
     {            
-        var directoryPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FolderConstants.LogsFolder);
+        var directoryPath = Path.Combine(baseDirectory, FolderConstants.LogsFolder);
         if (!Directory.Exists(directoryPath))
         {
             Directory.CreateDirectory(directoryPath);
         }
             
         await File.WriteAllTextAsync(
-            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FolderConstants.LogsFolder, "fatal.txt"), 
-            exception.ToString()
+            Path.Combine(directoryPath, "fatal.txt"), exception.ToString()
         );
             
         Console.ForegroundColor = ConsoleColor.Red;

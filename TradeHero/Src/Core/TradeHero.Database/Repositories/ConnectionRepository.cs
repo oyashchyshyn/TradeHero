@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Repositories;
 using TradeHero.Contracts.Repositories.Models;
 using TradeHero.Database.Context;
@@ -8,40 +9,150 @@ namespace TradeHero.Database.Repositories;
 
 internal class ConnectionRepository : IConnectionRepository
 {
+    private readonly ILogger<ConnectionRepository> _logger;
     private readonly ThDatabaseContext _database;
 
-    public ConnectionRepository(ThDatabaseContext database)
+    public ConnectionRepository(
+        ILogger<ConnectionRepository> logger, 
+        ThDatabaseContext database
+        )
     {
+        _logger = logger;
         _database = database;
     }
     
-    public ConnectionDto GetActiveConnection()
+    public async Task<List<ConnectionDto>> GetConnectionsAsync()
     {
-        var activeConnection = _database.Connections.AsNoTracking().Single(x => x.IsActive);
-
-        return GenerateConnectionDto(activeConnection);
+        try
+        {
+            return await _database.Connections.AsNoTracking()
+                .Select(x => GenerateConnectionDto(x))
+                .ToListAsync();
+        }
+        catch (Exception exception)
+        {
+            _logger.LogCritical(exception, "In {Method}", nameof(GetConnectionsAsync));
+            
+            return new List<ConnectionDto>();
+        }
     }
     
-    public async Task<ConnectionDto> GetActiveConnectionAsync()
+    public async Task<ConnectionDto?> GetConnectionByIdAsync(Guid connectionId)
     {
-        var activeConnection = await _database.Connections.AsNoTracking().SingleAsync(x => x.IsActive);
+        try
+        {
+            var connection = await _database.Connections.AsNoTracking()
+                .SingleOrDefaultAsync(x => x.Id == connectionId);
+        
+            return connection != null ? GenerateConnectionDto(connection) : null;
+        }
+        catch (Exception exception)
+        {
+            _logger.LogCritical(exception, "In {Method}", nameof(GetConnectionByIdAsync));
 
-        return GenerateConnectionDto(activeConnection);
+            return null;
+        }
+    }
+    
+    public ConnectionDto? GetActiveConnection()
+    {
+        try
+        {
+            var activeConnection = _database.Connections.AsNoTracking().SingleOrDefault(x => x.IsActive);
+
+            return activeConnection == null ? null : GenerateConnectionDto(activeConnection);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogCritical(exception, "In {Method}", nameof(GetActiveConnection));
+
+            return null;
+        }
     }
 
-    public Task AddConnectionAsync(ConnectionDto connectionDto)
+    public async Task<ConnectionDto?> GetActiveConnectionAsync()
     {
-        throw new NotImplementedException();
+        try
+        {
+            var activeConnection = await _database.Connections.AsNoTracking().SingleOrDefaultAsync(x => x.IsActive);
+
+            return activeConnection == null ? null : GenerateConnectionDto(activeConnection);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogCritical(exception, "In {Method}", nameof(GetActiveConnectionAsync));
+
+            return null;
+        }
     }
 
-    public Task UpdateConnectionAsync(ConnectionDto connectionDto)
+    public async Task<bool> SetActiveConnectionAsync(Guid connectionId)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var connections = await _database.Connections.ToListAsync();
+
+            foreach (var connection in connections)
+            {
+                connection.IsActive = connection.Id == connectionId;
+            }
+
+            return await _database.SaveChangesAsync() >= 0;
+        }
+        catch (Exception exception)
+        {
+            _logger.LogCritical(exception, "In {Method}", nameof(SetActiveConnectionAsync));
+
+            return false;
+        }
+    }
+    
+    public async Task<bool> AddConnectionAsync(ConnectionDto connectionDto)
+    {
+        try
+        {
+            var newConnection = new Connection
+            {
+                Name = connectionDto.Name,
+                ApiKey = connectionDto.ApiKey,
+                SecretKey = connectionDto.SecretKey,
+                CreationDateTime = connectionDto.CreationDateTime,
+                IsActive = false
+            };
+        
+            await _database.Connections.AddAsync(newConnection);
+
+            return await _database.SaveChangesAsync() >= 0;
+        }
+        catch (Exception exception)
+        {
+            _logger.LogCritical(exception, "In {Method}", nameof(DeleteConnectionAsync));
+
+            return false;
+        }
     }
 
-    public Task DeleteConnectionAsync(ConnectionDto connectionDto)
+    public async Task<bool> DeleteConnectionAsync(Guid connectionId)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var connection = await _database.Connections.SingleAsync(x => x.Id == connectionId);
+
+            _database.Connections.Remove(connection);
+
+            return await _database.SaveChangesAsync() >= 0;
+        }
+        catch (Exception exception)
+        {
+            _logger.LogCritical(exception, "In {Method}", nameof(DeleteConnectionAsync));
+
+            return false;
+        }
+    }
+
+    public async Task<bool> IsNameExistInDatabaseForCreate(string name)
+    {
+        return await _database.Connections.AnyAsync(x => x.Name == name);
     }
 
     #region private methods
@@ -54,6 +165,7 @@ internal class ConnectionRepository : IConnectionRepository
             Name = connection.Name,
             ApiKey = connection.ApiKey,
             SecretKey = connection.SecretKey,
+            CreationDateTime = connection.CreationDateTime,
             IsActive = connection.IsActive
         };
     }

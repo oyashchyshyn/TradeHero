@@ -1,5 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using TradeHero.Contracts.Base.Constants;
+using TradeHero.Contracts.Services;
 using TradeHero.DependencyResolver;
 using TradeHero.Runner.Helpers;
 
@@ -9,23 +12,40 @@ internal static class Program
 {
     private static async Task Main(string[] args)
     {
+        var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+        
         try
         {
+            var environmentType = ArgumentsHelper.GetEnvironmentType(args);
+
+            if (args.Contains($"--{ArgumentConstants.UpdateKey}"))
+            {
+                Console.WriteLine("Application updated");
+            }
+            
             var host = Host.CreateDefaultBuilder(args)
-                .UseEnvironment(args.Any() ? args[0] : "Production")
-                .UseContentRoot(AppDomain.CurrentDomain.BaseDirectory)
+                .UseEnvironment(environmentType.ToString())
+                .UseContentRoot(baseDirectory)
+                .ConfigureAppConfiguration((_, config) =>
+                {
+                    config.AddConfiguration(ConfigurationHelper.GenerateConfiguration(args));
+                })
                 .ConfigureServices((_, serviceCollection) =>
                 {
                     serviceCollection.AddThDependencyCollection();
-                    serviceCollection.AddSingleton<IHostLifetime, TradeHeroLifetime>();
                 })
                 .Build();
 
+            if (!await host.Services.GetRequiredService<IStartupService>().CheckIsFirstRunAsync())
+            {
+                throw new Exception("There is an error during user creation. Please see logs.");
+            }
+            
             await host.RunAsync();
         }
         catch (Exception exception)
         {
-            await ExceptionHelper.WriteExceptionAsync(exception);
+            await ExceptionHelper.WriteExceptionAsync(exception, baseDirectory);
         }
     }
 }

@@ -16,7 +16,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeHero.Core", "Src\Core\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeHero.Database", "Src\Core\TradeHero.Database\TradeHero.Database.csproj", "{BE97871C-9E72-42B3-ABA3-DF8DC3634BC5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeHero.Strategy", "Src\Core\TradeHero.Strategy\TradeHero.Strategy.csproj", "{E36CA1BE-F668-4616-94C1-688A2A1287C2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeHero.StrategyRunner", "Src\Core\TradeHero.StrategyRunner\TradeHero.StrategyRunner.csproj", "{E36CA1BE-F668-4616-94C1-688A2A1287C2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Abstractions", "Abstractions", "{8D1011DF-D680-4EF3-AF69-F15DEAFFF4AA}"
 EndProject
@@ -24,7 +24,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeHero.Contracts", "Src\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeHero.DependencyResolver", "Src\Abstractions\TradeHero.DependencyResolver\TradeHero.DependencyResolver.csproj", "{CE9B2CD5-118B-427C-BA77-581E8D0388EA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeHero.EntryPoint", "Src\Core\TradeHero.EntryPoint\TradeHero.EntryPoint.csproj", "{598CAADF-2BF9-455F-8471-74440F0F4C5B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeHero.Host", "Src\Core\TradeHero.Host\TradeHero.Host.csproj", "{598CAADF-2BF9-455F-8471-74440F0F4C5B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeHero.UnitTest.Core", "Test\TradeHero.UnitTest.Core\TradeHero.UnitTest.Core.csproj", "{1E0363ED-69BE-47DB-B1AD-7247FE41FBA1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Items", "Items", "{F12CCC6D-8DD6-4898-8AD3-E953460BBA6D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -68,6 +72,10 @@ Global
 		{598CAADF-2BF9-455F-8471-74440F0F4C5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{598CAADF-2BF9-455F-8471-74440F0F4C5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{598CAADF-2BF9-455F-8471-74440F0F4C5B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E0363ED-69BE-47DB-B1AD-7247FE41FBA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E0363ED-69BE-47DB-B1AD-7247FE41FBA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E0363ED-69BE-47DB-B1AD-7247FE41FBA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E0363ED-69BE-47DB-B1AD-7247FE41FBA1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{ECDC4E16-7FFD-4658-B106-A535BC656BF7} = {5234BCA9-77BD-4D08-8F98-8C3B8D17F1E8}
@@ -81,5 +89,6 @@ Global
 		{506AB818-B976-4308-BC65-9EB0E992DCB5} = {8D1011DF-D680-4EF3-AF69-F15DEAFFF4AA}
 		{CE9B2CD5-118B-427C-BA77-581E8D0388EA} = {8D1011DF-D680-4EF3-AF69-F15DEAFFF4AA}
 		{598CAADF-2BF9-455F-8471-74440F0F4C5B} = {D2174719-B255-4371-BA19-BF2B70106CBA}
+		{1E0363ED-69BE-47DB-B1AD-7247FE41FBA1} = {2A5867CE-E9EA-4214-8494-73EC31AFEE0D}
 	EndGlobalSection
 EndGlobal
