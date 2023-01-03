@@ -8,12 +8,12 @@ using TradeHero.Contracts.Client;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.StrategyRunner;
 using TradeHero.Contracts.StrategyRunner.Models;
-using TradeHero.Strategies.Base;
-using TradeHero.Strategies.Endpoints.Rest;
-using TradeHero.Strategies.TradeLogic.PercentLimit.Factory;
-using TradeHero.Strategies.TradeLogic.PercentLimit.Models;
+using TradeHero.StrategyRunner.Base;
+using TradeHero.StrategyRunner.Endpoints.Rest;
+using TradeHero.StrategyRunner.TradeLogic.PercentLimit.Factory;
+using TradeHero.StrategyRunner.TradeLogic.PercentLimit.Models;
 
-namespace TradeHero.Strategies.TradeLogic.PercentLimit.Flow;
+namespace TradeHero.StrategyRunner.TradeLogic.PercentLimit.Flow;
 
 internal class PercentLimitPositionWorker : BasePositionWorker
 {

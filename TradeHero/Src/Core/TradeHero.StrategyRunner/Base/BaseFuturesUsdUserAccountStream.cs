@@ -9,7 +9,7 @@ using TradeHero.Contracts.Services;
 using TradeHero.Contracts.StrategyRunner;
 using TradeHero.Contracts.StrategyRunner.Models.Args;
 
-namespace TradeHero.Strategies.Base;
+namespace TradeHero.StrategyRunner.Base;
 
 internal abstract class BaseFuturesUsdUserAccountStream
 {

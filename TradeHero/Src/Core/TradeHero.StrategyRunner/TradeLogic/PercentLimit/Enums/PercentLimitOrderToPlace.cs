@@ -1,4 +1,4 @@
-namespace TradeHero.Strategies.TradeLogic.PercentLimit.Enums;
+namespace TradeHero.StrategyRunner.TradeLogic.PercentLimit.Enums;
 
 internal enum PercentLimitOrderToPlace
 {

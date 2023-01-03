@@ -7,14 +7,14 @@ using TradeHero.Contracts.Client;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.StrategyRunner;
 using TradeHero.Contracts.StrategyRunner.Models.Instance;
-using TradeHero.Strategies.Base;
-using TradeHero.Strategies.Endpoints.Rest;
-using TradeHero.Strategies.Endpoints.Socket;
-using TradeHero.Strategies.Helpers;
-using TradeHero.Strategies.TradeLogic.PercentMove.Flow;
-using TradeHero.Strategies.TradeLogic.PercentMove.Streams;
+using TradeHero.StrategyRunner.Base;
+using TradeHero.StrategyRunner.Endpoints.Rest;
+using TradeHero.StrategyRunner.Endpoints.Socket;
+using TradeHero.StrategyRunner.Helpers;
+using TradeHero.StrategyRunner.TradeLogic.PercentMove.Flow;
+using TradeHero.StrategyRunner.TradeLogic.PercentMove.Streams;
 
-namespace TradeHero.Strategies.TradeLogic.PercentMove;
+namespace TradeHero.StrategyRunner.TradeLogic.PercentMove;
 
 internal class PercentMoveTradeLogic : BaseFuturesUsdTradeLogic
 {

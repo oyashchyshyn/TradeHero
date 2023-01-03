@@ -5,7 +5,7 @@ using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Base.Exceptions;
 using TradeHero.Contracts.Client;
 
-namespace TradeHero.Strategies.Base;
+namespace TradeHero.StrategyRunner.Base;
 
 internal abstract class BaseFuturesUsdSymbolTickerStream
 {

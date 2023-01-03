@@ -8,10 +8,10 @@ using TradeHero.Contracts.Client;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.StrategyRunner;
 using TradeHero.Contracts.StrategyRunner.Models;
-using TradeHero.Strategies.Base;
-using TradeHero.Strategies.TradeLogic.PercentMove.Factory;
+using TradeHero.StrategyRunner.Base;
+using TradeHero.StrategyRunner.TradeLogic.PercentMove.Factory;
 
-namespace TradeHero.Strategies.TradeLogic.PercentMove.Flow;
+namespace TradeHero.StrategyRunner.TradeLogic.PercentMove.Flow;
 
 internal class PercentMovePositionWorker : BasePositionWorker
 {

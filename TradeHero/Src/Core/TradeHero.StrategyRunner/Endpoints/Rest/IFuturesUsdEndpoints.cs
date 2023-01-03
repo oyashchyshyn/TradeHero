@@ -2,7 +2,7 @@ using Binance.Net.Enums;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.StrategyRunner;
 
-namespace TradeHero.Strategies.Endpoints.Rest;
+namespace TradeHero.StrategyRunner.Endpoints.Rest;
 
 public interface IFuturesUsdEndpoints
 {

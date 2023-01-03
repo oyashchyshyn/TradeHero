@@ -5,9 +5,9 @@ using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Base.Exceptions;
 using TradeHero.Contracts.Client;
 using TradeHero.Contracts.StrategyRunner;
-using TradeHero.Strategies.Base;
+using TradeHero.StrategyRunner.Base;
 
-namespace TradeHero.Strategies.Endpoints.Socket.Implementation;
+namespace TradeHero.StrategyRunner.Endpoints.Socket.Implementation;
 
 internal class FuturesUsdMarketTickerStream : IFuturesUsdMarketTickerStream
 {

@@ -1,10 +1,10 @@
 using Binance.Net.Interfaces;
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Client;
-using TradeHero.Strategies.Base;
-using TradeHero.Strategies.TradeLogic.PercentMove.Flow;
+using TradeHero.StrategyRunner.Base;
+using TradeHero.StrategyRunner.TradeLogic.PercentMove.Flow;
 
-namespace TradeHero.Strategies.TradeLogic.PercentMove.Streams;
+namespace TradeHero.StrategyRunner.TradeLogic.PercentMove.Streams;
 
 internal class PercentMoveSymbolTickerStream : BaseFuturesUsdSymbolTickerStream
 {

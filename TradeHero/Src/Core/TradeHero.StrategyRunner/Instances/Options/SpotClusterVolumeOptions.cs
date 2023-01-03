@@ -1,7 +1,7 @@
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.StrategyRunner.Models.Instance;
 
-namespace TradeHero.Strategies.Instances.Options;
+namespace TradeHero.StrategyRunner.Instances.Options;
 
 internal class SpotClusterVolumeOptions : BaseInstanceOptions
 {

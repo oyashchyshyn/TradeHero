@@ -7,11 +7,11 @@ using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.StrategyRunner.Models;
 using TradeHero.Contracts.StrategyRunner.Models.Instance;
-using TradeHero.Strategies.TradeLogic.PercentLimit.Enums;
-using TradeHero.Strategies.TradeLogic.PercentLimit.Models;
-using TradeHero.Strategies.TradeLogic.PercentLimit.Options;
+using TradeHero.StrategyRunner.TradeLogic.PercentLimit.Enums;
+using TradeHero.StrategyRunner.TradeLogic.PercentLimit.Models;
+using TradeHero.StrategyRunner.TradeLogic.PercentLimit.Options;
 
-namespace TradeHero.Strategies.TradeLogic.PercentLimit.Flow;
+namespace TradeHero.StrategyRunner.TradeLogic.PercentLimit.Flow;
 
 internal class PercentLimitFilters
 {

@@ -1,9 +1,9 @@
 using Binance.Net.Objects.Models.Futures;
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Services;
-using TradeHero.Strategies.TradeLogic.PercentMove.Options;
+using TradeHero.StrategyRunner.TradeLogic.PercentMove.Options;
 
-namespace TradeHero.Strategies.TradeLogic.PercentMove.Flow;
+namespace TradeHero.StrategyRunner.TradeLogic.PercentMove.Flow;
 
 internal class PercentMoveFilters
 {

@@ -2,10 +2,10 @@ using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Repositories.Models;
 using TradeHero.Contracts.Services;
-using TradeHero.Strategies.Base;
-using TradeHero.Strategies.TradeLogic.PercentMove.Options;
+using TradeHero.StrategyRunner.Base;
+using TradeHero.StrategyRunner.TradeLogic.PercentMove.Options;
 
-namespace TradeHero.Strategies.TradeLogic.PercentMove.Flow;
+namespace TradeHero.StrategyRunner.TradeLogic.PercentMove.Flow;
 
 internal class PercentMoveStore : BaseTradeLogicStore
 {

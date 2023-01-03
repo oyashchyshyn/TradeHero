@@ -2,10 +2,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.StrategyRunner;
-using TradeHero.Strategies.TradeLogic.PercentLimit;
-using TradeHero.Strategies.TradeLogic.PercentMove;
+using TradeHero.StrategyRunner.TradeLogic.PercentLimit;
+using TradeHero.StrategyRunner.TradeLogic.PercentMove;
 
-namespace TradeHero.Strategies.Factory;
+namespace TradeHero.StrategyRunner.Factory;
 
 internal class TradeLogicFactory : ITradeLogicFactory
 {

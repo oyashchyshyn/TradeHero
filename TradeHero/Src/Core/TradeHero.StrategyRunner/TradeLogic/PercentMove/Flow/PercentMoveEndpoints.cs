@@ -6,9 +6,9 @@ using TradeHero.Contracts.Base.Exceptions;
 using TradeHero.Contracts.Client;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.StrategyRunner.Models;
-using TradeHero.Strategies.Endpoints.Rest;
+using TradeHero.StrategyRunner.Endpoints.Rest;
 
-namespace TradeHero.Strategies.TradeLogic.PercentMove.Flow;
+namespace TradeHero.StrategyRunner.TradeLogic.PercentMove.Flow;
 
 internal class PercentMoveEndpoints
 {

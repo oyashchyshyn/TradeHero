@@ -1,7 +1,7 @@
 using TradeHero.Contracts.Extensions;
 using TradeHero.Contracts.StrategyRunner.Models.Instance;
 
-namespace TradeHero.Strategies.Helpers;
+namespace TradeHero.StrategyRunner.Helpers;
 
 internal static class MessageGenerator
 {

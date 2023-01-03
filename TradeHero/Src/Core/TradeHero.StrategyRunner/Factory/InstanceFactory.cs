@@ -3,10 +3,10 @@ using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.StrategyRunner;
 using TradeHero.Contracts.StrategyRunner.Models.Instance;
-using TradeHero.Strategies.Instances;
-using TradeHero.Strategies.Instances.Options;
+using TradeHero.StrategyRunner.Instances;
+using TradeHero.StrategyRunner.Instances.Options;
 
-namespace TradeHero.Strategies.Factory;
+namespace TradeHero.StrategyRunner.Factory;
 
 internal class InstanceFactory : IInstanceFactory
 {

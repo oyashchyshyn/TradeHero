@@ -2,11 +2,11 @@ using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Repositories.Models;
 using TradeHero.Contracts.Services;
-using TradeHero.Strategies.Base;
-using TradeHero.Strategies.TradeLogic.PercentLimit.Models;
-using TradeHero.Strategies.TradeLogic.PercentLimit.Options;
+using TradeHero.StrategyRunner.Base;
+using TradeHero.StrategyRunner.TradeLogic.PercentLimit.Models;
+using TradeHero.StrategyRunner.TradeLogic.PercentLimit.Options;
 
-namespace TradeHero.Strategies.TradeLogic.PercentLimit.Flow;
+namespace TradeHero.StrategyRunner.TradeLogic.PercentLimit.Flow;
 
 internal class PercentLimitStore : BaseTradeLogicStore
 {

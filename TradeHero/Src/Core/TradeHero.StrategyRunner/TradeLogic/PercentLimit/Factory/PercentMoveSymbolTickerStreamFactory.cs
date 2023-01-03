@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
-using TradeHero.Strategies.TradeLogic.PercentLimit.Streams;
+using TradeHero.StrategyRunner.TradeLogic.PercentLimit.Streams;
 
-namespace TradeHero.Strategies.TradeLogic.PercentLimit.Factory;
+namespace TradeHero.StrategyRunner.TradeLogic.PercentLimit.Factory;
 
 internal class PercentMoveSymbolTickerStreamFactory
 {
