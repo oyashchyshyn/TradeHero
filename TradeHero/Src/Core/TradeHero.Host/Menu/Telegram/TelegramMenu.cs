@@ -81,7 +81,7 @@ internal class TelegramMenu : IMenuService
         });
     }
 
-    public async Task<ActionResult> InitAsync(CancellationToken cancellationToken)
+    public async Task<ActionResult> InitAsync(CancellationToken cancellationToken = default)
     {
         try
         {
@@ -112,7 +112,7 @@ internal class TelegramMenu : IMenuService
         }
     }
 
-    public async Task<ActionResult> FinishAsync(CancellationToken cancellationToken)
+    public async Task<ActionResult> FinishAsync(CancellationToken cancellationToken = default)
     {
         try
         {
@@ -155,153 +155,175 @@ internal class TelegramMenu : IMenuService
         }
     }
 
-    public async Task OnDisconnectFromInternetAsync()
+    public async Task<ActionResult> OnDisconnectFromInternetAsync(CancellationToken cancellationToken = default)
     {
-        if (_store.Bot.TradeLogic != null)
+        try
         {
-            _internetConnectionService.SetPauseInternetConnectionChecking(true);
-            
-            await _store.Bot.TradeLogic.FinishAsync(true);
-            
-            _store.Bot.SetTradeLogic(null, TradeLogicStatus.Running);
-            
-            _internetConnectionService.SetPauseInternetConnectionChecking(false);
-        }
-        
-        await _telegramService.CloseConnectionAsync();
-    }
-    
-    public async Task OnReconnectToInternetAsync(CancellationToken cancellationToken)
-    {
-        var showMessage = false;
-
-        var result = await InitTelegramMenuAsync(cancellationToken);
-        while (result != ActionResult.Success)
-        {
-            await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
-            
-            _logger.LogError("Cannot init telegram services. In {Method}", 
-                nameof(OnReconnectToInternetAsync));
-            
-            result = await InitAsync(cancellationToken);
-        }
-        
-        while (true)
-        {
-            if (showMessage)
-            {
-                await _telegramService.SendTextMessageToUserAsync(
-                    "Will try repeat connection in a minute...", 
-                    _telegramMenuStore.GetRemoveKeyboard(), 
-                    cancellationToken: cancellationToken
-                );
-
-                await Task.Delay(TimeSpan.FromMinutes(1), cancellationToken);
-            }
-            else
-            {
-                await _telegramService.SendTextMessageToUserAsync(
-                    "Launched after internet disconnection.", 
-                    _telegramMenuStore.GetRemoveKeyboard(), 
-                    cancellationToken: cancellationToken
-                );
-            }
-
             if (_store.Bot.TradeLogic != null)
             {
-                await _telegramService.SendTextMessageToUserAsync(
-                    "Waiting for closing previous strategy...", 
-                    _telegramMenuStore.GetRemoveKeyboard(), 
-                    cancellationToken: cancellationToken
-                );
-                
-                while (_store.Bot.TradeLogic != null) { }
-                
-                await _telegramService.SendTextMessageToUserAsync(
-                    "Previous strategy closed.", 
-                    _telegramMenuStore.GetRemoveKeyboard(), 
-                    cancellationToken: cancellationToken
-                );
+                _internetConnectionService.SetPauseInternetConnectionChecking(true);
+            
+                await _store.Bot.TradeLogic.FinishAsync(true);
+            
+                _store.Bot.SetTradeLogic(null, TradeLogicStatus.Running);
+            
+                _internetConnectionService.SetPauseInternetConnectionChecking(false);
             }
+        
+            await _telegramService.CloseConnectionAsync();
+            
+            return ActionResult.Success;
+        }
+        catch (Exception exception)
+        {
+            _logger.LogCritical(exception, "In {Method}", nameof(FinishAsync));
+            
+            return ActionResult.SystemError;
+        }
+    }
+    
+    public async Task<ActionResult> OnReconnectToInternetAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var showMessage = false;
 
-            if (_store.Bot.TradeLogicStatus == TradeLogicStatus.Running)
+            var result = await InitTelegramMenuAsync(cancellationToken);
+            while (result != ActionResult.Success)
             {
-                var connection = await _connectionRepository.GetActiveConnectionAsync();
-                if (connection == null)
+                await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
+            
+                _logger.LogError("Cannot init telegram services. In {Method}", 
+                    nameof(OnReconnectToInternetAsync));
+            
+                result = await InitAsync(cancellationToken);
+            }
+        
+            while (true)
+            {
+                if (showMessage)
                 {
                     await _telegramService.SendTextMessageToUserAsync(
-                        "There is no active connection to exchanger.", 
-                        _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.MainMenu),
+                        "Will try repeat connection in a minute...", 
+                        _telegramMenuStore.GetRemoveKeyboard(), 
                         cancellationToken: cancellationToken
                     );
-                    
-                    return;
+
+                    await Task.Delay(TimeSpan.FromMinutes(1), cancellationToken);
                 }
-                
-                var activeStrategy = await _strategyRepository.GetActiveStrategyAsync();
-                if (activeStrategy == null)
+                else
                 {
                     await _telegramService.SendTextMessageToUserAsync(
-                        "There is no active strategy.", 
-                        _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.MainMenu),
+                        "Launched after internet disconnection.", 
+                        _telegramMenuStore.GetRemoveKeyboard(), 
                         cancellationToken: cancellationToken
                     );
-                    
-                    return;
-                }
-                
-                var strategy = _tradeLogicFactory.GetTradeLogicRunner(activeStrategy.TradeLogicType);
-                if (strategy == null)
-                {
-                    await _telegramService.SendTextMessageToUserAsync(
-                        "Strategy does not exist", 
-                        _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.MainMenu),
-                        cancellationToken: cancellationToken
-                    );
-                    
-                    return;
                 }
 
-                await _telegramService.SendTextMessageToUserAsync(
-                    "In starting process...", 
-                    _telegramMenuStore.GetRemoveKeyboard(), 
-                    cancellationToken: cancellationToken
-                );
-                
-                var strategyResult = await strategy.InitAsync(activeStrategy);
-                if (strategyResult != ActionResult.Success)
+                if (_store.Bot.TradeLogic != null)
                 {
-                    await strategy.FinishAsync(true);
-                    
                     await _telegramService.SendTextMessageToUserAsync(
-                        $"Cannot start '{activeStrategy.Name}' strategy. Error code: {strategyResult}", 
+                        "Waiting for closing previous strategy...", 
+                        _telegramMenuStore.GetRemoveKeyboard(), 
+                        cancellationToken: cancellationToken
+                    );
+                
+                    while (_store.Bot.TradeLogic != null) { }
+                
+                    await _telegramService.SendTextMessageToUserAsync(
+                        "Previous strategy closed.", 
+                        _telegramMenuStore.GetRemoveKeyboard(), 
+                        cancellationToken: cancellationToken
+                    );
+                }
+
+                if (_store.Bot.TradeLogicStatus == TradeLogicStatus.Running)
+                {
+                    var connection = await _connectionRepository.GetActiveConnectionAsync();
+                    if (connection == null)
+                    {
+                        await _telegramService.SendTextMessageToUserAsync(
+                            "There is no active connection to exchanger.", 
+                            _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.MainMenu),
+                            cancellationToken: cancellationToken
+                        );
+                    
+                        break;
+                    }
+                
+                    var activeStrategy = await _strategyRepository.GetActiveStrategyAsync();
+                    if (activeStrategy == null)
+                    {
+                        await _telegramService.SendTextMessageToUserAsync(
+                            "There is no active strategy.", 
+                            _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.MainMenu),
+                            cancellationToken: cancellationToken
+                        );
+                    
+                        break;
+                    }
+                
+                    var strategy = _tradeLogicFactory.GetTradeLogicRunner(activeStrategy.TradeLogicType);
+                    if (strategy == null)
+                    {
+                        await _telegramService.SendTextMessageToUserAsync(
+                            "Strategy does not exist", 
+                            _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.MainMenu),
+                            cancellationToken: cancellationToken
+                        );
+                    
+                        break;
+                    }
+
+                    await _telegramService.SendTextMessageToUserAsync(
+                        "In starting process...", 
+                        _telegramMenuStore.GetRemoveKeyboard(), 
+                        cancellationToken: cancellationToken
+                    );
+                
+                    var strategyResult = await strategy.InitAsync(activeStrategy);
+                    if (strategyResult != ActionResult.Success)
+                    {
+                        await strategy.FinishAsync(true);
+                    
+                        await _telegramService.SendTextMessageToUserAsync(
+                            $"Cannot start '{activeStrategy.Name}' strategy. Error code: {strategyResult}", 
+                            _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.MainMenu),
+                            cancellationToken: cancellationToken
+                        );
+                    
+                        showMessage = true;
+                    
+                        continue;
+                    }
+                
+                    _store.Bot.SetTradeLogic(strategy, TradeLogicStatus.Running);
+                
+                    await _telegramService.SendTextMessageToUserAsync(
+                        "Strategy started! Enjoy lazy pidor", 
                         _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.MainMenu),
                         cancellationToken: cancellationToken
                     );
-                    
-                    showMessage = true;
-                    
-                    continue;
+                
+                    break;
                 }
-                
-                _store.Bot.SetTradeLogic(strategy, TradeLogicStatus.Running);
-                
+            
                 await _telegramService.SendTextMessageToUserAsync(
-                    "Strategy started! Enjoy lazy pidor", 
+                    "Choose action:", 
                     _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.MainMenu),
                     cancellationToken: cancellationToken
                 );
-                
-                return;
+
+                break;
             }
             
-            await _telegramService.SendTextMessageToUserAsync(
-                "Choose action:", 
-                _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.MainMenu),
-                cancellationToken: cancellationToken
-            );
-
-            break;
+            return ActionResult.Success;
+        }
+        catch (Exception exception)
+        {
+            _logger.LogCritical(exception, "In {Method}", nameof(FinishAsync));
+            
+            return ActionResult.SystemError;
         }
     }
     

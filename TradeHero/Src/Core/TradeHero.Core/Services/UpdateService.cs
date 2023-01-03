@@ -33,7 +33,7 @@ internal class UpdateService : IUpdateService
 
         _environmentSettings = _environmentService.GetEnvironmentSettings();
     }
-
+    
     public event EventHandler<decimal>? OnDownloadProgress;
     public event EventHandler<Exception>? OnUpdateError;
 

@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Services;
-using TradeHero.EntryPoint.Menu.Telegram;
+using TradeHero.EntryPoint.Menu;
 
 namespace TradeHero.EntryPoint.Host;
 
@@ -18,7 +18,7 @@ internal class ThHostLifeTime : IHostLifetime, IDisposable
     private readonly IEnvironmentService _environmentService;
     private readonly IHostApplicationLifetime _applicationLifetime;
 
-    private readonly TelegramMenu _telegramMenu;
+    private readonly MenuFactory _menuFactory;
 
     private CancellationTokenSource _cancellationTokenSource = new();
     
@@ -29,7 +29,7 @@ internal class ThHostLifeTime : IHostLifetime, IDisposable
         IInternetConnectionService internetConnectionService,
         IFileService fileService,
         IEnvironmentService environmentService,
-        TelegramMenu telegramMenu
+        MenuFactory menuFactory
         )
     {
         _logger = loggerFactory.CreateLogger("TradeHero");
@@ -39,7 +39,7 @@ internal class ThHostLifeTime : IHostLifetime, IDisposable
         _environmentService = environmentService;
         _applicationLifetime = applicationLifetime;
 
-        _telegramMenu = telegramMenu;
+        _menuFactory = menuFactory;
     }
 
     public Task WaitForStartAsync(CancellationToken cancellationToken)
@@ -83,8 +83,11 @@ internal class ThHostLifeTime : IHostLifetime, IDisposable
         _internetConnectionService.OnInternetDisconnected += InternetConnectionServiceOnOnInternetDisconnected;
 
         RegisterBackgroundJobs();
-        
-        await _telegramMenu.InitAsync(_cancellationTokenSource.Token);
+
+        foreach (var menu in _menuFactory.GetMenus())
+        {
+            await menu.InitAsync(_cancellationTokenSource.Token);   
+        }
     }
 
     private void OnApplicationStopping()
@@ -113,7 +116,10 @@ internal class ThHostLifeTime : IHostLifetime, IDisposable
 
     private async Task EndAsync()
     {
-        await _telegramMenu.FinishAsync(_cancellationTokenSource.Token);
+        foreach (var menu in _menuFactory.GetMenus())
+        {
+            await menu.FinishAsync(_cancellationTokenSource.Token);
+        }
         
         _jobService.FinishAllJobs();
 
@@ -140,14 +146,20 @@ internal class ThHostLifeTime : IHostLifetime, IDisposable
     {
         _cancellationTokenSource = new CancellationTokenSource();
 
-        await _telegramMenu.OnReconnectToInternetAsync(_cancellationTokenSource.Token);
+        foreach (var menu in _menuFactory.GetMenus())
+        {
+            await menu.OnReconnectToInternetAsync(_cancellationTokenSource.Token);
+        }
     }
     
     private async void InternetConnectionServiceOnOnInternetDisconnected(object? sender, EventArgs e)
     {
         _cancellationTokenSource.Cancel();
 
-        await _telegramMenu.OnDisconnectFromInternetAsync();
+        foreach (var menu in _menuFactory.GetMenus())
+        {
+            await menu.OnDisconnectFromInternetAsync(_cancellationTokenSource.Token);
+        }
     }
 
     #endregion
