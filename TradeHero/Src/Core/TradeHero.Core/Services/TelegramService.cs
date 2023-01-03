@@ -42,7 +42,15 @@ internal class TelegramService : ITelegramService
         {
             if (_userId == 0)
             {
-                _userId = (await _userRepository.GetUserAsync()).TelegramUserId;   
+                var activeUser = await _userRepository.GetActiveUserAsync();
+                if (activeUser == null)
+                {
+                    _logger.LogError("There is no active user. In {Method}", nameof(InitAsync));
+
+                    return ActionResult.Error;
+                }
+                
+                _userId = activeUser.TelegramUserId;   
             }
 
             _telegramBotClient ??= _serviceProvider.GetRequiredService<ITelegramBotClient>();

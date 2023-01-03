@@ -4,6 +4,7 @@ namespace TradeHero.Contracts.Repositories;
 
 public interface IUserRepository
 {
-    UserDto GetUser();
-    Task<UserDto> GetUserAsync();
+    Task<UserDto?> GetActiveUserAsync();
+    UserDto? GetActiveUser();
+    Task<bool> AddUserAsync(UserDto userDto);
 }

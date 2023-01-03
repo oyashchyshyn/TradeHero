@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using TradeHero.Contracts.Base.Constants;
@@ -8,10 +9,15 @@ namespace TradeHero.Database.Worker;
 
 internal class DatabaseFileWorker
 {
+    private readonly ILogger<DatabaseFileWorker> _logger;
     private readonly IEnvironmentService _environmentService;
     
-    public DatabaseFileWorker(IEnvironmentService environmentService)
+    public DatabaseFileWorker(
+        ILogger<DatabaseFileWorker> logger, 
+        IEnvironmentService environmentService
+        )
     {
+        _logger = logger;
         _environmentService = environmentService;
     }
     
@@ -23,23 +29,33 @@ internal class DatabaseFileWorker
         {
             throw new Exception("Wrong file name!");
         }
-        
-        var stringData = File.ReadAllText(
-            Path.Combine(
-                _environmentService.GetDatabaseFolderPath(), 
-                fileName
-            )
+
+        var filePath = Path.Combine(
+            _environmentService.GetDatabaseFolderPath(),
+            fileName
         );
 
+        if (!File.Exists(filePath))
+        {
+            File.Create(filePath);
+            
+            _logger.LogInformation("Created file for {FileName}. In {Method}", 
+                fileName, nameof(GetDataFromFile));
+            
+            return new List<T>();
+        }
+
+        var stringData = File.ReadAllText(filePath);
+            
         if (string.IsNullOrWhiteSpace(stringData))
         {
-            throw new Exception($"There is no path file for type {typeof(T)}");
+            return new List<T>();
         }
 
         var data = JsonConvert.DeserializeObject<T[]>(stringData);
         if (data == null)
         {
-            throw new Exception($"There is no object data for type {typeof(T)}");
+            return new List<T>();
         }
 
         return data;

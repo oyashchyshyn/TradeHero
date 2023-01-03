@@ -122,8 +122,15 @@ internal class UpdateService : IUpdateService
                 Directory.CreateDirectory(_environmentService.GetUpdateFolderPath());
             }
             
-            var getCurrentUser = await _userRepository.GetUserAsync();
-            var productName = $"TradeHero-{getCurrentUser.TelegramUserId}";
+            var activeUser = await _userRepository.GetActiveUserAsync();
+            if (activeUser == null)
+            {
+                _logger.LogError("There is no active user. In {Method}", nameof(UpdateApplicationAsync));
+
+                return;
+            }
+            
+            var productName = $"TradeHero-{activeUser.TelegramUserId}";
             var productVersion = _environmentService.GetCurrentApplicationVersion().ToString();
 
             var progressIndicator = new Progress<decimal>();

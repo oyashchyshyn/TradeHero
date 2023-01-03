@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Repositories;
 using TradeHero.Contracts.Repositories.Models;
-using TradeHero.Contracts.Services;
 using TradeHero.Database.Context;
 using TradeHero.Database.Entities;
 
@@ -12,17 +11,14 @@ internal class ConnectionRepository : IConnectionRepository
 {
     private readonly ILogger<ConnectionRepository> _logger;
     private readonly ThDatabaseContext _database;
-    private readonly IDateTimeService _dateTimeService;
 
     public ConnectionRepository(
         ILogger<ConnectionRepository> logger, 
-        ThDatabaseContext database, 
-        IDateTimeService dateTimeService
+        ThDatabaseContext database
         )
     {
         _logger = logger;
         _database = database;
-        _dateTimeService = dateTimeService;
     }
     
     public async Task<List<ConnectionDto>> GetConnectionsAsync()
@@ -120,8 +116,8 @@ internal class ConnectionRepository : IConnectionRepository
                 Name = connectionDto.Name,
                 ApiKey = connectionDto.ApiKey,
                 SecretKey = connectionDto.SecretKey,
-                IsActive = connectionDto.IsActive,
-                CreationDateTime = _dateTimeService.GetUtcDateTime()
+                CreationDateTime = connectionDto.CreationDateTime,
+                IsActive = false
             };
         
             await _database.Connections.AddAsync(newConnection);
@@ -157,11 +153,6 @@ internal class ConnectionRepository : IConnectionRepository
     public async Task<bool> IsNameExistInDatabaseForCreate(string name)
     {
         return await _database.Connections.AnyAsync(x => x.Name == name);
-    }
-    
-    public async Task<bool> IsNameExistInDatabaseForUpdate(Guid id, string name)
-    {
-        return await _database.Connections.AnyAsync(x => x.Id != id && x.Name == name);
     }
 
     #region private methods

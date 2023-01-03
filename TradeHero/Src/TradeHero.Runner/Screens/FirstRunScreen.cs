@@ -1,82 +1,24 @@
-using Newtonsoft.Json;
+using Microsoft.Extensions.DependencyInjection;
 using Telegram.Bot;
-using TradeHero.Contracts.Base.Constants;
-using TradeHero.Contracts.Base.Enums;
+using TradeHero.Contracts.Repositories;
+using TradeHero.Contracts.Repositories.Models;
 
 namespace TradeHero.Runner.Screens;
 
 internal static class FirstRunScreen
 {
-    private static bool _isNeedToRunFirstScreenLogic;
-
-    public static async Task RunAsync(EnvironmentType environmentType, string baseDirectory)
+    public static async Task RunAsync(IServiceProvider serviceProvider)
     {
+        var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
+
         Console.Clear();
-        
-        _isNeedToRunFirstScreenLogic = false;
 
-        var pathToDatabase = Path.Combine(baseDirectory, FolderConstants.DataFolder,
-            FolderConstants.DatabaseFolder);
-
-        if (!Directory.Exists(pathToDatabase))
-        {
-            Directory.CreateDirectory(pathToDatabase);
-        }
-
-        var userPath = Path.Combine(pathToDatabase, DatabaseConstants.UserFileName);
-        if (!File.Exists(userPath))
-        {
-            await File.WriteAllTextAsync(userPath, "[]");
-
-            _isNeedToRunFirstScreenLogic = true;
-        }
-        else
-        {
-            var jsonData = await GetJsonObjectDataByPathAsync(userPath);
-            if (jsonData == null || !jsonData.Any())
-            {
-                await File.WriteAllTextAsync(userPath, string.Empty);
-                await File.WriteAllTextAsync(userPath, "[]");
-                
-                _isNeedToRunFirstScreenLogic = true;
-            }
-        }
-        
-        var connectionPath = Path.Combine(pathToDatabase, DatabaseConstants.ConnectionFileName);
-        if (!File.Exists(connectionPath))
-        {
-            await File.WriteAllTextAsync(connectionPath, "[]");
-        }
-        else
-        {
-            var jsonData = await GetJsonObjectDataByPathAsync(connectionPath);
-            if (jsonData == null)
-            {
-                await File.WriteAllTextAsync(connectionPath, string.Empty);
-                await File.WriteAllTextAsync(connectionPath, "[]");
-            }
-        }
-        
-        var strategyPath = Path.Combine(pathToDatabase, DatabaseConstants.StrategyFileName);
-        if (!File.Exists(strategyPath))
-        {
-            await File.WriteAllTextAsync(strategyPath, "[]");
-        }
-        else
-        {
-            var jsonData = await GetJsonObjectDataByPathAsync(strategyPath);
-            if (jsonData == null)
-            {
-                await File.WriteAllTextAsync(strategyPath, string.Empty);
-                await File.WriteAllTextAsync(strategyPath, "[]");
-            }
-        }
-
-        if (!_isNeedToRunFirstScreenLogic)
+        var activeUser = await userRepository.GetActiveUserAsync();
+        if (activeUser != null)
         {
             return;
         }
-        
+
         var errorMessage = string.Empty;
         
         while (true)
@@ -230,44 +172,21 @@ internal static class FirstRunScreen
             }
 
             Console.Clear();
-            
-            var jsonObject = new
+
+            var isCreated = await userRepository.AddUserAsync(new UserDto
             {
-                Id = Guid.NewGuid(),
                 Name = userName,
                 TelegramBotToken = botTelegramApiKey,
-                TelegramUserId = userTelegramId,
-                IsActive = true
-            };
+                TelegramUserId = userTelegramId
+            });
 
-            var jsonString = JsonConvert.SerializeObject(new List<object> { jsonObject }, Formatting.Indented);
-            
-            await File.WriteAllTextAsync(userPath, string.Empty);
-            await File.WriteAllTextAsync(userPath, jsonString);
-            
-            break;
-        }
-    }
-
-    private static async Task<List<object>?> GetJsonObjectDataByPathAsync(string path)
-    {
-        try
-        {
-            var jsonData = await File.ReadAllTextAsync(path);
-            if (string.IsNullOrWhiteSpace(jsonData))
+            if (!isCreated)
             {
-                return null;
+                throw new Exception("User did not created. See logs.");
             }
-
-            var jsonObject = JsonConvert.DeserializeObject<List<object>>(jsonData);
-            return jsonObject ?? null;
-        }
-        catch (Exception)
-        {
-            return null;
         }
     }
-    
+
     private static void ErrorMessage(string message)
     {
         Console.ForegroundColor = ConsoleColor.Red;

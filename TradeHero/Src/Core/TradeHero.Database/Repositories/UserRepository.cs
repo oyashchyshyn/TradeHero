@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Repositories;
 using TradeHero.Contracts.Repositories.Models;
 using TradeHero.Database.Context;
@@ -8,25 +9,70 @@ namespace TradeHero.Database.Repositories;
 
 internal class UserRepository : IUserRepository
 {
+    private readonly ILogger<UserRepository> _logger;
     private readonly ThDatabaseContext _database;
 
-    public UserRepository(ThDatabaseContext database)
+    public UserRepository(
+        ILogger<UserRepository> logger,
+        ThDatabaseContext database
+        )
     {
+        _logger = logger;
         _database = database;
     }
     
-    public UserDto GetUser()
+    public UserDto? GetActiveUser()
     {
-        var user = _database.User.AsNoTracking().Single(x => x.IsActive);
+        try
+        {
+            var user = _database.Users.AsNoTracking().SingleOrDefault(x => x.IsActive);
+            return user == null ? null : GenerateUserDto(user);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogCritical(exception, "In {Method}", nameof(GetActiveUser));
 
-        return GenerateUserDto(user);
+            return null;
+        }
     }
     
-    public async Task<UserDto> GetUserAsync()
+    public async Task<UserDto?> GetActiveUserAsync()
     {
-        var user = await _database.User.AsNoTracking().SingleAsync(x => x.IsActive);
+        try
+        {
+            var user = await _database.Users.AsNoTracking().SingleOrDefaultAsync(x => x.IsActive);
+            return user == null ? null : GenerateUserDto(user);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogCritical(exception, "In {Method}", nameof(GetActiveUserAsync));
 
-        return GenerateUserDto(user);
+            return null;
+        }
+    }
+    
+    public async Task<bool> AddUserAsync(UserDto userDto)
+    {
+        try
+        {
+            var newUser = new User
+            {
+                Name = userDto.Name,
+                TelegramUserId = userDto.TelegramUserId,
+                TelegramBotToken = userDto.TelegramBotToken,
+                IsActive = false
+            };
+        
+            await _database.Users.AddAsync(newUser);
+
+            return await _database.SaveChangesAsync() >= 0;
+        }
+        catch (Exception exception)
+        {
+            _logger.LogCritical(exception, "In {Method}", nameof(AddUserAsync));
+
+            return false;
+        }
     }
     
     #region private methods

@@ -32,8 +32,14 @@ public static class ThCoreServiceCollectionExtensions
         serviceCollection.AddHttpClient("TelegramBotClient")
             .AddTypedClient<ITelegramBotClient>((httpClient, serviceProvider) =>
             {
-                var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
-                var options = new TelegramBotClientOptions(userRepository.GetUser().TelegramBotToken);
+                var botToken = "default";
+                var activeUser = serviceProvider.GetRequiredService<IUserRepository>().GetActiveUser();
+                if (activeUser != null)
+                {
+                    botToken = activeUser.TelegramBotToken;
+                }
+                
+                var options = new TelegramBotClientOptions(botToken);
                 return new TelegramBotClient(options, httpClient);
             });
         

@@ -15,8 +15,6 @@ internal static class Program
         try
         {
             var environmentType = ArgumentsHelper.GetEnvironmentType(args);
-
-            await FirstRunScreen.RunAsync(environmentType, baseDirectory);
             
             var host = Host.CreateDefaultBuilder(args)
                 .UseEnvironment(environmentType.ToString())
@@ -31,6 +29,8 @@ internal static class Program
                 })
                 .Build();
 
+            await FirstRunScreen.RunAsync(host.Services);
+            
             await host.RunAsync();
         }
         catch (Exception exception)

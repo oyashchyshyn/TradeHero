@@ -101,7 +101,7 @@ internal class StrategyRepository : IStrategyRepository
                 InstanceType = strategyDto.InstanceType,
                 TradeLogicJson = strategyDto.TradeLogicJson,
                 InstanceJson = strategyDto.InstanceJson,
-                IsActive = strategyDto.IsActive
+                IsActive = false
             };
         
             await _database.Strategies.AddAsync(newStrategy);
