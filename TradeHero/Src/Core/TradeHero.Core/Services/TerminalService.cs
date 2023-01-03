@@ -14,11 +14,31 @@ internal class TerminalService : ITerminalService
         _environmentService = environmentService;
     }
     
-    public void NotifyInConsole(string message, ConsoleColor consoleColor)
+    public void Write(string message, ConsoleColor? consoleColor = null)
     {
-        Console.ForegroundColor = consoleColor;
-        Console.WriteLine();
+        if (consoleColor.HasValue)
+        {
+            Console.ForegroundColor = consoleColor.Value;    
+        }
+        
+        Console.Write(message);
         Console.ResetColor();
+    }
+    
+    public void WriteLine(string message, ConsoleColor? consoleColor = null)
+    {
+        if (consoleColor.HasValue)
+        {
+            Console.ForegroundColor = consoleColor.Value;    
+        }
+        
+        Console.WriteLine(message);
+        Console.ResetColor();
+    }
+
+    public string? ReadLine()
+    {
+        return Console.ReadLine();
     }
 
     public void ClearConsole()

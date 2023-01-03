@@ -30,14 +30,20 @@ internal class DatabaseFileWorker
             throw new Exception("Wrong file name!");
         }
 
-        var filePath = Path.Combine(
-            _environmentService.GetDatabaseFolderPath(),
-            fileName
-        );
-
+        var directoryPath = _environmentService.GetDatabaseFolderPath();
+        if (!Directory.Exists(directoryPath))
+        {
+            Directory.CreateDirectory(directoryPath);
+            
+            _logger.LogInformation("Created directories by path {DirectoryPath}. In {Method}", 
+                directoryPath, nameof(GetDataFromFile));
+        }
+        
+        var filePath = Path.Combine(directoryPath, fileName);
         if (!File.Exists(filePath))
         {
-            File.Create(filePath);
+            var fileStream = File.Create(filePath);
+            fileStream.Dispose();
             
             _logger.LogInformation("Created file for {FileName}. In {Method}", 
                 fileName, nameof(GetDataFromFile));

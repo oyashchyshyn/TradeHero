@@ -1,8 +1,9 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using TradeHero.Contracts.Services;
 using TradeHero.DependencyResolver;
 using TradeHero.Runner.Helpers;
-using TradeHero.Runner.Screens;
 
 namespace TradeHero.Runner;
 
@@ -29,7 +30,8 @@ internal static class Program
                 })
                 .Build();
 
-            await FirstRunScreen.RunAsync(host.Services);
+            await host.Services.GetRequiredService<IStartupService>()
+                .CheckIsFirstRunAsync();
             
             await host.RunAsync();
         }

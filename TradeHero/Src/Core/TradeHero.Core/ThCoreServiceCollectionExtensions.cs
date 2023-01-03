@@ -28,6 +28,7 @@ public static class ThCoreServiceCollectionExtensions
         serviceCollection.AddSingleton<IFileService, FileService>();
         serviceCollection.AddSingleton<IUpdateService, UpdateService>();
         serviceCollection.AddSingleton<ITerminalService, TerminalService>();
+        serviceCollection.AddSingleton<IStartupService, StartupService>();
         
         serviceCollection.AddHttpClient("TelegramBotClient")
             .AddTypedClient<ITelegramBotClient>((httpClient, serviceProvider) =>
