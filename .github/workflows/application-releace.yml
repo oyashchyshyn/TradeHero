@@ -5,7 +5,6 @@ on:
     branches: [ main ]
 
 env:
-  RELEASE_VERSION: ${{ github.event.head_commit.message }}
   HOST_PROJECT_PATH: TradeHero/Src/TradeHero.Runner/
   PUBLISH_WIN_FILE_PATH: TradeHero/Src/TradeHero.Runner/publish/win-x64/trade_hero.exe
   PUBLISH_LINUX_FILE_PATH: TradeHero/Src/TradeHero.Runner/publish/linux-x64/trade_hero
@@ -15,8 +14,6 @@ jobs:
   build-publish-dotnet:
     runs-on: windows-latest
     steps:
-      - name: Git message
-        run: echo "$RELEASE_VERSION"
       - name: Checkout to git directory
         uses: actions/checkout@v2
       - name: Setup .NET SDK
@@ -70,6 +67,7 @@ jobs:
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_VERSION: ${{ github.event.head_commit.message }}
         with:
           tag_name: ${{ env.RELEASE_VERSION }}
           release_name: ${{ env.RELEASE_VERSION }}
