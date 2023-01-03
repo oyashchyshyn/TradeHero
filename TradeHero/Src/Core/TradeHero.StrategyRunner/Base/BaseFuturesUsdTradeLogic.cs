@@ -5,6 +5,7 @@ using TradeHero.Contracts.Repositories.Models;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.StrategyRunner;
 using TradeHero.Contracts.StrategyRunner.Models;
+using TradeHero.Contracts.StrategyRunner.Models.Args;
 using TradeHero.Contracts.StrategyRunner.Models.Instance;
 using TradeHero.Strategies.Constants;
 using TradeHero.Strategies.Endpoints.Rest;
@@ -29,6 +30,8 @@ internal abstract class BaseFuturesUsdTradeLogic : ITradeLogic
     protected IInstance? Instance;
 
     protected readonly CancellationTokenSource CancellationTokenSource = new();
+
+    public event EventHandler<FuturesUsdOrderReceiveArgs>? OnOrderReceive;
     
     public ITradeLogicStore Store { get; protected init; } = null!;
 
@@ -115,7 +118,7 @@ internal abstract class BaseFuturesUsdTradeLogic : ITradeLogic
                 return actionResult;
             }
             
-            actionResult = await _userAccountStreamStream.StartUserUpdateDataStreamAsync();
+            actionResult = await _userAccountStreamStream.StartUserUpdateDataStreamAsync(OnOrderReceive);
             if (actionResult != ActionResult.Success)
             {
                 return actionResult;
