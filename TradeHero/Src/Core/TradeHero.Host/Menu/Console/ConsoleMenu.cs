@@ -43,7 +43,7 @@ internal class ConsoleMenu : IMenuService
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, "In {Method}", nameof(InitAsync));
+            _logger.LogError(exception, "In {Method}", nameof(FinishAsync));
 
             return ActionResult.SystemError;
         }
