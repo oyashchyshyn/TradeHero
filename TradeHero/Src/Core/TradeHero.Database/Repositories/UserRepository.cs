@@ -51,7 +51,7 @@ internal class UserRepository : IUserRepository
         }
     }
     
-    public async Task<bool> AddUserAsync(UserDto userDto)
+    public async Task<UserDto?> AddUserAsync(UserDto userDto)
     {
         try
         {
@@ -65,24 +65,48 @@ internal class UserRepository : IUserRepository
         
             await _database.Users.AddAsync(newUser);
 
-            return await _database.SaveChangesAsync() >= 0;
+            return await _database.SaveChangesAsync() > 0 ? GenerateUserDto(newUser) : null;
         }
         catch (Exception exception)
         {
             _logger.LogCritical(exception, "In {Method}", nameof(AddUserAsync));
 
-            return false;
+            return null;
         }
     }
     
+    public async Task<bool> SetUserActiveAsync(Guid userId)
+    {
+        try
+        {
+            var users = await _database.Users.ToListAsync();
+
+            foreach (var user in users)
+            {
+                user.IsActive = user.Id == userId;
+            }
+
+            return await _database.SaveChangesAsync() >= 0;
+        }
+        catch (Exception exception)
+        {
+            _logger.LogCritical(exception, "In {Method}", nameof(SetUserActiveAsync));
+
+            return false;
+        }
+    }
+
     #region private methods
 
     private static UserDto GenerateUserDto(User user)
     {
         return new UserDto
         {
+            Id = user.Id,
+            Name = user.Name,
             TelegramUserId = user.TelegramUserId,
             TelegramBotToken = user.TelegramBotToken,
+            IsActive = user.IsActive
         };
     }
 

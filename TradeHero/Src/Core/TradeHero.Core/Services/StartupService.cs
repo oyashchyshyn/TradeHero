@@ -189,14 +189,21 @@ internal class StartupService : IStartupService
 
                 _terminalService.ClearConsole();
 
-                var isCreated = await _userRepository.AddUserAsync(new UserDto
+                var createdUser = await _userRepository.AddUserAsync(new UserDto
                 {
                     Name = userName,
                     TelegramBotToken = botTelegramApiKey,
                     TelegramUserId = userTelegramId
                 });
 
-                return isCreated;
+                if (createdUser == null)
+                {
+                    return false;
+                }
+
+                var setUserActiveResult = await _userRepository.SetUserActiveAsync(createdUser.Id);
+                
+                return setUserActiveResult;
             }
         }
         catch (Exception exception)

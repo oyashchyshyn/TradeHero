@@ -86,7 +86,7 @@ internal class TelegramMenuStore
     {
         _handleIncomeData.AddRange(new List<string>
         {
-            TelegramButtons.Pidor,
+            TelegramButtons.About,
             TelegramButtons.StrategiesAdd,
             TelegramButtons.StrategiesUpdate,
             TelegramButtons.StrategiesSetActive,
@@ -142,7 +142,7 @@ internal class TelegramMenuStore
                 },
                 new()
                 {
-                    new KeyboardButton($"{_telegramButtonIds.Pidor}Ask question to bot"),
+                    new KeyboardButton($"{_telegramButtonIds.About}About"),
                     new KeyboardButton($"{_telegramButtonIds.MainMenu}Main menu")
                 }
             };
@@ -257,7 +257,7 @@ internal class TelegramMenuStore
         public readonly string StartStrategy = "\U0001F3C3 ";
         public readonly string StopStrategy = "\U0001F534 ";
         public readonly string CheckCodeStatus = "\U0001F4DF ";
-        public readonly string Pidor = "\U0001F491 ";
+        public readonly string About = "\U0001F491 ";
     
         public readonly string Positions = "\U0001F4BB ";
         public readonly string WatchingPositions = "\U0001F6BD ";

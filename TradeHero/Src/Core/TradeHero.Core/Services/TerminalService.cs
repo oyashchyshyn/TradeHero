@@ -45,7 +45,9 @@ internal class TerminalService : ITerminalService
     {
         if (_environmentService.GetEnvironmentType() == EnvironmentType.Development)
         {
+            Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine("Clear console <------------------------------------------------>");
+            Console.ResetColor();
             
             return;
         }

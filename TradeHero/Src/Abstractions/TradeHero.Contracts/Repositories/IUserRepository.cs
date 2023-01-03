@@ -6,5 +6,6 @@ public interface IUserRepository
 {
     Task<UserDto?> GetActiveUserAsync();
     UserDto? GetActiveUser();
-    Task<bool> AddUserAsync(UserDto userDto);
+    Task<UserDto?> AddUserAsync(UserDto userDto);
+    Task<bool> SetUserActiveAsync(Guid userId);
 }

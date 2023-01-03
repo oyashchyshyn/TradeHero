@@ -30,8 +30,10 @@ internal static class Program
                 })
                 .Build();
 
-            await host.Services.GetRequiredService<IStartupService>()
-                .CheckIsFirstRunAsync();
+            if (!await host.Services.GetRequiredService<IStartupService>().CheckIsFirstRunAsync())
+            {
+                throw new Exception("There is an error during user creation. Please see logs.");
+            }
             
             await host.RunAsync();
         }

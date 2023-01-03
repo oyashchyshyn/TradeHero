@@ -7,19 +7,17 @@ internal static class ArgumentsHelper
 {
     public static EnvironmentType GetEnvironmentType(string[] args)
     {
-        var environmentType = EnvironmentType.Production;
-
-        if (!args.Any(x => x.StartsWith(ArgumentConstants.EnvironmentKey)))
+        const string environmentArgumentKey = $"--{ArgumentConstants.EnvironmentKey}=";
+        
+        if (!args.Any(x => x.StartsWith(environmentArgumentKey)))
         {
-            return environmentType;
+            return EnvironmentType.Production;
         }
         
         var argValue = args
-            .First(x => x.StartsWith(ArgumentConstants.EnvironmentKey))
-            .Replace(ArgumentConstants.EnvironmentKey, string.Empty);
+            .First(x => x.StartsWith(environmentArgumentKey))
+            .Replace(environmentArgumentKey, string.Empty);
 
-        environmentType = (EnvironmentType)Enum.Parse(typeof(EnvironmentType), argValue);
-
-        return environmentType;
+        return (EnvironmentType)Enum.Parse(typeof(EnvironmentType), argValue);
     }
 }
