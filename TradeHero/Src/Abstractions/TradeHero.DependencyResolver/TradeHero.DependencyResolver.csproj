@@ -4,6 +4,9 @@
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <AssemblyVersion>1.0.0</AssemblyVersion>
+        <FileVersion>1.0.0</FileVersion>
+        <NeutralLanguage>en-001</NeutralLanguage>
     </PropertyGroup>
 
     <ItemGroup>
@@ -14,7 +17,7 @@
       <ProjectReference Include="..\..\Core\TradeHero.Client\TradeHero.Client.csproj" />
       <ProjectReference Include="..\..\Core\TradeHero.Core\TradeHero.Core.csproj" />
       <ProjectReference Include="..\..\Core\TradeHero.Database\TradeHero.Database.csproj" />
-      <ProjectReference Include="..\..\Core\TradeHero.EntryPoint\TradeHero.EntryPoint.csproj" />
+      <ProjectReference Include="..\..\Core\TradeHero.Host\TradeHero.Host.csproj" />
       <ProjectReference Include="..\..\Core\TradeHero.StrategyRunner\TradeHero.StrategyRunner.csproj" />
     </ItemGroup>
 

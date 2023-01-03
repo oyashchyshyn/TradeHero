@@ -7,6 +7,7 @@ using TradeHero.Contracts.Base.Exceptions;
 using TradeHero.Contracts.Client;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.StrategyRunner;
+using TradeHero.Contracts.StrategyRunner.Models.Args;
 
 namespace TradeHero.Strategies.Base;
 
@@ -34,9 +35,11 @@ internal abstract class BaseFuturesUsdUserAccountStream
         JsonService = jsonService;
     }
     
-    protected abstract Task OnOrderUpdateAsync(DataEvent<BinanceFuturesStreamOrderUpdate> data, CancellationToken cancellationToken);
+    protected abstract Task OnOrderUpdateAsync(DataEvent<BinanceFuturesStreamOrderUpdate> data, 
+        EventHandler<FuturesUsdOrderReceiveArgs>? orderReceiveEvent, CancellationToken cancellationToken);
     
-    public async Task<ActionResult> StartUserUpdateDataStreamAsync(int maxRetries = 5, CancellationToken cancellationToken = default)
+    public async Task<ActionResult> StartUserUpdateDataStreamAsync(EventHandler<FuturesUsdOrderReceiveArgs>? orderReceiveEvent, 
+        int maxRetries = 5, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -50,7 +53,7 @@ internal abstract class BaseFuturesUsdUserAccountStream
                     return ActionResult.CancellationTokenRequested;
                 }
 
-                async void OnOrderUpdate(DataEvent<BinanceFuturesStreamOrderUpdate> data) => await OnOrderUpdateAsync(data, cancellationToken);
+                async void OnOrderUpdate(DataEvent<BinanceFuturesStreamOrderUpdate> data) => await OnOrderUpdateAsync(data, orderReceiveEvent, cancellationToken);
 
                 var socketSubscriptionResult = await _binanceSocketClient.UsdFuturesStreams.SubscribeToUserDataUpdatesAsync(
                     Store.FuturesUsd.ExchangerData.StreamListenKey,

@@ -7,7 +7,6 @@ using Serilog.Sinks.SystemConsole.Themes;
 using TradeHero.Contracts.Base.Constants;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Services;
-using TradeHero.Contracts.Settings;
 using TradeHero.Contracts.Store;
 using SerilogLogger = Serilog.Core.Logger;
 
@@ -24,19 +23,19 @@ internal static class ThSerilogLoggerExtensions
         
         builder.Services.AddSingleton<ILoggerProvider, SerilogLoggerProvider>(serviceProvider =>
         {
-            var appSettings = serviceProvider.GetRequiredService<AppSettings>();
             var store = serviceProvider.GetRequiredService<IStore>();
-            var environment = serviceProvider.GetRequiredService<IEnvironmentService>();
+            var environmentService = serviceProvider.GetRequiredService<IEnvironmentService>();
+            var environmentSettings = environmentService.GetEnvironmentSettings();
 
             LoggerConfiguration loggerConfiguration;
 
-            if (appSettings.Logger.LogLevel != LogLevel.None)
+            if (environmentSettings.Logger.LogLevel != LogLevel.None)
             {
-                var loggerFilePath = Path.Combine(environment.GetBasePath(), FolderConstants.DataFolder, 
-                    FolderConstants.LogsFolder, appSettings.Logger.FileName);
+                var loggerFilePath = Path.Combine(environmentService.GetBasePath(), FolderConstants.DataFolder, 
+                    FolderConstants.LogsFolder, environmentSettings.Logger.FileName);
 
                 loggerConfiguration = new LoggerConfiguration()
-                    .MinimumLevel.Is((LogEventLevel)appSettings.Logger.LogLevel)
+                    .MinimumLevel.Is((LogEventLevel)environmentSettings.Logger.LogLevel)
                     .MinimumLevel.Override("System.Net.Http.HttpClient", LogEventLevel.Warning) 
                     .Enrich.FromLogContext()
                     .WriteTo.Sink(new StoreEventSink(store))
@@ -44,14 +43,14 @@ internal static class ThSerilogLoggerExtensions
                     (
                         loggerFilePath,
                         rollingInterval: RollingInterval.Day,
-                        outputTemplate: appSettings.Logger.LogTemplate,
+                        outputTemplate: environmentSettings.Logger.LogTemplate,
                         rollOnFileSizeLimit: true,
                         fileSizeLimitBytes: 209715200 // Limit file size 200mb.
                     );
 
-                if (environment.GetEnvironmentType() == EnvironmentType.Development)
+                if (environmentService.GetEnvironmentType() == EnvironmentType.Development)
                 {
-                    loggerConfiguration.WriteTo.Console(outputTemplate: appSettings.Logger.LogTemplate, theme: AnsiConsoleTheme.Code);
+                    loggerConfiguration.WriteTo.Console(outputTemplate: environmentSettings.Logger.LogTemplate, theme: AnsiConsoleTheme.Code);
                 }
             }
             else

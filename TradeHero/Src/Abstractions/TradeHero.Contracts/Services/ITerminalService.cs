@@ -2,6 +2,8 @@ namespace TradeHero.Contracts.Services;
 
 public interface ITerminalService
 {
-    void NotifyInConsole(string message, ConsoleColor consoleColor);
+    void Write(string message, ConsoleColor? consoleColor = null);
+    void WriteLine(string message, ConsoleColor? consoleColor = null);
+    string? ReadLine();
     void ClearConsole();
 }

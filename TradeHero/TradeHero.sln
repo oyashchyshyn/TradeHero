@@ -24,9 +24,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeHero.Contracts", "Src\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeHero.DependencyResolver", "Src\Abstractions\TradeHero.DependencyResolver\TradeHero.DependencyResolver.csproj", "{CE9B2CD5-118B-427C-BA77-581E8D0388EA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeHero.EntryPoint", "Src\Core\TradeHero.EntryPoint\TradeHero.EntryPoint.csproj", "{598CAADF-2BF9-455F-8471-74440F0F4C5B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeHero.Host", "Src\Core\TradeHero.Host\TradeHero.Host.csproj", "{598CAADF-2BF9-455F-8471-74440F0F4C5B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeHero.UnitTest.Core", "Test\TradeHero.UnitTest.Core\TradeHero.UnitTest.Core.csproj", "{1E0363ED-69BE-47DB-B1AD-7247FE41FBA1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Items", "Items", "{F12CCC6D-8DD6-4898-8AD3-E953460BBA6D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

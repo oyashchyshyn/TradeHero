@@ -2,8 +2,10 @@ using Binance.Net.Enums;
 using Binance.Net.Objects.Models.Futures.Socket;
 using CryptoExchange.Net.Sockets;
 using Microsoft.Extensions.Logging;
+using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Client;
 using TradeHero.Contracts.Services;
+using TradeHero.Contracts.StrategyRunner.Models.Args;
 using TradeHero.Strategies.Base;
 using TradeHero.Strategies.TradeLogic.PercentLimit.Flow;
 
@@ -25,7 +27,8 @@ internal class PercentLimitUserAccountStream : BaseFuturesUsdUserAccountStream
         _percentLimitPositionWorker = percentLimitPositionWorker;
     }
 
-    protected override async Task OnOrderUpdateAsync(DataEvent<BinanceFuturesStreamOrderUpdate> data, CancellationToken cancellationToken)
+    protected override async Task OnOrderUpdateAsync(DataEvent<BinanceFuturesStreamOrderUpdate> data, 
+        EventHandler<FuturesUsdOrderReceiveArgs>? orderReceiveEvent, CancellationToken cancellationToken)
     {
         try
         {
@@ -43,6 +46,8 @@ internal class PercentLimitUserAccountStream : BaseFuturesUsdUserAccountStream
                     return;
                 }
 
+                orderReceiveEvent?.Invoke(this, new FuturesUsdOrderReceiveArgs(data.Data.UpdateData, OrderReceiveType.Close));
+                
                 _percentLimitPositionWorker.UpdatePositionQuantity(openedPosition, data.Data, true);
 
                 if (data.Data.UpdateData.Status != OrderStatus.Filled || openedPosition.TotalQuantity > 0)
@@ -62,10 +67,14 @@ internal class PercentLimitUserAccountStream : BaseFuturesUsdUserAccountStream
                 
                     if (openedPosition != null)
                     {
+                        orderReceiveEvent?.Invoke(this, new FuturesUsdOrderReceiveArgs(data.Data.UpdateData, OrderReceiveType.Average));
+                        
                         _percentLimitPositionWorker.UpdatePositionQuantity(openedPosition, data.Data, false);
                     }
                     else
                     {
+                        orderReceiveEvent?.Invoke(this, new FuturesUsdOrderReceiveArgs(data.Data.UpdateData, OrderReceiveType.Open));
+                        
                         await _percentLimitPositionWorker.CreatePositionAsync(
                             Store,
                             data.Data.UpdateData.Symbol,

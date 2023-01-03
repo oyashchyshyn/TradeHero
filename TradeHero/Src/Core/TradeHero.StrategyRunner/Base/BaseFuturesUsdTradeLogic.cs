@@ -5,6 +5,7 @@ using TradeHero.Contracts.Repositories.Models;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.StrategyRunner;
 using TradeHero.Contracts.StrategyRunner.Models;
+using TradeHero.Contracts.StrategyRunner.Models.Args;
 using TradeHero.Contracts.StrategyRunner.Models.Instance;
 using TradeHero.Strategies.Constants;
 using TradeHero.Strategies.Endpoints.Rest;
@@ -29,6 +30,8 @@ internal abstract class BaseFuturesUsdTradeLogic : ITradeLogic
     protected IInstance? Instance;
 
     protected readonly CancellationTokenSource CancellationTokenSource = new();
+
+    public event EventHandler<FuturesUsdOrderReceiveArgs>? OnOrderReceive;
     
     public ITradeLogicStore Store { get; protected init; } = null!;
 
@@ -115,7 +118,7 @@ internal abstract class BaseFuturesUsdTradeLogic : ITradeLogic
                 return actionResult;
             }
             
-            actionResult = await _userAccountStreamStream.StartUserUpdateDataStreamAsync();
+            actionResult = await _userAccountStreamStream.StartUserUpdateDataStreamAsync(OnOrderReceive);
             if (actionResult != ActionResult.Success)
             {
                 return actionResult;
@@ -236,21 +239,9 @@ internal abstract class BaseFuturesUsdTradeLogic : ITradeLogic
             _jobService.FinishJobByKey(JobKey.UpdateExchangeInfoInStore);
             _jobService.FinishJobByKey(JobKey.UpdateBalancesInfoInStore);
             _jobService.FinishJobByKey(JobKey.UpdatePositionsInfoInStore);
-            
-            if (((BaseTradeLogicStore)Store).UsdFuturesTickerStreams.Any())
-            {
-                foreach (var usdFuturesTickerStream in ((BaseTradeLogicStore)Store).UsdFuturesTickerStreams)
-                {
-                    await _binanceSocketClient.UnsubscribeAsync(usdFuturesTickerStream.Value.SocketSubscription);   
-                }
-                
-                Logger.LogInformation("Unsubscribed from ticker streams. In {Method}", 
-                    nameof(FinishAsync));
-            }
-            
-            await _binanceSocketClient.UnsubscribeAsync(_userAccountStreamStream.SocketSubscription);
-            await _binanceSocketClient.UnsubscribeAsync(_futuresUsdMarketTickerStream.SocketSubscription);
-            
+
+            await _binanceSocketClient.UnsubscribeAllAsync();
+
             await FuturesUsdEndpoints.DestroyStreamListerKeyAsync(Store, cancellationToken: CancellationTokenSource.Token);
 
             await ((BaseTradeLogicStore)Store).ClearDataAsync();

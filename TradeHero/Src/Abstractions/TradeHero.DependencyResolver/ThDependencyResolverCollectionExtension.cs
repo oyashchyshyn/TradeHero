@@ -16,6 +16,6 @@ public static class ThDependencyResolverCollectionExtension
         serviceCollection.AddThDatabase();
         serviceCollection.AddThDatabase();
         serviceCollection.AddThStrategyRunner();
-        serviceCollection.AddThLogic();
+        serviceCollection.AddThHost();
     }
 }

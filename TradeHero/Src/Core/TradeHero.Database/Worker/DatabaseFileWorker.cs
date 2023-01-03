@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using TradeHero.Contracts.Base.Constants;
@@ -8,10 +9,15 @@ namespace TradeHero.Database.Worker;
 
 internal class DatabaseFileWorker
 {
+    private readonly ILogger<DatabaseFileWorker> _logger;
     private readonly IEnvironmentService _environmentService;
     
-    public DatabaseFileWorker(IEnvironmentService environmentService)
+    public DatabaseFileWorker(
+        ILogger<DatabaseFileWorker> logger, 
+        IEnvironmentService environmentService
+        )
     {
+        _logger = logger;
         _environmentService = environmentService;
     }
     
@@ -23,23 +29,39 @@ internal class DatabaseFileWorker
         {
             throw new Exception("Wrong file name!");
         }
-        
-        var stringData = File.ReadAllText(
-            Path.Combine(
-                _environmentService.GetDatabaseFolderPath(), 
-                fileName
-            )
-        );
 
+        var directoryPath = _environmentService.GetDatabaseFolderPath();
+        if (!Directory.Exists(directoryPath))
+        {
+            Directory.CreateDirectory(directoryPath);
+            
+            _logger.LogInformation("Created directories by path {DirectoryPath}. In {Method}", 
+                directoryPath, nameof(GetDataFromFile));
+        }
+        
+        var filePath = Path.Combine(directoryPath, fileName);
+        if (!File.Exists(filePath))
+        {
+            var fileStream = File.Create(filePath);
+            fileStream.Dispose();
+            
+            _logger.LogInformation("Created file for {FileName}. In {Method}", 
+                fileName, nameof(GetDataFromFile));
+            
+            return new List<T>();
+        }
+
+        var stringData = File.ReadAllText(filePath);
+            
         if (string.IsNullOrWhiteSpace(stringData))
         {
-            throw new Exception($"There is no path file for type {typeof(T)}");
+            return new List<T>();
         }
 
         var data = JsonConvert.DeserializeObject<T[]>(stringData);
         if (data == null)
         {
-            throw new Exception($"There is no object data for type {typeof(T)}");
+            return new List<T>();
         }
 
         return data;

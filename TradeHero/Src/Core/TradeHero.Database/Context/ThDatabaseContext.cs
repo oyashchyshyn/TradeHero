@@ -11,7 +11,7 @@ internal class ThDatabaseContext : DbContext
     private readonly ILogger<ThDatabaseContext> _logger;
     private readonly DatabaseFileWorker _databaseFileWorker;
 
-    public DbSet<User> User { get; set; } = null!;
+    public DbSet<User> Users { get; set; } = null!;
     public DbSet<Strategy> Strategies { get; set; } = null!;
     public DbSet<Connection> Connections { get; set; } = null!;
 
@@ -109,7 +109,7 @@ internal class ThDatabaseContext : DbContext
                     break;
                 case nameof(Entities.User):
                     _databaseFileWorker.UpdateDataInFile(
-                        User.AsNoTracking().ToList()
+                        Users.AsNoTracking().ToList()
                     );
                     break;
             }
