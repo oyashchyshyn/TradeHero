@@ -13,9 +13,10 @@ env:
 
 jobs:
   build-publish-dotnet:
-    name: build-publish-dotnet
     runs-on: windows-latest
     steps:
+      - name: Git message
+        run: echo "$RELEASE_VERSION"
       - name: Checkout to git directory
         uses: actions/checkout@v2
       - name: Setup .NET SDK
