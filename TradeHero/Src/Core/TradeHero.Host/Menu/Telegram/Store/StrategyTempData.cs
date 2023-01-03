@@ -1,6 +1,6 @@
 using TradeHero.Contracts.Base.Enums;
 
-namespace TradeHero.EntryPoint.Menu.Telegram.Store;
+namespace TradeHero.Host.Menu.Telegram.Store;
 
 internal class StrategyTempData
 {

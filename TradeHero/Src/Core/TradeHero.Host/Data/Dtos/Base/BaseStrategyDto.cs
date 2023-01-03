@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace TradeHero.EntryPoint.Data.Dtos.Base;
+namespace TradeHero.Host.Data.Dtos.Base;
 
 internal abstract class BaseStrategyDto
 {

@@ -4,9 +4,9 @@ using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Extensions;
 using TradeHero.Contracts.Repositories;
-using TradeHero.EntryPoint.Data.Dtos.TradeLogic;
+using TradeHero.Host.Data.Dtos.TradeLogic;
 
-namespace TradeHero.EntryPoint.Data.Validations;
+namespace TradeHero.Host.Data.Validations;
 
 internal class PercentMoveStrategyDtoValidation : AbstractValidator<PercentMoveTradeLogicDto>
 {

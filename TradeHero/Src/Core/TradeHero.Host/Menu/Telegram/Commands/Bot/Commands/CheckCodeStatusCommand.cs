@@ -2,9 +2,9 @@ using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Menu;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.Store;
-using TradeHero.EntryPoint.Menu.Telegram.Store;
+using TradeHero.Host.Menu.Telegram.Store;
 
-namespace TradeHero.EntryPoint.Menu.Telegram.Commands.Bot.Commands;
+namespace TradeHero.Host.Menu.Telegram.Commands.Bot.Commands;
 
 internal class CheckCodeStatusCommand : IMenuCommand
 {

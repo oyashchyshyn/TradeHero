@@ -99,4 +99,18 @@ internal class EnvironmentService : IEnvironmentService
 
         return applicationName;
     }
+
+    public string GetCurrentApplicationName()
+    {
+        var applicationName = GetCurrentOperationSystem() switch
+        {
+            OperationSystem.Windows => "trade_hero.exe",
+            OperationSystem.Linux => "trade_hero",
+            OperationSystem.Osx => "trade_hero",
+            OperationSystem.None => string.Empty,
+            _ => string.Empty
+        };
+
+        return applicationName;
+    }
 }

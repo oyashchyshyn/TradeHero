@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Menu;
 using TradeHero.Contracts.Services;
-using TradeHero.EntryPoint.Menu.Telegram.Store;
+using TradeHero.Host.Menu.Telegram.Store;
 
-namespace TradeHero.EntryPoint.Menu.Telegram.Commands.Strategy;
+namespace TradeHero.Host.Menu.Telegram.Commands.Strategy;
 
 internal class StrategyCommand : IMenuCommand
 {

@@ -5,9 +5,9 @@ using TradeHero.Contracts.Menu;
 using TradeHero.Contracts.Repositories;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.Store;
-using TradeHero.EntryPoint.Menu.Telegram.Store;
+using TradeHero.Host.Menu.Telegram.Store;
 
-namespace TradeHero.EntryPoint.Menu.Telegram.Commands.Connection.Commands;
+namespace TradeHero.Host.Menu.Telegram.Commands.Connection.Commands;
 
 internal class SetActiveConnectionCommand : IMenuCommand
 {

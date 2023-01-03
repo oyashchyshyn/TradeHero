@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
-namespace TradeHero.EntryPoint.Menu.Console;
+namespace TradeHero.Host.Menu.Console;
 
 internal static class ConsoleDiContainer
 {

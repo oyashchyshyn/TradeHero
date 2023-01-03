@@ -8,5 +8,6 @@ public interface IUpdateService
     event EventHandler<decimal> OnDownloadProgress;
 
     Task<GenericBaseResult<ReleaseVersion>> GetLatestReleaseAsync();
-    Task<bool> UpdateApplicationAsync(ReleaseVersion releaseVersion, CancellationToken cancellationToken = default);
+    Task<GenericBaseResult<DownloadResponse>> UpdateApplicationAsync(ReleaseVersion releaseVersion,
+        CancellationToken cancellationToken = default);
 }

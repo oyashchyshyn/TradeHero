@@ -1,8 +1,8 @@
 using System.ComponentModel;
 using Newtonsoft.Json;
-using TradeHero.EntryPoint.Data.Dtos.Base;
+using TradeHero.Host.Data.Dtos.Base;
 
-namespace TradeHero.EntryPoint.Data.Dtos.TradeLogic;
+namespace TradeHero.Host.Data.Dtos.TradeLogic;
 
 internal class PercentMoveTradeLogicDto : BaseStrategyDto
 {

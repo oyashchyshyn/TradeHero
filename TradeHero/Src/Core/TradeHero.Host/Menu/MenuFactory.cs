@@ -1,9 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using TradeHero.Contracts.Menu;
-using TradeHero.EntryPoint.Menu.Console;
-using TradeHero.EntryPoint.Menu.Telegram;
+using TradeHero.Host.Menu.Console;
+using TradeHero.Host.Menu.Telegram;
 
-namespace TradeHero.EntryPoint.Menu;
+namespace TradeHero.Host.Menu;
 
 internal class MenuFactory
 {

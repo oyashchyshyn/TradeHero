@@ -7,17 +7,17 @@ using TradeHero.Contracts.Services;
 using TradeHero.Contracts.Services.Models.Telegram;
 using TradeHero.Contracts.Store;
 using TradeHero.Contracts.StrategyRunner;
-using TradeHero.EntryPoint.Menu.Telegram.Commands;
-using TradeHero.EntryPoint.Menu.Telegram.Commands.Bot;
-using TradeHero.EntryPoint.Menu.Telegram.Commands.Bot.Commands;
-using TradeHero.EntryPoint.Menu.Telegram.Commands.Connection;
-using TradeHero.EntryPoint.Menu.Telegram.Commands.Connection.Commands;
-using TradeHero.EntryPoint.Menu.Telegram.Commands.Positions;
-using TradeHero.EntryPoint.Menu.Telegram.Commands.Strategy;
-using TradeHero.EntryPoint.Menu.Telegram.Commands.Strategy.Commands;
-using TradeHero.EntryPoint.Menu.Telegram.Store;
+using TradeHero.Host.Menu.Telegram.Commands;
+using TradeHero.Host.Menu.Telegram.Commands.Bot;
+using TradeHero.Host.Menu.Telegram.Commands.Bot.Commands;
+using TradeHero.Host.Menu.Telegram.Commands.Connection;
+using TradeHero.Host.Menu.Telegram.Commands.Connection.Commands;
+using TradeHero.Host.Menu.Telegram.Commands.Positions;
+using TradeHero.Host.Menu.Telegram.Commands.Strategy;
+using TradeHero.Host.Menu.Telegram.Commands.Strategy.Commands;
+using TradeHero.Host.Menu.Telegram.Store;
 
-namespace TradeHero.EntryPoint.Menu.Telegram;
+namespace TradeHero.Host.Menu.Telegram;
 
 internal class TelegramMenu : IMenuService
 {

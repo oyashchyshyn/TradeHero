@@ -5,10 +5,10 @@ using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Menu;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.Store;
-using TradeHero.EntryPoint.Host;
-using TradeHero.EntryPoint.Menu.Telegram.Store;
+using TradeHero.Host.Host;
+using TradeHero.Host.Menu.Telegram.Store;
 
-namespace TradeHero.EntryPoint.Menu.Telegram.Commands.Bot.Commands;
+namespace TradeHero.Host.Menu.Telegram.Commands.Bot.Commands;
 
 internal class CheckUpdateCommand : IMenuCommand
 {
@@ -17,6 +17,7 @@ internal class CheckUpdateCommand : IMenuCommand
     private readonly IUpdateService _updateService;
     private readonly IStore _store;
     private readonly IHostLifetime _hostLifetime;
+    private readonly IEnvironmentService _environmentService;
     private readonly TelegramMenuStore _telegramMenuStore;
 
     public CheckUpdateCommand(
@@ -24,14 +25,18 @@ internal class CheckUpdateCommand : IMenuCommand
         ITelegramService telegramService,
         IUpdateService updateService,
         IStore store,
-        TelegramMenuStore telegramMenuStore, IHostLifetime hostLifetime)
+        IHostLifetime hostLifetime,
+        IEnvironmentService environmentService,
+        TelegramMenuStore telegramMenuStore
+        )
     {
         _logger = logger;
         _telegramService = telegramService;
         _updateService = updateService;
         _store = store;
-        _telegramMenuStore = telegramMenuStore;
+        _environmentService = environmentService;
         _hostLifetime = hostLifetime;
+        _telegramMenuStore = telegramMenuStore;
     }
 
     public string Id => _telegramMenuStore.TelegramButtons.CheckUpdate;
@@ -139,33 +144,41 @@ internal class CheckUpdateCommand : IMenuCommand
                 }
 
                 var downloadingProgressMessageId = 0;
+                var previousProgress = 0.0m;
                 _updateService.OnDownloadProgress += async (_, progress) =>
                 {
-                    if (downloadingProgressMessageId == 0)
-                    {
-                        var newProgressMessage = await _telegramService.SendTextMessageToUserAsync(
-                            $"Downloading progress is: {Math.Round(progress, 0)}%",
-                            cancellationToken: cancellationToken
-                        );
-
-                        downloadingProgressMessageId = newProgressMessage.Data.MessageId;
-                        
-                        return;
-                    }
-                    
-                    await _telegramService.EditTextMessageForUserAsync(
-                        downloadingProgressMessageId,
-                        $"Downloading progress is: {Math.Round(progress, 0)}%",
-                        cancellationToken
-                    );
+                    // if (downloadingProgressMessageId == 0)
+                    // {
+                    //     var newProgressMessage = await _telegramService.SendTextMessageToUserAsync(
+                    //         $"Downloading progress is: {Math.Round(progress, 0)}%",
+                    //         cancellationToken: cancellationToken
+                    //     );
+                    //
+                    //     downloadingProgressMessageId = newProgressMessage.Data.MessageId;
+                    //     
+                    //     return;
+                    // }
+                    //
+                    // if (progress <= previousProgress + 5)
+                    // {
+                    //     return;
+                    // }
+                    //
+                    // previousProgress = progress;
+                    //     
+                    // await _telegramService.EditTextMessageForUserAsync(
+                    //     downloadingProgressMessageId,
+                    //     $"Downloading progress is: {Math.Round(progress, 0)}%",
+                    //     cancellationToken
+                    // );
                 };
                 
-                var result = await _updateService.UpdateApplicationAsync(
+                var downloadResult = await _updateService.UpdateApplicationAsync(
                     _telegramMenuStore.CheckUpdateData.ReleaseVersion, 
                     cancellationToken
                 );
 
-                if (!result)
+                if (downloadResult.ActionResult != ActionResult.Success)
                 {
                     await SendMessageWithClearDataAsync("There was an error during update, please, check logs.", cancellationToken);
                     
@@ -176,8 +189,16 @@ internal class CheckUpdateCommand : IMenuCommand
                     "Update downloaded. Prepare for installing.",
                     cancellationToken: cancellationToken
                 );
-
-                await ((ThHostLifeTime)_hostLifetime).RestartAsync();
+                
+                var args = $"--bfp={_environmentService.GetBasePath()} " +
+                           $"--ufp={_environmentService.GetUpdateFolderPath()}" +
+                           $"--man={_environmentService.GetCurrentApplicationName()}" +
+                           $"--dan={downloadResult.Data.AppFileName}";
+                
+                await ((ThHostLifeTime)_hostLifetime).RunUpdaterAsync(
+                    Path.Combine(_environmentService.GetUpdateFolderPath(), downloadResult.Data.UpdaterFileName),
+                    args
+                );
             }
 
             await SendMessageWithClearDataAsync("There was an error during process, please, try later.", cancellationToken);

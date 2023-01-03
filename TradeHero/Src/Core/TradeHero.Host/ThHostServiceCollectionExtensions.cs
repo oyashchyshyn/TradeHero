@@ -2,17 +2,17 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TradeHero.Contracts.Repositories.Models;
-using TradeHero.EntryPoint.Data;
-using TradeHero.EntryPoint.Data.Dtos.Instance;
-using TradeHero.EntryPoint.Data.Dtos.TradeLogic;
-using TradeHero.EntryPoint.Data.Validations;
-using TradeHero.EntryPoint.Dictionary;
-using TradeHero.EntryPoint.Host;
-using TradeHero.EntryPoint.Menu;
-using TradeHero.EntryPoint.Menu.Console;
-using TradeHero.EntryPoint.Menu.Telegram;
+using TradeHero.Host.Data;
+using TradeHero.Host.Data.Dtos.Instance;
+using TradeHero.Host.Data.Dtos.TradeLogic;
+using TradeHero.Host.Data.Validations;
+using TradeHero.Host.Dictionary;
+using TradeHero.Host.Host;
+using TradeHero.Host.Menu;
+using TradeHero.Host.Menu.Console;
+using TradeHero.Host.Menu.Telegram;
 
-namespace TradeHero.EntryPoint;
+namespace TradeHero.Host;
 
 public static class ThLogicServiceCollectionExtensions
 {

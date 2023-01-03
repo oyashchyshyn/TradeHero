@@ -1,4 +1,4 @@
-namespace TradeHero.EntryPoint.Events;
+namespace TradeHero.Host.Events;
 
 internal class EventHandlersObservable
 {

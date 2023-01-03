@@ -1,11 +1,10 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Base.Constants;
 using TradeHero.Contracts.Services;
-using TradeHero.EntryPoint.Menu;
+using TradeHero.Host.Menu;
 
-namespace TradeHero.EntryPoint.Host;
+namespace TradeHero.Host.Host;
 
 internal class ThHostLifeTime : IHostLifetime, IDisposable
 {
@@ -23,7 +22,7 @@ internal class ThHostLifeTime : IHostLifetime, IDisposable
     private readonly MenuFactory _menuFactory;
 
     private CancellationTokenSource _cancellationTokenSource = new();
-    
+
     public ThHostLifeTime(
         ILoggerFactory loggerFactory,
         IHostApplicationLifetime applicationLifetime,
@@ -60,19 +59,16 @@ internal class ThHostLifeTime : IHostLifetime, IDisposable
         return Task.CompletedTask;
     }
 
-    public async Task RestartAsync()
+    public async Task RunUpdaterAsync(string updaterPath, string args)
     {
         await EndAsync();
-        
-        var operationSystem = _environmentService.GetCurrentOperationSystem();
-        var applicationPath = Path.Combine(
-            _environmentService.GetBasePath(),
-            _environmentService.GetApplicationNameByOperationSystem(operationSystem)
-        );
-        
+
         _applicationLifetime.StopApplication();
 
-        Process.Start(applicationPath, $"--{ArgumentConstants.UpdateKey}=true");
+        var process = new Process();
+        process.StartInfo.FileName = updaterPath;
+        process.StartInfo.Arguments = args;
+        process.Start();
     }
 
     public void Dispose()
@@ -94,6 +90,11 @@ internal class ThHostLifeTime : IHostLifetime, IDisposable
         _logger.LogInformation("Application environment: {GetEnvironmentType}", _environmentService.GetEnvironmentType());
         _logger.LogInformation("Base path: {GetBasePath}", _environmentService.GetBasePath());
 
+        if (Directory.Exists(_environmentService.GetUpdateFolderPath()))
+        {
+            Directory.Delete(_environmentService.GetUpdateFolderPath(), true);
+        }
+        
         await _internetConnectionService.StartInternetConnectionCheckAsync();
 
         _internetConnectionService.OnInternetConnected += InternetConnectionServiceOnOnInternetConnected;
