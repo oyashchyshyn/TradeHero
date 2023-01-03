@@ -53,7 +53,7 @@ internal class CheckCodeStatusCommand : IMenuCommand
         {
             _logger.LogCritical(exception, "In {Method}", nameof(ExecuteAsync));
 
-            await ErrorMessageAsync("There was an error during process, please, try later.", cancellationToken);
+            await SendMessageWithClearDataAsync("There was an error during process, please, try later.", cancellationToken);
         }
     }
 
@@ -69,7 +69,7 @@ internal class CheckCodeStatusCommand : IMenuCommand
     
     #region Private methods
     
-    private async Task ErrorMessageAsync(string message, CancellationToken cancellationToken)
+    private async Task SendMessageWithClearDataAsync(string message, CancellationToken cancellationToken)
     {
         _telegramMenuStore.ClearData();
         

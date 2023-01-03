@@ -25,8 +25,8 @@ internal static class TelegramDiContainer
         
         // Bot
         serviceCollection.AddTransient<BotCommand>();
-        serviceCollection.AddTransient<StartStrategyCommand>();
-        serviceCollection.AddTransient<StopStrategyCommand>();
+        serviceCollection.AddTransient<StartCommand>();
+        serviceCollection.AddTransient<StopCommand>();
         serviceCollection.AddTransient<CheckCodeStatusCommand>();
         serviceCollection.AddTransient<AboutCommand>();
         

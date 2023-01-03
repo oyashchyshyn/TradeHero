@@ -35,7 +35,6 @@ internal class UpdateService : IUpdateService
     }
     
     public event EventHandler<decimal>? OnDownloadProgress;
-    public event EventHandler<Exception>? OnUpdateError;
 
     public async Task<GenericBaseResult<ReleaseVersion>> GetLatestReleaseAsync()
     {
@@ -98,7 +97,7 @@ internal class UpdateService : IUpdateService
         }
     }
 
-    public async Task UpdateApplicationAsync(ReleaseVersion releaseVersion, CancellationToken cancellationToken = default)
+    public async Task<bool> UpdateApplicationAsync(ReleaseVersion releaseVersion, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -109,7 +108,7 @@ internal class UpdateService : IUpdateService
                 _logger.LogWarning("Latest release version {ReleaseVersion} is not higher than current version {CurrentVersion}. In {Method}", 
                     releaseVersion.Version.ToString(), currentVersion.ToString(), nameof(UpdateApplicationAsync));
 
-                return;
+                return false;
             }
             
             var applicationName = _environmentService.GetApplicationNameByOperationSystem(
@@ -127,7 +126,7 @@ internal class UpdateService : IUpdateService
             {
                 _logger.LogError("There is no active user. In {Method}", nameof(UpdateApplicationAsync));
 
-                return;
+                return false;
             }
             
             var productName = $"TradeHero-{activeUser.TelegramUserId}";
@@ -165,27 +164,22 @@ internal class UpdateService : IUpdateService
             
             File.Move(Path.Combine(_environmentService.GetUpdateFolderPath(), downloadedApplicationName), mainApplicationPath);
 
-            if (!File.Exists(mainApplicationPath))
+            if (File.Exists(mainApplicationPath))
             {
-                _logger.LogWarning(null, "Cannot create new application. In {Method}", 
-                    nameof(UpdateApplicationAsync));
-
-                throw new Exception("Cannot find download application by main path.");
+                return true;
             }
+            
+            _logger.LogError(null, "Cannot create new application. In {Method}", 
+                nameof(UpdateApplicationAsync));
 
-            if (Directory.Exists(_environmentService.GetUpdateFolderPath()))
-            {
-                Directory.Delete(_environmentService.GetUpdateFolderPath(), true);
-                
-                _logger.LogInformation("{DirectoryPath} deleted. In {Method}", _environmentService.GetUpdateFolderPath(), 
-                    nameof(UpdateApplicationAsync));
-            }
+            return false;
+
         }
         catch (Exception exception)
         {
             _logger.LogError(exception, "Error in {Method}", nameof(UpdateApplicationAsync));
-            
-            OnUpdateError?.Invoke(this, exception);
+
+            return false;
         }
     }
 }

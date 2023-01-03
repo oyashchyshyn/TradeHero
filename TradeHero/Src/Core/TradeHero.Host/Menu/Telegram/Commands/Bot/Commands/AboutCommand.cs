@@ -65,7 +65,7 @@ internal class AboutCommand : IMenuCommand
         
         await _telegramService.SendTextMessageToUserAsync(
             message,
-            _telegramMenuStore.GetRemoveKeyboard(),
+            _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.Bot),
             cancellationToken: cancellationToken
         );
     }

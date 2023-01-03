@@ -529,6 +529,67 @@ internal class TelegramService : ITelegramService
         }
     }
 
+    public async Task<GenericBaseResult<Message>> EditTextMessageForUserAsync(int messageId, string text, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            if (_telegramBotClient == null)
+            {
+                _logger.LogError("{Instance} is null. In {Method}", 
+                    nameof(_telegramBotClient), nameof(EditTextMessageForUserAsync));
+                
+                return new GenericBaseResult<Message>(ActionResult.Error);
+            }
+
+            if (string.IsNullOrEmpty(text))
+            {
+                _logger.LogError("Text cannot be null or empty. In {Method}", 
+                    nameof(EditTextMessageForUserAsync));
+                
+                return new GenericBaseResult<Message>(ActionResult.Error);
+            }
+
+            if (text.Length > TelegramConstants.MaximumMessageLenght)
+            {
+                _logger.LogError("Text message length cannot be greater then {MaximumMessageLenght}. In {Method}", 
+                    TelegramConstants.MaximumMessageLenght, nameof(EditTextMessageForUserAsync));
+                
+                return new GenericBaseResult<Message>(ActionResult.Error);
+            }
+            
+            if (cancellationToken.IsCancellationRequested)
+            {
+                _logger.LogWarning("Cancellation token is requested. In {Method}", 
+                    nameof(EditTextMessageForUserAsync));
+                
+                return new GenericBaseResult<Message>(ActionResult.CancellationTokenRequested);
+            }
+            
+            var message = await _telegramBotClient.EditMessageTextAsync(
+                _userId,
+                messageId,
+                text,
+                parseMode: ParseMode.Html,
+                cancellationToken: cancellationToken
+            );
+
+            return new GenericBaseResult<Message>(message);
+        }
+        catch (TaskCanceledException taskCanceledException)
+        {
+            _logger.LogWarning("{Message}. In {Method}",
+                taskCanceledException.Message, nameof(EditTextMessageForUserAsync));
+            
+            return new GenericBaseResult<Message>(ActionResult.CancellationTokenRequested);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogCritical(exception, "In {Method}", nameof(EditTextMessageForUserAsync));
+            
+            return new GenericBaseResult<Message>(ActionResult.SystemError);
+        }
+    }
+    
     public Task<ActionResult> CloseConnectionAsync()
     {
         try

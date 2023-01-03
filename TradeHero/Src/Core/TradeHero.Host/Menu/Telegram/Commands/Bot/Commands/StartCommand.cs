@@ -9,9 +9,9 @@ using TradeHero.EntryPoint.Menu.Telegram.Store;
 
 namespace TradeHero.EntryPoint.Menu.Telegram.Commands.Bot.Commands;
 
-internal class StartStrategyCommand : IMenuCommand
+internal class StartCommand : IMenuCommand
 {
-    private readonly ILogger<StartStrategyCommand> _logger;
+    private readonly ILogger<StartCommand> _logger;
     private readonly ITelegramService _telegramService;
     private readonly IStrategyRepository _strategyRepository;
     private readonly IConnectionRepository _connectionRepository;
@@ -19,8 +19,8 @@ internal class StartStrategyCommand : IMenuCommand
     private readonly IStore _store;
     private readonly TelegramMenuStore _telegramMenuStore;
 
-    public StartStrategyCommand(
-        ILogger<StartStrategyCommand> logger,
+    public StartCommand(
+        ILogger<StartCommand> logger,
         ITelegramService telegramService, 
         IStrategyRepository strategyRepository, 
         IConnectionRepository connectionRepository,

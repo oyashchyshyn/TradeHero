@@ -7,15 +7,15 @@ using TradeHero.EntryPoint.Menu.Telegram.Store;
 
 namespace TradeHero.EntryPoint.Menu.Telegram.Commands.Bot.Commands;
 
-internal class StopStrategyCommand : IMenuCommand
+internal class StopCommand : IMenuCommand
 {
-    private readonly ILogger<StopStrategyCommand> _logger;
+    private readonly ILogger<StopCommand> _logger;
     private readonly ITelegramService _telegramService;
     private readonly IStore _store;
     private readonly TelegramMenuStore _telegramMenuStore;
 
-    public StopStrategyCommand(
-        ILogger<StopStrategyCommand> logger,
+    public StopCommand(
+        ILogger<StopCommand> logger,
         ITelegramService telegramService, 
         IStore store, 
         TelegramMenuStore telegramMenuStore

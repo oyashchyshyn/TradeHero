@@ -18,5 +18,6 @@ public interface ITelegramService
     Task<GenericBaseResult<Message>> SendTextMessageToUserAsync(string text, bool? disableNotification = false, CancellationToken cancellationToken = default);
     Task<GenericBaseResult<Message>> SendTextMessageToUserAsync(string text, ReplyMarkupBase replyMarkupBase, bool? disableNotification = false, CancellationToken cancellationToken = default);
     Task<GenericBaseResult<Message>> SendTextMessageToUserAsync(string text, InlineKeyboardMarkup inlineKeyboardMarkup, bool? disableNotification = false, CancellationToken cancellationToken = default);
+    Task<GenericBaseResult<Message>> EditTextMessageForUserAsync(int messageId, string text, CancellationToken cancellationToken = default);
     Task<ActionResult> CloseConnectionAsync();
 }

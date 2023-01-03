@@ -1,5 +1,7 @@
+using System.Diagnostics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using TradeHero.Contracts.Base.Constants;
 using TradeHero.Contracts.Services;
 using TradeHero.EntryPoint.Menu;
 
@@ -56,6 +58,21 @@ internal class ThHostLifeTime : IHostLifetime, IDisposable
     public Task StopAsync(CancellationToken cancellationToken)
     {
         return Task.CompletedTask;
+    }
+
+    public async Task RestartAsync()
+    {
+        await EndAsync();
+        
+        var operationSystem = _environmentService.GetCurrentOperationSystem();
+        var applicationPath = Path.Combine(
+            _environmentService.GetBasePath(),
+            _environmentService.GetApplicationNameByOperationSystem(operationSystem)
+        );
+        
+        _applicationLifetime.StopApplication();
+
+        Process.Start(applicationPath, $"--{ArgumentConstants.UpdateKey}=true");
     }
 
     public void Dispose()

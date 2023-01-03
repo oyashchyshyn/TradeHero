@@ -16,6 +16,7 @@ internal class TelegramMenuStore
     public readonly TelegramButtonIds TelegramButtons;
     
     public readonly StrategyTempData StrategyData = new();
+    public readonly CheckUpdateTempData CheckUpdateData = new();
     public string LastCommandId { get; set; } = string.Empty;
     public string GoBackCommandId { get; private set; } = string.Empty;
 
@@ -69,6 +70,7 @@ internal class TelegramMenuStore
         LastCommandId = string.Empty;
         GoBackCommandId = string.Empty;
         StrategyData.ClearData();
+        CheckUpdateData.ClearData();
     }
     
     #region Private methods
@@ -142,7 +144,11 @@ internal class TelegramMenuStore
                 },
                 new()
                 {
-                    new KeyboardButton($"{_telegramButtonIds.About}About"),
+                    new KeyboardButton($"{_telegramButtonIds.CheckUpdate}Check updates"),
+                    new KeyboardButton($"{_telegramButtonIds.About}About")
+                },
+                new()
+                {
                     new KeyboardButton($"{_telegramButtonIds.MainMenu}Main menu")
                 }
             };
@@ -257,6 +263,7 @@ internal class TelegramMenuStore
         public readonly string StartStrategy = "\U0001F3C3 ";
         public readonly string StopStrategy = "\U0001F534 ";
         public readonly string CheckCodeStatus = "\U0001F4DF ";
+        public readonly string CheckUpdate = "\U0000267B ";
         public readonly string About = "\U0001F491 ";
     
         public readonly string Positions = "\U0001F4BB ";

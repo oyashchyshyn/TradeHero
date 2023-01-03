@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using TradeHero.Contracts.Base.Constants;
 using TradeHero.Contracts.Services;
 using TradeHero.DependencyResolver;
 using TradeHero.Runner.Helpers;
@@ -16,6 +17,11 @@ internal static class Program
         try
         {
             var environmentType = ArgumentsHelper.GetEnvironmentType(args);
+
+            if (args.Contains($"--{ArgumentConstants.UpdateKey}"))
+            {
+                Console.WriteLine("Application updated");
+            }
             
             var host = Host.CreateDefaultBuilder(args)
                 .UseEnvironment(environmentType.ToString())
