@@ -151,8 +151,7 @@ internal class UpdateService : IUpdateService
             var downloadResponse = new DownloadResponse
             {
                 AppFileName = releaseVersion.AppName,
-                UpdaterFileName = releaseVersion.UpdaterName,
-                UpdateFolderPath = _environmentService.GetUpdateFolderPath()
+                UpdaterFileName = releaseVersion.UpdaterName
             };
             
             return new GenericBaseResult<DownloadResponse>(downloadResponse);
