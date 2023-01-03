@@ -65,6 +65,7 @@ internal class TelegramMenu : IMenuService
             serviceProvider.GetRequiredService<StopCommand>(),
             serviceProvider.GetRequiredService<CheckCodeStatusCommand>(),
             serviceProvider.GetRequiredService<AboutCommand>(),
+            serviceProvider.GetRequiredService<CheckUpdateCommand>(),
             serviceProvider.GetRequiredService<PositionsCommand>(),
             serviceProvider.GetRequiredService<StrategyCommand>(),
             serviceProvider.GetRequiredService<ShowStrategiesCommand>(),

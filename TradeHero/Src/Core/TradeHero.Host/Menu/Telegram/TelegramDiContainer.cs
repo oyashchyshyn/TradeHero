@@ -29,6 +29,7 @@ internal static class TelegramDiContainer
         serviceCollection.AddTransient<StopCommand>();
         serviceCollection.AddTransient<CheckCodeStatusCommand>();
         serviceCollection.AddTransient<AboutCommand>();
+        serviceCollection.AddTransient<CheckUpdateCommand>();
         
         // Positions
         serviceCollection.AddTransient<PositionsCommand>();

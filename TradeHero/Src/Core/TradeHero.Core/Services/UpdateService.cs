@@ -40,7 +40,7 @@ internal class UpdateService : IUpdateService
     {
         try
         {
-            var client = new GitHubClient(new ProductHeaderValue(_environmentSettings.Github.Repository))
+            var client = new GitHubClient(new ProductHeaderValue(_environmentSettings.Github.Owner))
             {
                 Credentials = new Credentials(_environmentSettings.Github.Token)
             };
