@@ -4,9 +4,9 @@ using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Extensions;
 using TradeHero.Contracts.Services;
-using TradeHero.EntryPoint.Data.Dtos.Instance;
+using TradeHero.Host.Data.Dtos.Instance;
 
-namespace TradeHero.EntryPoint.Data.Validations;
+namespace TradeHero.Host.Data.Validations;
 
 internal class SpotClusterVolumeOptionsDtoValidation : AbstractValidator<SpotClusterVolumeOptionsDto>
 {

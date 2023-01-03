@@ -8,7 +8,7 @@ using TradeHero.Contracts.Extensions;
 using TradeHero.Contracts.Repositories;
 using TradeHero.Contracts.Repositories.Models;
 
-namespace TradeHero.EntryPoint.Data.Validations;
+namespace TradeHero.Host.Data.Validations;
 
 internal class ConnectionDtoValidation : AbstractValidator<ConnectionDto>
 {

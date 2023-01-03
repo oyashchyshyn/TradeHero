@@ -5,10 +5,10 @@ using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Menu;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.Store;
-using TradeHero.EntryPoint.Host;
-using TradeHero.EntryPoint.Menu.Telegram.Store;
+using TradeHero.Host.Host;
+using TradeHero.Host.Menu.Telegram.Store;
 
-namespace TradeHero.EntryPoint.Menu.Telegram.Commands.Bot.Commands;
+namespace TradeHero.Host.Menu.Telegram.Commands.Bot.Commands;
 
 internal class CheckUpdateCommand : IMenuCommand
 {
@@ -139,25 +139,33 @@ internal class CheckUpdateCommand : IMenuCommand
                 }
 
                 var downloadingProgressMessageId = 0;
+                var previousProgress = 0.0m;
                 _updateService.OnDownloadProgress += async (_, progress) =>
                 {
-                    if (downloadingProgressMessageId == 0)
-                    {
-                        var newProgressMessage = await _telegramService.SendTextMessageToUserAsync(
-                            $"Downloading progress is: {Math.Round(progress, 0)}%",
-                            cancellationToken: cancellationToken
-                        );
-
-                        downloadingProgressMessageId = newProgressMessage.Data.MessageId;
-                        
-                        return;
-                    }
-                    
-                    await _telegramService.EditTextMessageForUserAsync(
-                        downloadingProgressMessageId,
-                        $"Downloading progress is: {Math.Round(progress, 0)}%",
-                        cancellationToken
-                    );
+                    // if (downloadingProgressMessageId == 0)
+                    // {
+                    //     var newProgressMessage = await _telegramService.SendTextMessageToUserAsync(
+                    //         $"Downloading progress is: {Math.Round(progress, 0)}%",
+                    //         cancellationToken: cancellationToken
+                    //     );
+                    //
+                    //     downloadingProgressMessageId = newProgressMessage.Data.MessageId;
+                    //     
+                    //     return;
+                    // }
+                    //
+                    // if (progress <= previousProgress + 5)
+                    // {
+                    //     return;
+                    // }
+                    //
+                    // previousProgress = progress;
+                    //     
+                    // await _telegramService.EditTextMessageForUserAsync(
+                    //     downloadingProgressMessageId,
+                    //     $"Downloading progress is: {Math.Round(progress, 0)}%",
+                    //     cancellationToken
+                    // );
                 };
                 
                 var result = await _updateService.UpdateApplicationAsync(

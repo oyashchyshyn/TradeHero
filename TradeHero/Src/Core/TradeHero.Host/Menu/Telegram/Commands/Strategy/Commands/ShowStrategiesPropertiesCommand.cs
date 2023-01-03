@@ -5,12 +5,12 @@ using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Extensions;
 using TradeHero.Contracts.Menu;
 using TradeHero.Contracts.Services;
-using TradeHero.EntryPoint.Data.Dtos.Instance;
-using TradeHero.EntryPoint.Data.Dtos.TradeLogic;
-using TradeHero.EntryPoint.Dictionary;
-using TradeHero.EntryPoint.Menu.Telegram.Store;
+using TradeHero.Host.Data.Dtos.Instance;
+using TradeHero.Host.Data.Dtos.TradeLogic;
+using TradeHero.Host.Dictionary;
+using TradeHero.Host.Menu.Telegram.Store;
 
-namespace TradeHero.EntryPoint.Menu.Telegram.Commands.Strategy.Commands;
+namespace TradeHero.Host.Menu.Telegram.Commands.Strategy.Commands;
 
 internal class ShowStrategiesPropertiesCommand : IMenuCommand
 {

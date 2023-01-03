@@ -1,6 +1,6 @@
 using TradeHero.Contracts.Services.Models.Update;
 
-namespace TradeHero.EntryPoint.Menu.Telegram.Store;
+namespace TradeHero.Host.Menu.Telegram.Store;
 
 internal class CheckUpdateTempData
 {

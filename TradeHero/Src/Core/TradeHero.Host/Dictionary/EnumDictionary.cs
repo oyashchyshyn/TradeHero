@@ -1,6 +1,6 @@
 using TradeHero.Contracts.Base.Enums;
 
-namespace TradeHero.EntryPoint.Dictionary;
+namespace TradeHero.Host.Dictionary;
 
 internal class EnumDictionary
 {

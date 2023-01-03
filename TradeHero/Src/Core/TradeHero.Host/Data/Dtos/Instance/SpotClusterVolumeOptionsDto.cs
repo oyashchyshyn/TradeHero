@@ -4,7 +4,7 @@ using Binance.Net.Enums;
 using Newtonsoft.Json;
 using TradeHero.Contracts.Attributes;
 
-namespace TradeHero.EntryPoint.Data.Dtos.Instance;
+namespace TradeHero.Host.Data.Dtos.Instance;
 
 internal class SpotClusterVolumeOptionsDto
 {

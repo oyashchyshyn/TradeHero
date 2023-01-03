@@ -5,6 +5,7 @@ using TradeHero.Contracts.Base.Constants;
 using TradeHero.Contracts.Services;
 using TradeHero.DependencyResolver;
 using TradeHero.Runner.Helpers;
+using HostApp = Microsoft.Extensions.Hosting.Host;
 
 namespace TradeHero.Runner;
 
@@ -23,7 +24,7 @@ internal static class Program
                 Console.WriteLine("Application updated");
             }
             
-            var host = Host.CreateDefaultBuilder(args)
+            var host = HostApp.CreateDefaultBuilder(args)
                 .UseEnvironment(environmentType.ToString())
                 .UseContentRoot(baseDirectory)
                 .ConfigureAppConfiguration((_, config) =>

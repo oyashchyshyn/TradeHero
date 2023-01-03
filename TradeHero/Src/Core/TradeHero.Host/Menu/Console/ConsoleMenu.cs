@@ -2,9 +2,8 @@ using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Menu;
 using TradeHero.Contracts.Services;
-using TradeHero.Contracts.Store;
 
-namespace TradeHero.EntryPoint.Menu.Console;
+namespace TradeHero.Host.Menu.Console;
 
 internal class ConsoleMenu : IMenuService
 {

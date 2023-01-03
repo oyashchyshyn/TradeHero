@@ -3,7 +3,7 @@ using TradeHero.Contracts.Store;
 
 // ReSharper disable ConvertToConstant.Global
 
-namespace TradeHero.EntryPoint.Menu.Telegram.Store;
+namespace TradeHero.Host.Menu.Telegram.Store;
 
 internal class TelegramMenuStore
 {

@@ -9,12 +9,12 @@ using TradeHero.Contracts.Repositories;
 using TradeHero.Contracts.Repositories.Models;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.Store;
-using TradeHero.EntryPoint.Data;
-using TradeHero.EntryPoint.Data.Dtos.Base;
-using TradeHero.EntryPoint.Dictionary;
-using TradeHero.EntryPoint.Menu.Telegram.Store;
+using TradeHero.Host.Data;
+using TradeHero.Host.Data.Dtos.Base;
+using TradeHero.Host.Dictionary;
+using TradeHero.Host.Menu.Telegram.Store;
 
-namespace TradeHero.EntryPoint.Menu.Telegram.Commands.Strategy.Commands;
+namespace TradeHero.Host.Menu.Telegram.Commands.Strategy.Commands;
 
 internal class UpdateStrategyCommand : IMenuCommand
 {

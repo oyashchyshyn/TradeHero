@@ -111,11 +111,14 @@ internal class UpdateService : IUpdateService
                 return false;
             }
             
+            var productName = "TradeHero";
+            var productVersion = _environmentService.GetCurrentApplicationVersion().ToString();
             var applicationName = _environmentService.GetApplicationNameByOperationSystem(
                 _environmentService.GetCurrentOperationSystem());
             var downloadedApplicationName = $"new_{applicationName}";
-            var mainApplicationPath = Path.Combine(_environmentService.GetBasePath(), applicationName);
-
+            var applicationNameToDelete = $"old_{applicationName}";
+            var progressIndicator = new Progress<decimal>();
+            
             if (!Directory.Exists(_environmentService.GetUpdateFolderPath()))
             {
                 Directory.CreateDirectory(_environmentService.GetUpdateFolderPath());
@@ -128,11 +131,6 @@ internal class UpdateService : IUpdateService
 
                 return false;
             }
-            
-            var productName = $"TradeHero-{activeUser.TelegramUserId}";
-            var productVersion = _environmentService.GetCurrentApplicationVersion().ToString();
-
-            var progressIndicator = new Progress<decimal>();
 
             progressIndicator.ProgressChanged += (sender, progress) =>
             {
@@ -160,20 +158,17 @@ internal class UpdateService : IUpdateService
                 }
             }
 
-            File.Move(mainApplicationPath, Path.Combine(_environmentService.GetUpdateFolderPath(), applicationName));
+            File.Move(
+                Path.Combine(_environmentService.GetBasePath(), applicationName), 
+                Path.Combine(_environmentService.GetBasePath(), applicationNameToDelete)
+            );
             
-            File.Move(Path.Combine(_environmentService.GetUpdateFolderPath(), downloadedApplicationName), mainApplicationPath);
+            File.Move(
+                Path.Combine(_environmentService.GetUpdateFolderPath(), downloadedApplicationName), 
+                Path.Combine(_environmentService.GetBasePath(), applicationName)
+            );
 
-            if (File.Exists(mainApplicationPath))
-            {
-                return true;
-            }
-            
-            _logger.LogError(null, "Cannot create new application. In {Method}", 
-                nameof(UpdateApplicationAsync));
-
-            return false;
-
+            return true;
         }
         catch (Exception exception)
         {

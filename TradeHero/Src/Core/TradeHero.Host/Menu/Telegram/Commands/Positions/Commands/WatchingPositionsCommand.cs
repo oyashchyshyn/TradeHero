@@ -4,9 +4,9 @@ using TradeHero.Contracts.Base.Constants;
 using TradeHero.Contracts.Menu;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.Store;
-using TradeHero.EntryPoint.Menu.Telegram.Store;
+using TradeHero.Host.Menu.Telegram.Store;
 
-namespace TradeHero.EntryPoint.Menu.Telegram.Commands.Positions.Commands;
+namespace TradeHero.Host.Menu.Telegram.Commands.Positions.Commands;
 
 internal class WatchingPositionsCommand : IMenuCommand
 {

@@ -3,9 +3,9 @@ using Binance.Net.Enums;
 using Newtonsoft.Json;
 using TradeHero.Contracts.Attributes;
 using TradeHero.Contracts.Base.Enums;
-using TradeHero.EntryPoint.Data.Dtos.Base;
+using TradeHero.Host.Data.Dtos.Base;
 
-namespace TradeHero.EntryPoint.Data.Dtos.TradeLogic;
+namespace TradeHero.Host.Data.Dtos.TradeLogic;
 
 internal class PercentLimitTradeLogicDto : BaseStrategyDto
 {

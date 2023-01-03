@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using TradeHero.Client;
 using TradeHero.Core;
 using TradeHero.Database;
-using TradeHero.EntryPoint;
+using TradeHero.Host;
 using TradeHero.Strategies;
 
 namespace TradeHero.DependencyResolver;
