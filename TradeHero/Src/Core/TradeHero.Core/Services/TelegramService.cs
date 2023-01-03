@@ -271,7 +271,7 @@ internal class TelegramService : ITelegramService
         }
     }
 
-    public async Task<ActionResult> SendTextMessageToChannelAsync(long channelId, string text, bool? disableNotification = false, 
+    public async Task<GenericBaseResult<Message>> SendTextMessageToChannelAsync(long channelId, string text, bool? disableNotification = false, 
         CancellationToken cancellationToken = default)
     {
         try
@@ -281,7 +281,7 @@ internal class TelegramService : ITelegramService
                 _logger.LogError("{Instance} is null. In {Method}", 
                     nameof(_telegramBotClient), nameof(SendTextMessageToChannelAsync));
                 
-                return ActionResult.Error;
+                return new GenericBaseResult<Message>(ActionResult.Error);
             }
             
             if (channelId == 0)
@@ -289,7 +289,7 @@ internal class TelegramService : ITelegramService
                 _logger.LogError("Channel chat id cannot be equal to zero. In {Method}", 
                     nameof(SendTextMessageToChannelAsync));
                 
-                return ActionResult.Error;
+                return new GenericBaseResult<Message>(ActionResult.Error);
             }
 
             if (string.IsNullOrEmpty(text))
@@ -297,7 +297,7 @@ internal class TelegramService : ITelegramService
                 _logger.LogError("Text cannot be null or empty. In {Method}", 
                     nameof(SendTextMessageToChannelAsync));
                 
-                return ActionResult.Error;
+                return new GenericBaseResult<Message>(ActionResult.Error);
             }
 
             if (text.Length > TelegramConstants.MaximumMessageLenght)
@@ -305,7 +305,7 @@ internal class TelegramService : ITelegramService
                 _logger.LogError("Text message length cannot be greater then {MaximumMessageLenght}. In {Method}", 
                     TelegramConstants.MaximumMessageLenght, nameof(SendTextMessageToChannelAsync));
                 
-                return ActionResult.Error;
+                return new GenericBaseResult<Message>(ActionResult.Error);
             }
             
             if (cancellationToken.IsCancellationRequested)
@@ -313,10 +313,10 @@ internal class TelegramService : ITelegramService
                 _logger.LogWarning("Cancellation token is requested. In {Method}", 
                     nameof(SendTextMessageToChannelAsync));
                 
-                return ActionResult.CancellationTokenRequested;
+                return new GenericBaseResult<Message>(ActionResult.CancellationTokenRequested);
             }
             
-            await _telegramBotClient.SendTextMessageAsync(
+            var message = await _telegramBotClient.SendTextMessageAsync(
                 channelId,
                 text,
                 parseMode: ParseMode.Html,
@@ -324,24 +324,24 @@ internal class TelegramService : ITelegramService
                 cancellationToken: cancellationToken
             );
 
-            return ActionResult.Success;
+            return new GenericBaseResult<Message>(message);
         }
         catch (TaskCanceledException taskCanceledException)
         {
             _logger.LogWarning("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(SendTextMessageToChannelAsync));
             
-            return ActionResult.CancellationTokenRequested;
+            return new GenericBaseResult<Message>(ActionResult.CancellationTokenRequested);
         }
         catch (Exception exception)
         {
             _logger.LogCritical(exception, "In {Method}", nameof(SendTextMessageToChannelAsync));
             
-            return ActionResult.SystemError;
+            return new GenericBaseResult<Message>(ActionResult.SystemError);
         }
     }
 
-    public async Task<ActionResult> SendTextMessageToUserAsync(string text, ReplyMarkupBase replyMarkupBase, 
+    public async Task<GenericBaseResult<Message>> SendTextMessageToUserAsync(string text, ReplyMarkupBase replyMarkupBase, 
         bool? disableNotification = false, CancellationToken cancellationToken = default)
     {
         try
@@ -351,7 +351,7 @@ internal class TelegramService : ITelegramService
                 _logger.LogError("{Instance} is null. In {Method}", 
                     nameof(_telegramBotClient), nameof(SendTextMessageToUserAsync));
                 
-                return ActionResult.Error;
+                return new GenericBaseResult<Message>(ActionResult.Error);
             }
 
             if (string.IsNullOrEmpty(text))
@@ -359,7 +359,7 @@ internal class TelegramService : ITelegramService
                 _logger.LogError("Text cannot be null or empty. In {Method}", 
                     nameof(SendTextMessageToUserAsync));
                 
-                return ActionResult.Error;
+                return new GenericBaseResult<Message>(ActionResult.Error);
             }
 
             if (text.Length > TelegramConstants.MaximumMessageLenght)
@@ -367,7 +367,7 @@ internal class TelegramService : ITelegramService
                 _logger.LogError("Text message length cannot be greater then {MaximumMessageLenght}. In {Method}", 
                     TelegramConstants.MaximumMessageLenght, nameof(SendTextMessageToUserAsync));
                 
-                return ActionResult.Error;
+                return new GenericBaseResult<Message>(ActionResult.Error);
             }
             
             if (cancellationToken.IsCancellationRequested)
@@ -375,10 +375,10 @@ internal class TelegramService : ITelegramService
                 _logger.LogWarning("Cancellation token is requested. In {Method}", 
                     nameof(SendTextMessageToUserAsync));
                 
-                return ActionResult.CancellationTokenRequested;
+                return new GenericBaseResult<Message>(ActionResult.CancellationTokenRequested);
             }
             
-            await _telegramBotClient.SendTextMessageAsync(
+            var message = await _telegramBotClient.SendTextMessageAsync(
                 _userId,
                 text,
                 parseMode: ParseMode.Html,
@@ -387,24 +387,24 @@ internal class TelegramService : ITelegramService
                 replyMarkup: replyMarkupBase
             );
 
-            return ActionResult.Success;
+            return new GenericBaseResult<Message>(message);
         }
         catch (TaskCanceledException taskCanceledException)
         {
             _logger.LogWarning("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(SendTextMessageToUserAsync));
             
-            return ActionResult.CancellationTokenRequested;
+            return new GenericBaseResult<Message>(ActionResult.CancellationTokenRequested);
         }
         catch (Exception exception)
         {
             _logger.LogCritical(exception, "In {Method}", nameof(SendTextMessageToUserAsync));
             
-            return ActionResult.SystemError;
+            return new GenericBaseResult<Message>(ActionResult.SystemError);
         }
     }
 
-    public async Task<ActionResult> SendTextMessageToUserAsync(string text, InlineKeyboardMarkup inlineKeyboardMarkup, bool? disableNotification,
+    public async Task<GenericBaseResult<Message>> SendTextMessageToUserAsync(string text, InlineKeyboardMarkup inlineKeyboardMarkup, bool? disableNotification,
         CancellationToken cancellationToken = default)
     {
         try
@@ -414,7 +414,7 @@ internal class TelegramService : ITelegramService
                 _logger.LogError("{Instance} is null. In {Method}", 
                     nameof(_telegramBotClient), nameof(SendTextMessageToUserAsync));
                 
-                return ActionResult.Error;
+                return new GenericBaseResult<Message>(ActionResult.Error);
             }
 
             if (string.IsNullOrEmpty(text))
@@ -422,7 +422,7 @@ internal class TelegramService : ITelegramService
                 _logger.LogError("Text cannot be null or empty. In {Method}", 
                     nameof(SendTextMessageToUserAsync));
                 
-                return ActionResult.Error;
+                return new GenericBaseResult<Message>(ActionResult.Error);
             }
 
             if (text.Length > TelegramConstants.MaximumMessageLenght)
@@ -430,7 +430,7 @@ internal class TelegramService : ITelegramService
                 _logger.LogError("Text message length cannot be greater then {MaximumMessageLenght}. In {Method}", 
                     TelegramConstants.MaximumMessageLenght, nameof(SendTextMessageToUserAsync));
                 
-                return ActionResult.Error;
+                return new GenericBaseResult<Message>(ActionResult.Error);
             }
             
             if (cancellationToken.IsCancellationRequested)
@@ -438,10 +438,10 @@ internal class TelegramService : ITelegramService
                 _logger.LogWarning("Cancellation token is requested. In {Method}", 
                     nameof(SendTextMessageToUserAsync));
                 
-                return ActionResult.CancellationTokenRequested;
+                return new GenericBaseResult<Message>(ActionResult.CancellationTokenRequested);
             }
             
-            await _telegramBotClient.SendTextMessageAsync(
+            var message = await _telegramBotClient.SendTextMessageAsync(
                 _userId,
                 text,
                 parseMode: ParseMode.Html,
@@ -450,24 +450,24 @@ internal class TelegramService : ITelegramService
                 replyMarkup: inlineKeyboardMarkup
             );
 
-            return ActionResult.Success;
+            return new GenericBaseResult<Message>(message);
         }
         catch (TaskCanceledException taskCanceledException)
         {
             _logger.LogWarning("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(SendTextMessageToUserAsync));
             
-            return ActionResult.CancellationTokenRequested;
+            return new GenericBaseResult<Message>(ActionResult.CancellationTokenRequested);
         }
         catch (Exception exception)
         {
             _logger.LogCritical(exception, "In {Method}", nameof(SendTextMessageToUserAsync));
             
-            return ActionResult.SystemError;
+            return new GenericBaseResult<Message>(ActionResult.SystemError);
         }
     }
     
-    public async Task<ActionResult> SendTextMessageToUserAsync(string text, bool? disableNotification,
+    public async Task<GenericBaseResult<Message>> SendTextMessageToUserAsync(string text, bool? disableNotification,
         CancellationToken cancellationToken = default)
     {
         try
@@ -477,7 +477,7 @@ internal class TelegramService : ITelegramService
                 _logger.LogError("{Instance} is null. In {Method}", 
                     nameof(_telegramBotClient), nameof(SendTextMessageToUserAsync));
                 
-                return ActionResult.Error;
+                return new GenericBaseResult<Message>(ActionResult.Error);
             }
 
             if (string.IsNullOrEmpty(text))
@@ -485,7 +485,7 @@ internal class TelegramService : ITelegramService
                 _logger.LogError("Text cannot be null or empty. In {Method}", 
                     nameof(SendTextMessageToUserAsync));
                 
-                return ActionResult.Error;
+                return new GenericBaseResult<Message>(ActionResult.Error);
             }
 
             if (text.Length > TelegramConstants.MaximumMessageLenght)
@@ -493,7 +493,7 @@ internal class TelegramService : ITelegramService
                 _logger.LogError("Text message length cannot be greater then {MaximumMessageLenght}. In {Method}", 
                     TelegramConstants.MaximumMessageLenght, nameof(SendTextMessageToUserAsync));
                 
-                return ActionResult.Error;
+                return new GenericBaseResult<Message>(ActionResult.Error);
             }
             
             if (cancellationToken.IsCancellationRequested)
@@ -501,10 +501,10 @@ internal class TelegramService : ITelegramService
                 _logger.LogWarning("Cancellation token is requested. In {Method}", 
                     nameof(SendTextMessageToUserAsync));
                 
-                return ActionResult.CancellationTokenRequested;
+                return new GenericBaseResult<Message>(ActionResult.CancellationTokenRequested);
             }
             
-            await _telegramBotClient.SendTextMessageAsync(
+            var message = await _telegramBotClient.SendTextMessageAsync(
                 _userId,
                 text,
                 parseMode: ParseMode.Html,
@@ -512,20 +512,20 @@ internal class TelegramService : ITelegramService
                 cancellationToken: cancellationToken
             );
 
-            return ActionResult.Success;
+            return new GenericBaseResult<Message>(message);
         }
         catch (TaskCanceledException taskCanceledException)
         {
             _logger.LogWarning("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(SendTextMessageToUserAsync));
             
-            return ActionResult.CancellationTokenRequested;
+            return new GenericBaseResult<Message>(ActionResult.CancellationTokenRequested);
         }
         catch (Exception exception)
         {
             _logger.LogCritical(exception, "In {Method}", nameof(SendTextMessageToUserAsync));
             
-            return ActionResult.SystemError;
+            return new GenericBaseResult<Message>(ActionResult.SystemError);
         }
     }
 
