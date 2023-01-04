@@ -92,17 +92,17 @@ internal static class Program
                 switch (environmentService.GetCurrentOperationSystem())
                 {
                     case OperationSystem.Linux:
+                        processStartInfo.FileName = "/bin/bash";
+                        processStartInfo.Arguments = $"{Path.Combine(baseFolderPath, mainApplicationName)} " +
+                                                     $"upt=relaunch-app env={environmentService.GetEnvironmentType()}";
+                        processStartInfo.UseShellExecute = false;
                         break;
                     case OperationSystem.Windows:
                     {
-                        // processStartInfo.FileName = "cmd.exe";
-                        // processStartInfo.Arguments = $"/C start {Path.Combine(baseFolderPath, mainApplicationName)} upt=relaunch-app env={environmentService.GetEnvironmentType()}";
-                        // processStartInfo.UseShellExecute = false;
-                        
-                        processStartInfo.FileName = Path.Combine(baseFolderPath, mainApplicationName);
-                        processStartInfo.Arguments = $"--upt=relaunch-app --env={environmentService.GetEnvironmentType()}";
+                        processStartInfo.FileName = "cmd.exe";
+                        processStartInfo.Arguments = $"/C start {Path.Combine(baseFolderPath, mainApplicationName)} " +
+                                                     $"upt=relaunch-app env={environmentService.GetEnvironmentType()}";
                         processStartInfo.UseShellExecute = false;
-
                         break;   
                     }
                     case OperationSystem.None:
