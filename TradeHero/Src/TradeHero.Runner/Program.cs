@@ -18,19 +18,16 @@ internal static class Program
         
         try
         {
-            var currentProcess = Process.GetCurrentProcess();
-            var processes = Process.GetProcesses().ToList();
-            
             if (args.Contains("--upt=relaunch-app"))
             {
-                foreach (var tradeHeroProcess in processes.Where(x => x.Id != currentProcess.Id && x.ProcessName.Contains("trade_hero")))
+                foreach (var tradeHeroProcess in Process.GetProcesses().Where(x => x.Id != Process.GetCurrentProcess().Id && x.ProcessName.Contains("trade_hero")))
                 {
                     tradeHeroProcess.Kill();
                     tradeHeroProcess.Dispose();
                 }
             }
 
-            if (processes.Count(x => x.ProcessName == currentProcess.ProcessName) > 1)
+            if (Process.GetProcesses().Count(x => x.ProcessName == "trade_hero") > 1)
             {
                 Console.WriteLine("TradeHero already running!");
                 Console.WriteLine("Press any key to exit.");
