@@ -23,3 +23,4 @@ await octokit.request('POST /repos/{owner}/{repo}/releases', {
   prerelease: false,
   generate_release_notes: false
 })
+
