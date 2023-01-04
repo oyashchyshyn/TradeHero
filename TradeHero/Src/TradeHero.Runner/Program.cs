@@ -89,19 +89,27 @@ internal static class Program
                     Path.Combine(baseFolderPath, mainApplicationName)
                 );
 
-                var arguments = "--upt=relaunch-app";
+                var processStartInfo = new ProcessStartInfo();
                 
-                if (environmentService.GetEnvironmentType() == EnvironmentType.Development)
+                switch (environmentService.GetCurrentOperationSystem())
                 {
-                    arguments += " --env=Development";
-                }
+                    case OperationSystem.Linux:
+                        break;
+                    case OperationSystem.Osx:
+                        break;
+                    case OperationSystem.Windows:
+                    {
+                        processStartInfo.FileName = "cmd.exe";
+                        processStartInfo.Arguments = @$"/c start "" ""{Path.Combine(baseFolderPath)}"" --upt=relaunch-app --env={environmentService.GetEnvironmentType()}";
+                        processStartInfo.UseShellExecute = false;
+                        processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
 
-                var processStartInfo = new ProcessStartInfo
-                {
-                    FileName = Path.Combine(baseFolderPath, mainApplicationName),
-                    Arguments = arguments,
-                    UseShellExecute = false
-                };
+                        break;   
+                    }
+                    case OperationSystem.None:
+                    default:
+                        return;
+                }
 
                 var process = new Process
                 {
