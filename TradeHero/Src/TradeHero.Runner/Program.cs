@@ -48,16 +48,23 @@ internal static class Program
 
             await host.WaitForShutdownAsync();
 
-            if (environment.CustomArgs.ContainsKey("--upd=") && !string.IsNullOrWhiteSpace(environment.CustomArgs["--upd="]))
+            if (environment.CustomArgs.ContainsKey("--urd=") && !string.IsNullOrWhiteSpace(environment.CustomArgs["--urd="])
+                && environment.CustomArgs.ContainsKey("--urn=") && !string.IsNullOrWhiteSpace(environment.CustomArgs["--urn="]))
             {
                 var baseFolderPath = environment.CustomArgs["--bfp="];
                 var updateFolderPath = environment.CustomArgs["--ufp="];
                 var mainApplicationName = environment.CustomArgs["--man="];
                 var downloadedApplicationName = environment.CustomArgs["--dan="];
 
+                var workingDirectory = environment.CustomArgs["--urd="];
+                var fileName = environment.CustomArgs["--urn="];
+                var arguments = $"--bfp={baseFolderPath} --ufp={updateFolderPath} --man={mainApplicationName} --dan={downloadedApplicationName}";
+
                 var process = new Process();
-                process.StartInfo.FileName = environment.CustomArgs["--upd="];
-                process.StartInfo.Arguments = $"--bfp={baseFolderPath} --ufp={updateFolderPath} --man={mainApplicationName} --dan={downloadedApplicationName}";
+                process.StartInfo.FileName = Path.Combine(workingDirectory, fileName);
+                process.StartInfo.Arguments = arguments;
+                process.StartInfo.UseShellExecute = true;
+                process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
                 process.Start();
             }
         }

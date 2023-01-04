@@ -64,15 +64,15 @@ internal class UpdateService : IUpdateService
             {
                 case OperationSystem.Windows:
                     appAsset = latestReleases.Assets.Single(x => x.Name == "trade_hero_win.exe");
-                    updaterAsset = latestReleases.Assets.Single(x => x.Name == "trade_hero_win.exe");
+                    updaterAsset = latestReleases.Assets.Single(x => x.Name == "updater_win.exe");
                     break;
                 case OperationSystem.Linux:
                     appAsset = latestReleases.Assets.Single(x => x.Name == "trade_hero_linux");
-                    updaterAsset = latestReleases.Assets.Single(x => x.Name == "trade_hero_linux");
+                    updaterAsset = latestReleases.Assets.Single(x => x.Name == "updater_linux");
                     break;
                 case OperationSystem.Osx:
                     appAsset = latestReleases.Assets.Single(x => x.Name == "trade_hero_osx");
-                    updaterAsset = latestReleases.Assets.Single(x => x.Name == "trade_hero_osx");
+                    updaterAsset = latestReleases.Assets.Single(x => x.Name == "updater_osx");
                     break;
                 case OperationSystem.None:
                 default:

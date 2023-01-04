@@ -146,6 +146,11 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
                 var previousProgress = 0.0m;
                 _updateService.OnDownloadProgress += async (_, progress) =>
                 {
+                    if (progress < previousProgress + 120)
+                    {
+                        return;
+                    }
+                    
                     if (downloadingProgressMessageId == 0)
                     {
                         var newProgressMessage = await _telegramService.SendTextMessageToUserAsync(
@@ -157,12 +162,7 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
                         
                         return;
                     }
-                    
-                    if (progress < previousProgress + 120)
-                    {
-                        return;
-                    }
-                    
+
                     previousProgress = progress;
                         
                     await _telegramService.EditTextMessageForUserAsync(
@@ -191,7 +191,8 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
 
                 _environmentService.CustomArgs.Clear();
                 _environmentService.CustomArgs.Add("--upt=", "run-updater");
-                _environmentService.CustomArgs.Add("--upd=", Path.Combine(downloadResult.Data.UpdaterFileLocation, downloadResult.Data.UpdaterFileName));
+                _environmentService.CustomArgs.Add("--urd=", downloadResult.Data.UpdaterFileLocation);
+                _environmentService.CustomArgs.Add("--urn=", downloadResult.Data.UpdaterFileName);
                 _environmentService.CustomArgs.Add("--bfp=", _environmentService.GetBasePath());
                 _environmentService.CustomArgs.Add("--ufp=", downloadResult.Data.AppFileLocation);
                 _environmentService.CustomArgs.Add("--man=", _environmentService.GetCurrentApplicationName());

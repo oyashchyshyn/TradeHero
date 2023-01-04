@@ -1,23 +1,18 @@
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Menu;
-using TradeHero.Contracts.Services;
 
 namespace TradeHero.Host.Menu.Console;
 
 internal class ConsoleMenu : IMenuService
 {
     private readonly ILogger<ConsoleMenu> _logger;
-    private readonly IEnvironmentService _environmentService;
 
     public ConsoleMenu(
-        ILogger<ConsoleMenu> logger,
-        IEnvironmentService environmentService, 
-        ITerminalService terminalService
+        ILogger<ConsoleMenu> logger
         )
     {
         _logger = logger;
-        _environmentService = environmentService;
     }
 
     public Task<ActionResult> InitAsync(CancellationToken cancellationToken = default)

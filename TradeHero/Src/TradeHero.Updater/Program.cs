@@ -24,7 +24,8 @@ internal static class Program
             );
 
             var process = new Process();
-            process.StartInfo.FileName = Path.Combine(baseFolderPath, mainApplicationName);
+            process.StartInfo.WorkingDirectory = baseFolderPath;
+            process.StartInfo.FileName = mainApplicationName;
             process.StartInfo.Arguments = "--upt=after-update";
             process.Start();
         }
