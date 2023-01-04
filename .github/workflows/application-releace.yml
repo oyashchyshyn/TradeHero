@@ -37,9 +37,6 @@ jobs:
       - name: Publish application linux-x64
         working-directory: ${{ env.HOST_PROJECT_PATH }}
         run: dotnet publish -r linux-x64 --output ./publish/linux-x64 --self-contained true -p:PublishTrimmed=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
-      - name: Publish application osx-x64
-        working-directory: ${{ env.HOST_PROJECT_PATH }}
-        run: dotnet publish -r osx-x64 --output ./publish/osx-x64 --self-contained true -p:PublishTrimmed=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
       - name: Restore updater dependencies
         working-directory: ${{ env.UPDATER_PROJECT_PATH }}
         run: dotnet restore
@@ -52,9 +49,6 @@ jobs:
       - name: Publish application linux-x64
         working-directory: ${{ env.UPDATER_PROJECT_PATH }}
         run: dotnet publish -r linux-x64 --output ./publish/linux-x64 --self-contained true -p:PublishTrimmed=true -p:PublishSingleFile=true
-      - name: Publish application osx-x64
-        working-directory: ${{ env.UPDATER_PROJECT_PATH }}
-        run: dotnet publish -r osx-x64 --output ./publish/osx-x64 --self-contained true -p:PublishTrimmed=true -p:PublishSingleFile=true
       - name: Upload application win-x86
         uses: actions/upload-artifact@v1
         with:
@@ -65,11 +59,6 @@ jobs:
         with:
           name: linux-application
           path: ${{ env.PUBLISH_LINUX_FILE_PATH }}
-      - name: Upload application osx-x64
-        uses: actions/upload-artifact@v1
-        with:
-          name: osx-application
-          path: ${{ env.PUBLISH_OSX_FILE_PATH }}
       - name: Upload updater win-x86
         uses: actions/upload-artifact@v1
         with:
@@ -80,11 +69,6 @@ jobs:
         with:
           name: linux-updater
           path: ${{ env.PUBLISH_UPDATER_LINUX_PATH }}
-      - name: Upload updater osx-x64
-        uses: actions/upload-artifact@v1
-        with:
-          name: osx-updater
-          path: ${{ env.PUBLISH_UPDATER_OSX_PATH }}
       - run: echo "Finish 'build-publish-dotnet'"
   create-release-and-upload-files:
     name: create-release-and-upload-files
@@ -119,11 +103,6 @@ jobs:
         with:
           name: linux-application
           path: ./linux
-      - name: Download osx application
-        uses: actions/download-artifact@v1
-        with:
-          name: osx-application
-          path: ./osx
       - name: Download win updater
         uses: actions/download-artifact@v1
         with:
@@ -134,11 +113,6 @@ jobs:
         with:
           name: linux-updater
           path: ./linux
-      - name: Download osx updater
-        uses: actions/download-artifact@v1
-        with:
-          name: osx-updater
-          path: ./osx
       - name: Upload WIN application Asset
         id: upload-win-application-release-asset 
         uses: actions/upload-release-asset@v1
@@ -159,16 +133,6 @@ jobs:
           asset_path: ./linux/trade_hero
           asset_name: trade_hero_linux
           asset_content_type: application/octet-stream
-      - name: Upload OSX application Asset
-        id: upload-osx-application-release-asset 
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create-release.outputs.upload_url }} 
-          asset_path: ./osx/trade_hero
-          asset_name: trade_hero_osx
-          asset_content_type: application/octet-stream
       - name: Upload WIN updater Asset
         id: upload-win-updater-release-asset 
         uses: actions/upload-release-asset@v1
@@ -188,15 +152,5 @@ jobs:
           upload_url: ${{ steps.create-release.outputs.upload_url }} 
           asset_path: ./linux/updater
           asset_name: updater_linux
-          asset_content_type: application/octet-stream
-      - name: Upload OSX updater Asset
-        id: upload-osx-updater-release-asset 
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create-release.outputs.upload_url }} 
-          asset_path: ./osx/updater
-          asset_name: updater_osx
           asset_content_type: application/octet-stream
       - run: echo "Finish 'create-release-and-upload-files'" 
