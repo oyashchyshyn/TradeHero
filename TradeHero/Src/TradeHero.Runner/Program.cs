@@ -30,9 +30,8 @@ internal static class Program
                 Console.WriteLine("Lunched after update!!!");
             }
             
-            //var environmentType = ArgumentsHelper.GetEnvironmentType(args);
-            var environmentType = EnvironmentType.Development;
-            
+            var environmentType = ArgumentsHelper.GetEnvironmentType(args);
+
             var host = HostApp.CreateDefaultBuilder(args)
                 .UseEnvironment(environmentType.ToString())
                 .UseContentRoot(baseDirectory)
@@ -74,11 +73,18 @@ internal static class Program
                     Path.Combine(updateFolderPath, downloadedApplicationName), 
                     Path.Combine(baseFolderPath, mainApplicationName)
                 );
+
+                var arguments = "--upt=relaunch-app";
                 
+                if (environmentService.GetEnvironmentType() == EnvironmentType.Development)
+                {
+                    arguments += " --env=Development";
+                }
+
                 var processStartInfo = new ProcessStartInfo
                 {
                     FileName = Path.Combine(baseFolderPath, mainApplicationName),
-                    Arguments = "--upt=relaunch-app",
+                    Arguments = arguments,
                     UseShellExecute = false
                 };
 
