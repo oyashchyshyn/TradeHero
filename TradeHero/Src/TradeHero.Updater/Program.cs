@@ -17,6 +17,7 @@ internal static class Program
             foreach (var tradeHeroProcess in Process.GetProcesses().Where(x => x.ProcessName.Contains("trade_hero")))
             {
                 tradeHeroProcess.Kill();
+                tradeHeroProcess.Dispose();
             }
             
             File.Move(
