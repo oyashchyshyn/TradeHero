@@ -15,14 +15,16 @@ internal static class Program
             var operationSystem = args.First(x => x.StartsWith("--os=")).Replace("--os=", string.Empty);
             var environment = args.First(x => x.StartsWith("--env=")).Replace("--env=", string.Empty);
 
-            File.Move(
-                Path.Combine(baseFolderPath, mainApplicationName), 
-                Path.Combine(updateFolderPath, mainApplicationName)
-            );
-
+            foreach (var tradeHeroProcess in Process.GetProcesses().Where(x => x.ProcessName.Contains("trade_hero")))
+            {
+                tradeHeroProcess.Kill(true);
+                tradeHeroProcess.Dispose();
+            }
+            
             File.Move(
                 Path.Combine(updateFolderPath, downloadedApplicationName), 
-                Path.Combine(baseFolderPath, mainApplicationName)
+                Path.Combine(baseFolderPath, mainApplicationName),
+                true
             );
 
             var processStartInfo = new ProcessStartInfo();
