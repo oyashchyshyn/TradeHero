@@ -69,9 +69,8 @@ internal static class Program
                     case OperationSystem.Osx:
                         break;
                     case OperationSystem.Windows:
-                        processStartInfo.FileName = "cmd.exe";
-                        processStartInfo.Arguments = $"/K {Path.Combine(workingDirectory, fileName)} " + 
-                            $"--bfp={baseFolderPath} --ufp={updateFolderPath} --man={mainApplicationName} --dan={downloadedApplicationName}";
+                        processStartInfo.FileName = Path.Combine(workingDirectory, fileName);
+                        processStartInfo.Arguments = $"--bfp={baseFolderPath} --ufp={updateFolderPath} --man={mainApplicationName} --dan={downloadedApplicationName}";
                         processStartInfo.UseShellExecute = false;
                         processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
                         break;
