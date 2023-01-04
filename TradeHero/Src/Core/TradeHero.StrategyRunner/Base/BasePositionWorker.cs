@@ -4,7 +4,7 @@ using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.StrategyRunner;
 using TradeHero.Contracts.StrategyRunner.Models;
 
-namespace TradeHero.Strategies.Base;
+namespace TradeHero.StrategyRunner.Base;
 
 public abstract class BasePositionWorker
 {

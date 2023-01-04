@@ -1,6 +1,6 @@
-namespace TradeHero.Contracts.Menu;
+namespace TradeHero.Contracts.Menu.Commands;
 
-public interface IMenuCommand
+public interface ITelegramMenuCommand
 {
     string Id { get; }
 

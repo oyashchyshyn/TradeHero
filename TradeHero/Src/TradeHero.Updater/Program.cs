@@ -12,20 +12,20 @@ internal static class Program
             var updateFolderPath = args.First(x => x.StartsWith("--ufp=")).Replace("--ufp=", string.Empty);
             var mainApplicationName = args.First(x => x.StartsWith("--man=")).Replace("--man=", string.Empty);
             var downloadedApplicationName = args.First(x => x.StartsWith("--dan=")).Replace("--dan=", string.Empty);
-            
+
             File.Move(
                 Path.Combine(baseFolderPath, mainApplicationName), 
                 Path.Combine(updateFolderPath, mainApplicationName)
             );
-            
+
             File.Move(
                 Path.Combine(updateFolderPath, downloadedApplicationName), 
                 Path.Combine(baseFolderPath, mainApplicationName)
             );
-            
+
             var process = new Process();
             process.StartInfo.FileName = Path.Combine(baseFolderPath, mainApplicationName);
-            process.StartInfo.Arguments = "--upt=true";
+            process.StartInfo.Arguments = "--upt=after-update";
             process.Start();
         }
         catch (Exception exception)
@@ -35,13 +35,13 @@ internal static class Program
             {
                 return;
             }
-            
+
             var directoryPath = Path.Combine(parentDirectory.FullName, "logs");
             if (!Directory.Exists(directoryPath))
             {
                 Directory.CreateDirectory(directoryPath);
             }
-            
+
             await File.WriteAllTextAsync(
                 Path.Combine(directoryPath, "updater-fatal.txt"), exception.ToString()
             );

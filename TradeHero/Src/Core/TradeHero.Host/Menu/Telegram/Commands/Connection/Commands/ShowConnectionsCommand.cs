@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types.ReplyMarkups;
 using TradeHero.Contracts.Extensions;
 using TradeHero.Contracts.Menu;
+using TradeHero.Contracts.Menu.Commands;
 using TradeHero.Contracts.Repositories;
 using TradeHero.Contracts.Repositories.Models;
 using TradeHero.Contracts.Services;
@@ -9,7 +10,7 @@ using TradeHero.Host.Menu.Telegram.Store;
 
 namespace TradeHero.Host.Menu.Telegram.Commands.Connection.Commands;
 
-internal class ShowConnectionsCommand : IMenuCommand
+internal class ShowConnectionsCommand : ITelegramMenuCommand
 {
     private readonly ILogger<ShowConnectionsCommand> _logger;
     private readonly ITelegramService _telegramService;

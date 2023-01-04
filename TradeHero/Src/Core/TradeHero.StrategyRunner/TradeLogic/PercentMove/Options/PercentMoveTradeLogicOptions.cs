@@ -1,6 +1,6 @@
-using TradeHero.Strategies.Base;
+using TradeHero.StrategyRunner.Base;
 
-namespace TradeHero.Strategies.TradeLogic.PercentMove.Options;
+namespace TradeHero.StrategyRunner.TradeLogic.PercentMove.Options;
 
 internal class PercentMoveTradeLogicOptions : BaseTradeLogicOptions
 {

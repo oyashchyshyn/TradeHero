@@ -2,7 +2,7 @@ using CryptoExchange.Net.Sockets;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.StrategyRunner;
 
-namespace TradeHero.Strategies.Endpoints.Socket;
+namespace TradeHero.StrategyRunner.Endpoints.Socket;
 
 internal interface IFuturesUsdMarketTickerStream
 {

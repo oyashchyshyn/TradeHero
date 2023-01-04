@@ -7,11 +7,11 @@ using TradeHero.Contracts.StrategyRunner;
 using TradeHero.Contracts.StrategyRunner.Models;
 using TradeHero.Contracts.StrategyRunner.Models.Args;
 using TradeHero.Contracts.StrategyRunner.Models.Instance;
-using TradeHero.Strategies.Constants;
-using TradeHero.Strategies.Endpoints.Rest;
-using TradeHero.Strategies.Endpoints.Socket;
+using TradeHero.StrategyRunner.Constants;
+using TradeHero.StrategyRunner.Endpoints.Rest;
+using TradeHero.StrategyRunner.Endpoints.Socket;
 
-namespace TradeHero.Strategies.Base;
+namespace TradeHero.StrategyRunner.Base;
 
 internal abstract class BaseFuturesUsdTradeLogic : ITradeLogic
 {

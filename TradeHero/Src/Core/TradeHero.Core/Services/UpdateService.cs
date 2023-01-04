@@ -57,22 +57,22 @@ internal class UpdateService : IUpdateService
                 return new GenericBaseResult<ReleaseVersion>(ActionResult.Null);
             }
 
-            ReleaseAsset appReleaseAsset;
-            ReleaseAsset updaterReleaseAsset;
+            ReleaseAsset appAsset;
+            ReleaseAsset updaterAsset;
 
             switch (_environmentService.GetCurrentOperationSystem())
             {
                 case OperationSystem.Windows:
-                    appReleaseAsset = latestReleases.Assets.Single(x => x.Name == "trade_hero_win.exe");
-                    updaterReleaseAsset = latestReleases.Assets.Single(x => x.Name == "updater_win.exe");
+                    appAsset = latestReleases.Assets.Single(x => x.Name == "trade_hero_win.exe");
+                    updaterAsset = latestReleases.Assets.Single(x => x.Name == "trade_hero_win.exe");
                     break;
                 case OperationSystem.Linux:
-                    appReleaseAsset = latestReleases.Assets.Single(x => x.Name == "trade_hero_linux");
-                    updaterReleaseAsset = latestReleases.Assets.Single(x => x.Name == "updater_linux");
+                    appAsset = latestReleases.Assets.Single(x => x.Name == "trade_hero_linux");
+                    updaterAsset = latestReleases.Assets.Single(x => x.Name == "trade_hero_linux");
                     break;
                 case OperationSystem.Osx:
-                    appReleaseAsset = latestReleases.Assets.Single(x => x.Name == "trade_hero_osx");
-                    updaterReleaseAsset = latestReleases.Assets.Single(x => x.Name == "updater_osx");
+                    appAsset = latestReleases.Assets.Single(x => x.Name == "trade_hero_osx");
+                    updaterAsset = latestReleases.Assets.Single(x => x.Name == "trade_hero_osx");
                     break;
                 case OperationSystem.None:
                 default:
@@ -88,10 +88,10 @@ internal class UpdateService : IUpdateService
             {
                 IsNewAvailable = currentVersion.CompareTo(remoteVersion) == -1,
                 Version = remoteVersion,
-                AppName = appReleaseAsset.Name,
-                AppDownloadUri = appReleaseAsset.Url,
-                UpdaterName = updaterReleaseAsset.Name,
-                UpdaterDownloadUri = updaterReleaseAsset.Url
+                AppName = appAsset.Name,
+                AppDownloadUri = appAsset.Url,
+                UpdaterName = updaterAsset.Name,
+                UpdaterDownloadUri = updaterAsset.Url
             };
 
             return new GenericBaseResult<ReleaseVersion>(releaseVersion);
@@ -136,22 +136,25 @@ internal class UpdateService : IUpdateService
             var productName = $"TradeHero_{telegramUserId}";
             var productVersion = _environmentService.GetCurrentApplicationVersion().ToString();
             var progressIndicator = new Progress<decimal>();
+            var filePath = Path.Combine(_environmentService.GetUpdateFolderPath(), releaseVersion.AppName);
 
-            await DownloadFileAsync(releaseVersion.UpdaterDownloadUri, releaseVersion.UpdaterName, productName,
-                productVersion, null, cancellationToken);
-            
             progressIndicator.ProgressChanged += (sender, progress) =>
             {
                 OnDownloadProgress?.Invoke(sender, progress);
             };
 
+            await DownloadFileAsync(releaseVersion.UpdaterDownloadUri, releaseVersion.UpdaterName, productName,
+                productVersion, progressIndicator, cancellationToken);
+            
             await DownloadFileAsync(releaseVersion.AppDownloadUri, releaseVersion.AppName, productName,
                 productVersion, progressIndicator, cancellationToken);
 
             var downloadResponse = new DownloadResponse
             {
                 AppFileName = releaseVersion.AppName,
-                UpdaterFileName = releaseVersion.UpdaterName
+                AppFileLocation = _environmentService.GetUpdateFolderPath(),
+                UpdaterFileName = releaseVersion.UpdaterName,
+                UpdaterFileLocation = _environmentService.GetUpdateFolderPath()
             };
             
             return new GenericBaseResult<DownloadResponse>(downloadResponse);
@@ -163,7 +166,7 @@ internal class UpdateService : IUpdateService
             return new GenericBaseResult<DownloadResponse>(ActionResult.SystemError);
         }
     }
-
+    
     #region Private methods
 
     private async Task DownloadFileAsync(string downloadUrl, string name, string productName, string productVersion, 
@@ -184,7 +187,7 @@ internal class UpdateService : IUpdateService
             Path.Combine(_environmentService.GetUpdateFolderPath(), name), 
             FileMode.Create, FileAccess.Write, FileShare.None
         );
-            
+
         // Use the custom extension method below to download the data.
         // The passed progress-instance will receive the download status updates.
         await client.DownloadAsync(request, file, progressIndicator, cancellationToken);

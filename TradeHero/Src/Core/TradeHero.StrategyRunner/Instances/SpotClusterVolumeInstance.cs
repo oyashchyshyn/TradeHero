@@ -10,9 +10,9 @@ using TradeHero.Contracts.Extensions;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.StrategyRunner;
 using TradeHero.Contracts.StrategyRunner.Models.Instance;
-using TradeHero.Strategies.Instances.Options;
+using TradeHero.StrategyRunner.Instances.Options;
 
-namespace TradeHero.Strategies.Instances;
+namespace TradeHero.StrategyRunner.Instances;
 
 internal class SpotClusterVolumeInstance : IInstance
 {

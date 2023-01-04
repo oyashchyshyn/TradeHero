@@ -20,59 +20,59 @@ internal class ConsoleMenu : IMenuService
         _environmentService = environmentService;
     }
 
-    public async Task<ActionResult> InitAsync(CancellationToken cancellationToken = default)
+    public Task<ActionResult> InitAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            return ActionResult.Success;
+            return Task.FromResult(ActionResult.Success);
         }
         catch (Exception exception)
         {
             _logger.LogError(exception, "In {Method}", nameof(InitAsync));
 
-            return ActionResult.SystemError;
+            return Task.FromResult(ActionResult.SystemError);
         }
     }
 
-    public async Task<ActionResult> FinishAsync(CancellationToken cancellationToken = default)
+    public Task<ActionResult> FinishAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            return ActionResult.Success;
+            return Task.FromResult(ActionResult.Success);
         }
         catch (Exception exception)
         {
             _logger.LogError(exception, "In {Method}", nameof(FinishAsync));
 
-            return ActionResult.SystemError;
+            return Task.FromResult(ActionResult.SystemError);
         }
     }
 
-    public async Task<ActionResult> OnDisconnectFromInternetAsync(CancellationToken cancellationToken = default)
+    public Task<ActionResult> OnDisconnectFromInternetAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            return ActionResult.Success;
+            return Task.FromResult(ActionResult.Success);
         }
         catch (Exception exception)
         {
             _logger.LogError(exception, "In {Method}", nameof(InitAsync));
 
-            return ActionResult.SystemError;
+            return Task.FromResult(ActionResult.SystemError);
         }
     }
 
-    public async Task<ActionResult> OnReconnectToInternetAsync(CancellationToken cancellationToken = default)
+    public Task<ActionResult> OnReconnectToInternetAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            return ActionResult.Success;
+            return Task.FromResult(ActionResult.Success);
         }
         catch (Exception exception)
         {
             _logger.LogError(exception, "In {Method}", nameof(OnReconnectToInternetAsync));
 
-            return ActionResult.SystemError;
+            return Task.FromResult(ActionResult.SystemError);
         }
     }
 }

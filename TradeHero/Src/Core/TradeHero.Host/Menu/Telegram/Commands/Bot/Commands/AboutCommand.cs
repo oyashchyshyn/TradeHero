@@ -1,11 +1,12 @@
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Menu;
+using TradeHero.Contracts.Menu.Commands;
 using TradeHero.Contracts.Services;
 using TradeHero.Host.Menu.Telegram.Store;
 
 namespace TradeHero.Host.Menu.Telegram.Commands.Bot.Commands;
 
-internal class AboutCommand : IMenuCommand
+internal class AboutCommand : ITelegramMenuCommand
 {
     private readonly ILogger<AboutCommand> _logger;
     private readonly ITelegramService _telegramService;

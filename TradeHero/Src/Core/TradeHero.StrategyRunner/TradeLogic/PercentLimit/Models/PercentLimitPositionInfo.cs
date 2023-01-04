@@ -1,4 +1,4 @@
-namespace TradeHero.Strategies.TradeLogic.PercentLimit.Models;
+namespace TradeHero.StrategyRunner.TradeLogic.PercentLimit.Models;
 
 public class PercentLimitPositionInfo
 {

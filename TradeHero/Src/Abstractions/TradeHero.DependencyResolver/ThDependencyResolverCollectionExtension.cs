@@ -3,7 +3,7 @@ using TradeHero.Client;
 using TradeHero.Core;
 using TradeHero.Database;
 using TradeHero.Host;
-using TradeHero.Strategies;
+using TradeHero.StrategyRunner;
 
 namespace TradeHero.DependencyResolver;
 

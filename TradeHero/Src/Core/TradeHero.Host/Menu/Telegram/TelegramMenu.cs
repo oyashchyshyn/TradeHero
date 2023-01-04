@@ -2,19 +2,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Menu;
+using TradeHero.Contracts.Menu.Commands;
 using TradeHero.Contracts.Repositories;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.Services.Models.Telegram;
 using TradeHero.Contracts.Store;
 using TradeHero.Contracts.StrategyRunner;
-using TradeHero.Host.Menu.Telegram.Commands;
-using TradeHero.Host.Menu.Telegram.Commands.Bot;
-using TradeHero.Host.Menu.Telegram.Commands.Bot.Commands;
-using TradeHero.Host.Menu.Telegram.Commands.Connection;
-using TradeHero.Host.Menu.Telegram.Commands.Connection.Commands;
-using TradeHero.Host.Menu.Telegram.Commands.Positions;
-using TradeHero.Host.Menu.Telegram.Commands.Strategy;
-using TradeHero.Host.Menu.Telegram.Commands.Strategy.Commands;
 using TradeHero.Host.Menu.Telegram.Store;
 
 namespace TradeHero.Host.Menu.Telegram;
@@ -32,7 +25,7 @@ internal class TelegramMenu : IMenuService
 
     private readonly TelegramMenuStore _telegramMenuStore;
     
-    private readonly List<IMenuCommand> _commands = new();
+    private readonly List<ITelegramMenuCommand> _commands = new();
 
     public TelegramMenu(
         ILogger<TelegramMenu> logger,
@@ -57,29 +50,7 @@ internal class TelegramMenu : IMenuService
         _jsonService = jsonService;
         _telegramMenuStore = telegramMenuStore;
 
-        _commands.AddRange(new List<IMenuCommand>
-        {
-            serviceProvider.GetRequiredService<MainMenuCommand>(),
-            serviceProvider.GetRequiredService<BotCommand>(),
-            serviceProvider.GetRequiredService<StartCommand>(),
-            serviceProvider.GetRequiredService<StopCommand>(),
-            serviceProvider.GetRequiredService<CheckCodeStatusCommand>(),
-            serviceProvider.GetRequiredService<AboutCommand>(),
-            serviceProvider.GetRequiredService<CheckUpdateCommand>(),
-            serviceProvider.GetRequiredService<PositionsCommand>(),
-            serviceProvider.GetRequiredService<StrategyCommand>(),
-            serviceProvider.GetRequiredService<ShowStrategiesCommand>(),
-            serviceProvider.GetRequiredService<ShowStrategiesPropertiesCommand>(),
-            serviceProvider.GetRequiredService<AddStrategyCommand>(),
-            serviceProvider.GetRequiredService<UpdateStrategyCommand>(),
-            serviceProvider.GetRequiredService<SetActiveStrategyCommand>(),
-            serviceProvider.GetRequiredService<DeleteStrategyCommand>(),
-            serviceProvider.GetRequiredService<ConnectionCommand>(),
-            serviceProvider.GetRequiredService<AddConnectionCommand>(),
-            serviceProvider.GetRequiredService<SetActiveConnectionCommand>(),
-            serviceProvider.GetRequiredService<ShowConnectionsCommand>(),
-            serviceProvider.GetRequiredService<DeleteConnectionCommand>()
-        });
+        _commands.AddRange(serviceProvider.GetServices<ITelegramMenuCommand>());
     }
 
     public async Task<ActionResult> InitAsync(CancellationToken cancellationToken = default)

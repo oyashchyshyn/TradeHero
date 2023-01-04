@@ -1,21 +1,21 @@
 using Microsoft.Extensions.DependencyInjection;
 using TradeHero.Contracts.StrategyRunner;
-using TradeHero.Strategies.Endpoints.Rest;
-using TradeHero.Strategies.Endpoints.Rest.Implementation;
-using TradeHero.Strategies.Endpoints.Socket;
-using TradeHero.Strategies.Endpoints.Socket.Implementation;
-using TradeHero.Strategies.Factory;
-using TradeHero.Strategies.Instances;
-using TradeHero.Strategies.TradeLogic.PercentLimit;
-using TradeHero.Strategies.TradeLogic.PercentLimit.Factory;
-using TradeHero.Strategies.TradeLogic.PercentLimit.Flow;
-using TradeHero.Strategies.TradeLogic.PercentLimit.Streams;
-using TradeHero.Strategies.TradeLogic.PercentMove;
-using TradeHero.Strategies.TradeLogic.PercentMove.Factory;
-using TradeHero.Strategies.TradeLogic.PercentMove.Flow;
-using TradeHero.Strategies.TradeLogic.PercentMove.Streams;
+using TradeHero.StrategyRunner.Endpoints.Rest;
+using TradeHero.StrategyRunner.Endpoints.Rest.Implementation;
+using TradeHero.StrategyRunner.Endpoints.Socket;
+using TradeHero.StrategyRunner.Endpoints.Socket.Implementation;
+using TradeHero.StrategyRunner.Factory;
+using TradeHero.StrategyRunner.Instances;
+using TradeHero.StrategyRunner.TradeLogic.PercentLimit;
+using TradeHero.StrategyRunner.TradeLogic.PercentLimit.Factory;
+using TradeHero.StrategyRunner.TradeLogic.PercentLimit.Flow;
+using TradeHero.StrategyRunner.TradeLogic.PercentLimit.Streams;
+using TradeHero.StrategyRunner.TradeLogic.PercentMove;
+using TradeHero.StrategyRunner.TradeLogic.PercentMove.Factory;
+using TradeHero.StrategyRunner.TradeLogic.PercentMove.Flow;
+using TradeHero.StrategyRunner.TradeLogic.PercentMove.Streams;
 
-namespace TradeHero.Strategies;
+namespace TradeHero.StrategyRunner;
 
 public static class ThStrategyRunnerServiceCollectionExtensions
 {

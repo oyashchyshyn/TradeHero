@@ -6,10 +6,10 @@ using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Client;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.StrategyRunner.Models.Args;
-using TradeHero.Strategies.Base;
-using TradeHero.Strategies.TradeLogic.PercentLimit.Flow;
+using TradeHero.StrategyRunner.Base;
+using TradeHero.StrategyRunner.TradeLogic.PercentLimit.Flow;
 
-namespace TradeHero.Strategies.TradeLogic.PercentLimit.Streams;
+namespace TradeHero.StrategyRunner.TradeLogic.PercentLimit.Streams;
 
 internal class PercentLimitUserAccountStream : BaseFuturesUsdUserAccountStream
 {

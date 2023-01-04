@@ -9,7 +9,7 @@ using TradeHero.Contracts.StrategyRunner.Models.FuturesUsd;
 using TradeHero.Contracts.StrategyRunner.Models.Instance;
 using TradeHero.Contracts.StrategyRunner.Models.Spot;
 
-namespace TradeHero.Strategies.Base;
+namespace TradeHero.StrategyRunner.Base;
 
 internal abstract class BaseTradeLogicStore : ITradeLogicStore
 {

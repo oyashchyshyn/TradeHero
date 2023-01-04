@@ -6,7 +6,7 @@ using TradeHero.Contracts.Base.Exceptions;
 using TradeHero.Contracts.Client;
 using TradeHero.Contracts.StrategyRunner;
 
-namespace TradeHero.Strategies.Endpoints.Rest.Implementation;
+namespace TradeHero.StrategyRunner.Endpoints.Rest.Implementation;
 
 internal class FuturesUsdEndpoints : IFuturesUsdEndpoints
 {

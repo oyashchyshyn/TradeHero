@@ -1,13 +1,14 @@
 ﻿using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Menu;
+using TradeHero.Contracts.Menu.Commands;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.Store;
 using TradeHero.Host.Menu.Telegram.Store;
 
 namespace TradeHero.Host.Menu.Telegram.Commands.Bot.Commands;
 
-internal class StopCommand : IMenuCommand
+internal class StopCommand : ITelegramMenuCommand
 {
     private readonly ILogger<StopCommand> _logger;
     private readonly ITelegramService _telegramService;

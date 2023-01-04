@@ -1,4 +1,4 @@
-namespace TradeHero.Strategies.Base;
+namespace TradeHero.StrategyRunner.Base;
 
 internal abstract class BaseTradeLogicOptions
 {

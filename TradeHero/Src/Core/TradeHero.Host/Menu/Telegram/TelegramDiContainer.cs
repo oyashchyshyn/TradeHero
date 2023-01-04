@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using TradeHero.Contracts.Menu;
+using TradeHero.Contracts.Menu.Commands;
 using TradeHero.Host.Menu.Telegram.Commands;
 using TradeHero.Host.Menu.Telegram.Commands.Bot;
 using TradeHero.Host.Menu.Telegram.Commands.Bot.Commands;
@@ -16,39 +18,41 @@ internal static class TelegramDiContainer
 {
     public static void Register(IServiceCollection serviceCollection)
     {
-        // Telegram Menu
-        serviceCollection.AddSingleton<TelegramMenu>();
+        // Telegram Store
         serviceCollection.AddSingleton<TelegramMenuStore>();
         
+        // Telegram Menu
+        serviceCollection.AddSingleton<IMenuService, TelegramMenu>();
+
         // Main menu
-        serviceCollection.AddTransient<MainMenuCommand>();
+        serviceCollection.AddTransient<ITelegramMenuCommand, MainTelegramMenuCommand>();
         
         // Bot
-        serviceCollection.AddTransient<BotCommand>();
-        serviceCollection.AddTransient<StartCommand>();
-        serviceCollection.AddTransient<StopCommand>();
-        serviceCollection.AddTransient<CheckCodeStatusCommand>();
-        serviceCollection.AddTransient<AboutCommand>();
-        serviceCollection.AddTransient<CheckUpdateCommand>();
+        serviceCollection.AddTransient<ITelegramMenuCommand, BotCommand>();
+        serviceCollection.AddTransient<ITelegramMenuCommand, StartCommand>();
+        serviceCollection.AddTransient<ITelegramMenuCommand, StopCommand>();
+        serviceCollection.AddTransient<ITelegramMenuCommand, CheckCodeStatusCommand>();
+        serviceCollection.AddTransient<ITelegramMenuCommand, AboutCommand>();
+        serviceCollection.AddTransient<ITelegramMenuCommand, CheckUpdateCommand>();
         
         // Positions
-        serviceCollection.AddTransient<PositionsCommand>();
-        serviceCollection.AddTransient<WatchingPositionsCommand>();
+        serviceCollection.AddTransient<ITelegramMenuCommand, PositionsCommand>();
+        serviceCollection.AddTransient<ITelegramMenuCommand, WatchingPositionsCommand>();
 
         // Strategy settings
-        serviceCollection.AddTransient<StrategyCommand>();
-        serviceCollection.AddTransient<AddStrategyCommand>();
-        serviceCollection.AddTransient<UpdateStrategyCommand>();
-        serviceCollection.AddTransient<SetActiveStrategyCommand>();
-        serviceCollection.AddTransient<ShowStrategiesCommand>();
-        serviceCollection.AddTransient<ShowStrategiesPropertiesCommand>();
-        serviceCollection.AddTransient<DeleteStrategyCommand>();
+        serviceCollection.AddTransient<ITelegramMenuCommand, StrategyCommand>();
+        serviceCollection.AddTransient<ITelegramMenuCommand, AddStrategyCommand>();
+        serviceCollection.AddTransient<ITelegramMenuCommand, UpdateStrategyCommand>();
+        serviceCollection.AddTransient<ITelegramMenuCommand, SetActiveStrategyCommand>();
+        serviceCollection.AddTransient<ITelegramMenuCommand, ShowStrategiesCommand>();
+        serviceCollection.AddTransient<ITelegramMenuCommand, ShowStrategiesPropertiesCommand>();
+        serviceCollection.AddTransient<ITelegramMenuCommand, DeleteStrategyCommand>();
         
         // Connection settings
-        serviceCollection.AddTransient<ConnectionCommand>();
-        serviceCollection.AddTransient<AddConnectionCommand>();
-        serviceCollection.AddTransient<SetActiveConnectionCommand>();
-        serviceCollection.AddTransient<ShowConnectionsCommand>();
-        serviceCollection.AddTransient<DeleteConnectionCommand>();
+        serviceCollection.AddTransient<ITelegramMenuCommand, ConnectionCommand>();
+        serviceCollection.AddTransient<ITelegramMenuCommand, AddConnectionCommand>();
+        serviceCollection.AddTransient<ITelegramMenuCommand, SetActiveConnectionCommand>();
+        serviceCollection.AddTransient<ITelegramMenuCommand, ShowConnectionsCommand>();
+        serviceCollection.AddTransient<ITelegramMenuCommand, DeleteConnectionCommand>();
     }
 }

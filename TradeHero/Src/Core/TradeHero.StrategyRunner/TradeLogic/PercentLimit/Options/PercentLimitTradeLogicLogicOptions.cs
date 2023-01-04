@@ -1,8 +1,8 @@
 using Binance.Net.Enums;
 using TradeHero.Contracts.Base.Enums;
-using TradeHero.Strategies.Base;
+using TradeHero.StrategyRunner.Base;
 
-namespace TradeHero.Strategies.TradeLogic.PercentLimit.Options;
+namespace TradeHero.StrategyRunner.TradeLogic.PercentLimit.Options;
 
 internal class PercentLimitTradeLogicLogicOptions : BaseTradeLogicOptions
 {

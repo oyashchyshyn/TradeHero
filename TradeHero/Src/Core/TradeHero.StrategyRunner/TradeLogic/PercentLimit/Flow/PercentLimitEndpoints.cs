@@ -8,10 +8,10 @@ using TradeHero.Contracts.Services;
 using TradeHero.Contracts.Services.Models.Calculator;
 using TradeHero.Contracts.StrategyRunner.Models;
 using TradeHero.Contracts.StrategyRunner.Models.Instance;
-using TradeHero.Strategies.Endpoints.Rest;
-using TradeHero.Strategies.TradeLogic.PercentLimit.Options;
+using TradeHero.StrategyRunner.Endpoints.Rest;
+using TradeHero.StrategyRunner.TradeLogic.PercentLimit.Options;
 
-namespace TradeHero.Strategies.TradeLogic.PercentLimit.Flow;
+namespace TradeHero.StrategyRunner.TradeLogic.PercentLimit.Flow;
 
 internal class PercentLimitEndpoints
 {

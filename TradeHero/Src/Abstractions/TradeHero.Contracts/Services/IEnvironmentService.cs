@@ -5,6 +5,7 @@ namespace TradeHero.Contracts.Services;
 
 public interface IEnvironmentService
 {
+    Dictionary<string, string> CustomArgs { get; }
     EnvironmentSettings GetEnvironmentSettings();
     string? GetEnvironmentValueByKey(string key);
     Version GetCurrentApplicationVersion();

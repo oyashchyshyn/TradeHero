@@ -1,4 +1,4 @@
-namespace TradeHero.Strategies.Constants;
+namespace TradeHero.StrategyRunner.Constants;
 
 internal static class JobKey
 {
