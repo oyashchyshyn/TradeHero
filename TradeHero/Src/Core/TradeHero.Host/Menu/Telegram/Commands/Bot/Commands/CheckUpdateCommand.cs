@@ -2,22 +2,21 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types.ReplyMarkups;
 using TradeHero.Contracts.Base.Enums;
-using TradeHero.Contracts.Menu;
+using TradeHero.Contracts.Menu.Commands;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.Store;
-using TradeHero.Host.Host;
 using TradeHero.Host.Menu.Telegram.Store;
 
 namespace TradeHero.Host.Menu.Telegram.Commands.Bot.Commands;
 
-internal class CheckUpdateCommand : IMenuCommand
+internal class CheckUpdateCommand : ITelegramMenuCommand
 {
     private readonly ILogger<CheckUpdateCommand> _logger;
     private readonly ITelegramService _telegramService;
     private readonly IUpdateService _updateService;
     private readonly IStore _store;
-    private readonly IHostLifetime _hostLifetime;
     private readonly IEnvironmentService _environmentService;
+    private readonly IHostLifetime _hostLifetime;
     private readonly TelegramMenuStore _telegramMenuStore;
 
     public CheckUpdateCommand(
@@ -25,8 +24,8 @@ internal class CheckUpdateCommand : IMenuCommand
         ITelegramService telegramService,
         IUpdateService updateService,
         IStore store,
-        IHostLifetime hostLifetime,
         IEnvironmentService environmentService,
+        IHostLifetime hostLifetime,
         TelegramMenuStore telegramMenuStore
         )
     {
@@ -189,16 +188,15 @@ internal class CheckUpdateCommand : IMenuCommand
                     "Update downloaded. Prepare for installing.",
                     cancellationToken: cancellationToken
                 );
-                
-                var args = $"--bfp={_environmentService.GetBasePath()} " +
-                           $"--ufp={_environmentService.GetUpdateFolderPath()}" +
-                           $"--man={_environmentService.GetCurrentApplicationName()}" +
-                           $"--dan={downloadResult.Data.AppFileName}";
-                
-                await ((ThHostLifeTime)_hostLifetime).RunUpdaterAsync(
-                    Path.Combine(_environmentService.GetUpdateFolderPath(), downloadResult.Data.UpdaterFileName),
-                    args
-                );
+
+                _environmentService.CustomArgs.Clear();
+                _environmentService.CustomArgs.Add("--upt=", "true");
+                _environmentService.CustomArgs.Add("--bfp=", _environmentService.GetBasePath());
+                _environmentService.CustomArgs.Add("--ufp=", downloadResult.Data.AppFileLocation);
+                _environmentService.CustomArgs.Add("--man=", _environmentService.GetCurrentApplicationName());
+                _environmentService.CustomArgs.Add("--dan=", downloadResult.Data.AppFileName);
+
+                await _hostLifetime.StopAsync(cancellationToken);
             }
 
             await SendMessageWithClearDataAsync("There was an error during process, please, try later.", cancellationToken);

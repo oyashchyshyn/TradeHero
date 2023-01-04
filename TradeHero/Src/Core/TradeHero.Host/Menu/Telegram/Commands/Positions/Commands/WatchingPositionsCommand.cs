@@ -2,13 +2,14 @@ using System.Text;
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Base.Constants;
 using TradeHero.Contracts.Menu;
+using TradeHero.Contracts.Menu.Commands;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.Store;
 using TradeHero.Host.Menu.Telegram.Store;
 
 namespace TradeHero.Host.Menu.Telegram.Commands.Positions.Commands;
 
-internal class WatchingPositionsCommand : IMenuCommand
+internal class WatchingPositionsCommand : ITelegramMenuCommand
 {
     private readonly ILogger<WatchingPositionsCommand> _logger;
     private readonly ITelegramService _telegramService;

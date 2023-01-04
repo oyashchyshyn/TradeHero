@@ -4,6 +4,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Extensions;
 using TradeHero.Contracts.Menu;
+using TradeHero.Contracts.Menu.Commands;
 using TradeHero.Contracts.Services;
 using TradeHero.Host.Data.Dtos.Instance;
 using TradeHero.Host.Data.Dtos.TradeLogic;
@@ -12,7 +13,7 @@ using TradeHero.Host.Menu.Telegram.Store;
 
 namespace TradeHero.Host.Menu.Telegram.Commands.Strategy.Commands;
 
-internal class ShowStrategiesPropertiesCommand : IMenuCommand
+internal class ShowStrategiesPropertiesCommand : ITelegramMenuCommand
 {
     private readonly ILogger<ShowStrategiesPropertiesCommand> _logger;
     private readonly ITelegramService _telegramService;

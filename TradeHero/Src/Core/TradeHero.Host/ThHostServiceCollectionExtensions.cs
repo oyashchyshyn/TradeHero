@@ -18,6 +18,9 @@ public static class ThLogicServiceCollectionExtensions
 {
     public static void AddThHost(this IServiceCollection serviceCollection)
     {
+        // Host
+        serviceCollection.AddSingleton<IHostLifetime, ThHostLifeTime>();
+
         // Menu factory
         serviceCollection.AddSingleton<MenuFactory>();
         
@@ -34,8 +37,5 @@ public static class ThLogicServiceCollectionExtensions
         serviceCollection.AddTransient<IValidator<PercentMoveTradeLogicDto>, PercentMoveStrategyDtoValidation>();
         serviceCollection.AddTransient<IValidator<SpotClusterVolumeOptionsDto>, SpotClusterVolumeOptionsDtoValidation>();
         serviceCollection.AddSingleton<DtoValidator>();
-        
-        // Host
-        serviceCollection.AddSingleton<IHostLifetime, ThHostLifeTime>();
     }
 }

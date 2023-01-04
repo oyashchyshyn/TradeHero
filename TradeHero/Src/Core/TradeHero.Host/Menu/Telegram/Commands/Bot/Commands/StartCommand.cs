@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Menu;
+using TradeHero.Contracts.Menu.Commands;
 using TradeHero.Contracts.Repositories;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.Store;
@@ -9,7 +10,7 @@ using TradeHero.Host.Menu.Telegram.Store;
 
 namespace TradeHero.Host.Menu.Telegram.Commands.Bot.Commands;
 
-internal class StartCommand : IMenuCommand
+internal class StartCommand : ITelegramMenuCommand
 {
     private readonly ILogger<StartCommand> _logger;
     private readonly ITelegramService _telegramService;

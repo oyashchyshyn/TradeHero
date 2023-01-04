@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Services;
@@ -47,32 +46,35 @@ internal class ThHostLifeTime : IHostLifetime, IDisposable
     {
         _applicationStartedRegistration = _applicationLifetime.ApplicationStarted.Register(OnApplicationStarted);
         _applicationStoppingRegistration = _applicationLifetime.ApplicationStopping.Register(OnApplicationStopping);
+        _applicationStoppingRegistration = _applicationLifetime.ApplicationStopped.Register(OnApplicationStopped);
 
         AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
         Console.CancelKeyPress += OnCancelKeyPress;
+
+        return Task.CompletedTask;
+    }
+
+    public async Task StopAsync(CancellationToken cancellationToken)
+    {
+        foreach (var menu in _menuFactory.GetMenus())
+        {
+            await menu.FinishAsync(_cancellationTokenSource.Token);
+        }
         
-        return Task.CompletedTask;
-    }
+        _jobService.FinishAllJobs();
 
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        return Task.CompletedTask;
-    }
-
-    public async Task RunUpdaterAsync(string updaterPath, string args)
-    {
-        await EndAsync();
-
+        _internetConnectionService.OnInternetConnected -= InternetConnectionServiceOnOnInternetConnected;
+        _internetConnectionService.OnInternetDisconnected -= InternetConnectionServiceOnOnInternetDisconnected;
+        
+        _internetConnectionService.StopInternetConnectionChecking();
+        
         _applicationLifetime.StopApplication();
-
-        var process = new Process();
-        process.StartInfo.FileName = updaterPath;
-        process.StartInfo.Arguments = args;
-        process.Start();
     }
 
     public void Dispose()
     {
+        Console.WriteLine($"{nameof(ThHostLifeTime)}-{nameof(Dispose)} Start");
+        
         _shutdownBlock.Set();
 
         AppDomain.CurrentDomain.ProcessExit -= OnProcessExit;
@@ -80,6 +82,8 @@ internal class ThHostLifeTime : IHostLifetime, IDisposable
 
         _applicationStartedRegistration.Dispose();
         _applicationStoppingRegistration.Dispose();
+        
+        Console.WriteLine($"{nameof(ThHostLifeTime)}-{nameof(Dispose)} Stop");
     }
 
     #region Private methods
@@ -113,11 +117,15 @@ internal class ThHostLifeTime : IHostLifetime, IDisposable
         _logger.LogInformation("Application is shutting down...");
     }
 
+    private void OnApplicationStopped()
+    {
+        _logger.LogInformation("Application is stopped");
+    }
+    
     private async void OnProcessExit(object? sender, EventArgs e)
     {
-        await EndAsync();
-        
-        _applicationLifetime.StopApplication();
+        await StopAsync(CancellationToken.None);
+
         _shutdownBlock.WaitOne();
         
         Environment.ExitCode = 0;
@@ -127,26 +135,9 @@ internal class ThHostLifeTime : IHostLifetime, IDisposable
     {
         e.Cancel = true;
 
-        await EndAsync();
-        
-        _applicationLifetime.StopApplication();
+        await StopAsync(CancellationToken.None);
     }
 
-    private async Task EndAsync()
-    {
-        foreach (var menu in _menuFactory.GetMenus())
-        {
-            await menu.FinishAsync(_cancellationTokenSource.Token);
-        }
-        
-        _jobService.FinishAllJobs();
-
-        _internetConnectionService.OnInternetConnected -= InternetConnectionServiceOnOnInternetConnected;
-        _internetConnectionService.OnInternetDisconnected -= InternetConnectionServiceOnOnInternetDisconnected;
-        
-        _internetConnectionService.StopInternetConnectionChecking();
-    }
-    
     private void RegisterBackgroundJobs()
     {
         async Task DeleteOldFilesFunction()

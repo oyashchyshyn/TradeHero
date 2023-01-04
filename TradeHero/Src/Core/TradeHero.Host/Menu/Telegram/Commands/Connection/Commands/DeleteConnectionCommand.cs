@@ -1,13 +1,14 @@
 using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types.ReplyMarkups;
 using TradeHero.Contracts.Menu;
+using TradeHero.Contracts.Menu.Commands;
 using TradeHero.Contracts.Repositories;
 using TradeHero.Contracts.Services;
 using TradeHero.Host.Menu.Telegram.Store;
 
 namespace TradeHero.Host.Menu.Telegram.Commands.Connection.Commands;
 
-internal class DeleteConnectionCommand : IMenuCommand
+internal class DeleteConnectionCommand : ITelegramMenuCommand
 {
     private readonly ILogger<DeleteConnectionCommand> _logger;
     private readonly ITelegramService _telegramService;
