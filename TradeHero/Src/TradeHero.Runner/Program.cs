@@ -102,7 +102,6 @@ internal static class Program
                         processStartInfo.FileName = "cmd.exe";
                         processStartInfo.Arguments = @$"start {Path.Combine(baseFolderPath, mainApplicationName)} --upt=relaunch-app --env={environmentService.GetEnvironmentType()}";
                         processStartInfo.UseShellExecute = false;
-                        processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
 
                         break;   
                     }
