@@ -19,9 +19,9 @@ internal static class Program
         try
         {
             var processId = Environment.ProcessId;
-            
+
             Console.WriteLine($"Current process id: {processId}");
-            
+
             if (args.Contains("--upt=relaunch-app"))
             {
                 foreach (var tradeHeroProcess in Process.GetProcesses().Where(x => x.Id != processId && x.ProcessName.Contains("trade_hero")))
@@ -93,17 +93,20 @@ internal static class Program
                 {
                     case OperationSystem.Linux:
                         break;
-                    case OperationSystem.Osx:
-                        break;
                     case OperationSystem.Windows:
                     {
-                        processStartInfo.FileName = "cmd.exe";
-                        processStartInfo.Arguments = $"/C start {Path.Combine(baseFolderPath, mainApplicationName)} --upt=relaunch-app --env={environmentService.GetEnvironmentType()}";
+                        // processStartInfo.FileName = "cmd.exe";
+                        // processStartInfo.Arguments = $"/C start {Path.Combine(baseFolderPath, mainApplicationName)} upt=relaunch-app env={environmentService.GetEnvironmentType()}";
+                        // processStartInfo.UseShellExecute = false;
+                        
+                        processStartInfo.FileName = Path.Combine(baseFolderPath, mainApplicationName);
+                        processStartInfo.Arguments = $"--upt=relaunch-app --env={environmentService.GetEnvironmentType()}";
                         processStartInfo.UseShellExecute = false;
 
                         break;   
                     }
                     case OperationSystem.None:
+                    case OperationSystem.Osx:
                     default:
                         return;
                 }
