@@ -190,9 +190,7 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
                 );
 
                 _environmentService.CustomArgs.Clear();
-                _environmentService.CustomArgs.Add("--upt=", "run-updater");
-                _environmentService.CustomArgs.Add("--urd=", downloadResult.Data.UpdaterFileLocation);
-                _environmentService.CustomArgs.Add("--urn=", downloadResult.Data.UpdaterFileName);
+                _environmentService.CustomArgs.Add("--upt=", "run-update");
                 _environmentService.CustomArgs.Add("--bfp=", _environmentService.GetBasePath());
                 _environmentService.CustomArgs.Add("--ufp=", downloadResult.Data.AppFileLocation);
                 _environmentService.CustomArgs.Add("--man=", _environmentService.GetCurrentApplicationName());

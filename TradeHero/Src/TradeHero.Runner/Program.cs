@@ -18,16 +18,26 @@ internal static class Program
         
         try
         {
+            var currentProcess = Process.GetCurrentProcess();
+            var processes = Process.GetProcesses().ToList();
+            
             if (args.Contains("--upt=relaunch-app"))
             {
-                var currentProcess = Process.GetCurrentProcess();
-                foreach (var tradeHeroProcess in Process.GetProcesses().Where(x => x.Id != currentProcess.Id && x.ProcessName.Contains("trade_hero")))
+                foreach (var tradeHeroProcess in processes.Where(x => x.Id != currentProcess.Id && x.ProcessName.Contains("trade_hero")))
                 {
                     tradeHeroProcess.Kill();
                     tradeHeroProcess.Dispose();
                 }
+            }
+
+            if (processes.Count(x => x.ProcessName == currentProcess.ProcessName) > 1)
+            {
+                Console.WriteLine("TradeHero already running!");
+                Console.WriteLine("Press any key to exit.");
+
+                Console.ReadKey();
                 
-                Console.WriteLine("Lunched after update!!!");
+                return;
             }
             
             var environmentType = ArgumentsHelper.GetEnvironmentType(args);
@@ -56,8 +66,7 @@ internal static class Program
 
             await host.WaitForShutdownAsync();
 
-            if (environmentService.CustomArgs.ContainsKey("--urd=") && !string.IsNullOrWhiteSpace(environmentService.CustomArgs["--urd="])
-                && environmentService.CustomArgs.ContainsKey("--urn=") && !string.IsNullOrWhiteSpace(environmentService.CustomArgs["--urn="]))
+            if (environmentService.CustomArgs.ContainsKey("--upt=") && environmentService.CustomArgs["--upt="] == "run-update")
             {
                 var baseFolderPath = environmentService.CustomArgs["--bfp="];
                 var updateFolderPath = environmentService.CustomArgs["--ufp="];
