@@ -32,8 +32,6 @@ internal static class Program
                 }
             }
 
-            await Task.Delay(5000);
-            
             var counter = Process.GetProcesses().Count(x => x.ProcessName == "trade_hero") > 1;
             if (counter)
             {
