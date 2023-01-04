@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Runtime.InteropServices;
 
 namespace TradeHero.Updater;
 
@@ -13,42 +12,42 @@ internal static class Program
             var updateFolderPath = args.First(x => x.StartsWith("--ufp=")).Replace("--ufp=", string.Empty);
             var mainApplicationName = args.First(x => x.StartsWith("--man=")).Replace("--man=", string.Empty);
             var downloadedApplicationName = args.First(x => x.StartsWith("--dan=")).Replace("--dan=", string.Empty);
-            
-            foreach (var tradeHeroProcess in Process.GetProcesses().Where(x => x.ProcessName.Contains("trade_hero")))
-            {
-                tradeHeroProcess.Kill();
-                tradeHeroProcess.Dispose();
-            }
-            
+            var operationSystem = args.First(x => x.StartsWith("--os=")).Replace("--os=", string.Empty);
+            var environment = args.First(x => x.StartsWith("--env=")).Replace("--env=", string.Empty);
+
+            File.Move(
+                Path.Combine(baseFolderPath, mainApplicationName), 
+                Path.Combine(updateFolderPath, mainApplicationName)
+            );
+
             File.Move(
                 Path.Combine(updateFolderPath, downloadedApplicationName), 
-                Path.Combine(baseFolderPath, mainApplicationName),
-                true
+                Path.Combine(baseFolderPath, mainApplicationName)
             );
-            
+
             var processStartInfo = new ProcessStartInfo();
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                processStartInfo.FileName = Path.Combine(baseFolderPath, mainApplicationName);
-                processStartInfo.Arguments = "--upt=after-update";
-                processStartInfo.UseShellExecute = false;
-                processStartInfo.Verb = "runas";
-            }
             
-            var process = new Process
+            switch (operationSystem)
             {
-                StartInfo = processStartInfo
-            };
+                case "Linux":
+                    processStartInfo.FileName = "/bin/bash";                                                           
+                    processStartInfo.Arguments = $"{Path.Combine(baseFolderPath, mainApplicationName)} " +             
+                                                 $"--upt=relaunch-app --env={environment}";
+                    processStartInfo.UseShellExecute = false;
+                    break;
+                case "Windows":
+                    processStartInfo.FileName = "cmd.exe";                                                              
+                    processStartInfo.Arguments = $"/C start {Path.Combine(baseFolderPath, mainApplicationName)} " +     
+                                                 $"--upt=relaunch-app --env={environment}"; 
+                    processStartInfo.UseShellExecute = false;
+                    break;
+                default:
+                    return;
+            }
+
+            Process.Start(processStartInfo);
             
-            process.Start();
+            Environment.Exit(0);
         }
         catch (Exception exception)
         {

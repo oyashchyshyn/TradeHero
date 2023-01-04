@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Globalization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -18,16 +19,35 @@ internal static class Program
         
         try
         {
+            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+            
+            var processId = Environment.ProcessId;
+
+            Console.WriteLine($"Current process id: {processId}");
+
             if (args.Contains("--upt=relaunch-app"))
             {
-                var currentProcess = Process.GetCurrentProcess();
-                foreach (var tradeHeroProcess in Process.GetProcesses().Where(x => x.Id != currentProcess.Id && x.ProcessName.Contains("trade_hero")))
+                foreach (var tradeHeroProcess in Process.GetProcesses().Where(x => x.Id != processId && x.ProcessName.Contains("trade_hero")))
                 {
-                    tradeHeroProcess.Kill();
+                    Console.WriteLine($"{tradeHeroProcess.Id} {tradeHeroProcess.ProcessName}");
+                    tradeHeroProcess.Kill(true);
                     tradeHeroProcess.Dispose();
                 }
+            }
+
+            var counter = Process.GetProcesses().Count(x => x.ProcessName == "trade_hero") > 1;
+            if (counter)
+            {
+                Console.WriteLine(counter);
+                Console.WriteLine("TradeHero already running!");
+                Console.WriteLine("Press any key to exit.");
+
+                Console.ReadKey();
                 
-                Console.WriteLine("Lunched after update!!!");
+                return;
             }
             
             var environmentType = ArgumentsHelper.GetEnvironmentType(args);
@@ -56,44 +76,41 @@ internal static class Program
 
             await host.WaitForShutdownAsync();
 
-            if (environmentService.CustomArgs.ContainsKey("--urd=") && !string.IsNullOrWhiteSpace(environmentService.CustomArgs["--urd="])
-                && environmentService.CustomArgs.ContainsKey("--urn=") && !string.IsNullOrWhiteSpace(environmentService.CustomArgs["--urn="]))
+            if (environmentService.CustomArgs.ContainsKey("--upd=") && environmentService.CustomArgs.ContainsKey("--upa="))
             {
-                var baseFolderPath = environmentService.CustomArgs["--bfp="];
-                var updateFolderPath = environmentService.CustomArgs["--ufp="];
-                var mainApplicationName = environmentService.CustomArgs["--man="];
-                var downloadedApplicationName = environmentService.CustomArgs["--dan="];
+                var arguments = environmentService.CustomArgs.Aggregate(string.Empty, (current, customArg) => 
+                    current + $"{customArg.Key}{customArg.Value} ");
 
-                File.Move(
-                    Path.Combine(baseFolderPath, mainApplicationName), 
-                    Path.Combine(updateFolderPath, mainApplicationName)
-                );
+                var updaterLocation = environmentService.CustomArgs["--upd="];
+                var updaterName = environmentService.CustomArgs["--upa="];
                 
-                File.Move(
-                    Path.Combine(updateFolderPath, downloadedApplicationName), 
-                    Path.Combine(baseFolderPath, mainApplicationName)
-                );
+                var processStartInfo = new ProcessStartInfo();
 
-                var arguments = "--upt=relaunch-app";
-                
-                if (environmentService.GetEnvironmentType() == EnvironmentType.Development)
+                switch (environmentService.GetCurrentOperationSystem())
                 {
-                    arguments += " --env=Development";
+                    case OperationSystem.Linux:
+                        processStartInfo.FileName = "/bin/bash";
+                        processStartInfo.Arguments = $"{Path.Combine(updaterLocation, updaterName)} {arguments}";
+                        processStartInfo.UseShellExecute = false;
+                        processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                        break;
+                    case OperationSystem.Windows:
+                    {
+                        processStartInfo.FileName = "cmd.exe";
+                        processStartInfo.Arguments = $"/C start {Path.Combine(updaterLocation, updaterName)} {arguments}";
+                        processStartInfo.UseShellExecute = false;
+                        processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                        break;   
+                    }
+                    case OperationSystem.None:
+                    case OperationSystem.Osx:
+                    default:
+                        return;
                 }
 
-                var processStartInfo = new ProcessStartInfo
-                {
-                    FileName = Path.Combine(baseFolderPath, mainApplicationName),
-                    Arguments = arguments,
-                    UseShellExecute = false
-                };
-
-                var process = new Process
-                {
-                    StartInfo = processStartInfo
-                };
+                Process.Start(processStartInfo);
                 
-                process.Start();
+                Environment.Exit(0);
             }
         }
         catch (Exception exception)
