@@ -27,11 +27,13 @@ internal static class Program
                 foreach (var tradeHeroProcess in Process.GetProcesses().Where(x => x.Id != processId && x.ProcessName.Contains("trade_hero")))
                 {
                     Console.WriteLine($"{tradeHeroProcess.Id} {tradeHeroProcess.ProcessName}");
-                    tradeHeroProcess.Kill();
+                    tradeHeroProcess.Kill(true);
                     tradeHeroProcess.Dispose();
                 }
             }
 
+            await Task.Delay(5000);
+            
             var counter = Process.GetProcesses().Count(x => x.ProcessName == "trade_hero") > 1;
             if (counter)
             {
