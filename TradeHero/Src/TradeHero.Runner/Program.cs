@@ -100,7 +100,7 @@ internal static class Program
                     case OperationSystem.Windows:
                     {
                         processStartInfo.FileName = "cmd.exe";
-                        processStartInfo.Arguments = @$"start {Path.Combine(baseFolderPath, mainApplicationName)} --upt=relaunch-app --env={environmentService.GetEnvironmentType()}";
+                        processStartInfo.Arguments = $"/C start {Path.Combine(baseFolderPath, mainApplicationName)} --upt=relaunch-app --env={environmentService.GetEnvironmentType()}";
                         processStartInfo.UseShellExecute = false;
 
                         break;   
@@ -110,12 +110,9 @@ internal static class Program
                         return;
                 }
 
-                var process = new Process
-                {
-                    StartInfo = processStartInfo
-                };
+                Process.Start(processStartInfo);
                 
-                process.Start();
+                Environment.Exit(0);
             }
         }
         catch (Exception exception)
