@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace TradeHero.Updater;
 
@@ -22,10 +23,29 @@ internal static class Program
                 Path.Combine(updateFolderPath, downloadedApplicationName), 
                 Path.Combine(baseFolderPath, mainApplicationName)
             );
-
-            var process = new Process();
-            process.StartInfo.FileName = Path.Combine(baseFolderPath, mainApplicationName);
-            process.StartInfo.Arguments = "--upt=after-update";
+            
+            var processStartInfo = new ProcessStartInfo();
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                processStartInfo.FileName = "cmd.exe";
+                processStartInfo.Arguments = $"/K {Path.Combine(baseFolderPath, mainApplicationName)} --upt=after-update";
+                processStartInfo.UseShellExecute = false;
+                processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            }
+            
+            var process = new Process
+            {
+                StartInfo = processStartInfo
+            };
+            
             process.Start();
         }
         catch (Exception exception)
