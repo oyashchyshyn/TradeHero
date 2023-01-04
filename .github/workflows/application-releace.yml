@@ -48,13 +48,13 @@ jobs:
         run: dotnet build --configuration Release --no-restore
       - name: Publish updater win-x86
         working-directory: ${{ env.UPDATER_PROJECT_PATH }}
-        run: dotnet publish -r win-x64 --output ./publish/win-x86 --self-contained true -p:PublishTrimmed=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+        run: dotnet publish -r win-x64 --output ./publish/win-x86 --self-contained true -p:PublishTrimmed=true -p:PublishSingleFile=true
       - name: Publish application linux-x64
         working-directory: ${{ env.UPDATER_PROJECT_PATH }}
-        run: dotnet publish -r linux-x64 --output ./publish/linux-x64 --self-contained true -p:PublishTrimmed=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+        run: dotnet publish -r linux-x64 --output ./publish/linux-x64 --self-contained true -p:PublishTrimmed=true -p:PublishSingleFile=true
       - name: Publish application osx-x64
         working-directory: ${{ env.UPDATER_PROJECT_PATH }}
-        run: dotnet publish -r osx-x64 --output ./publish/osx-x64 --self-contained true -p:PublishTrimmed=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+        run: dotnet publish -r osx-x64 --output ./publish/osx-x64 --self-contained true -p:PublishTrimmed=true -p:PublishSingleFile=true
       - name: Upload application win-x86
         uses: actions/upload-artifact@v1
         with:
