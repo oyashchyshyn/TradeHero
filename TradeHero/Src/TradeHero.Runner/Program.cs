@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using TradeHero.Contracts.Base.Constants;
 using TradeHero.Contracts.Services;
 using TradeHero.DependencyResolver;
 using TradeHero.Runner.Helpers;
@@ -18,20 +17,9 @@ internal static class Program
         
         try
         {
-            if (args.Contains("--upt=re-lunch"))
+            if (args.Contains("--upt=after-update"))
             {
-                var dictionary = args.Select(arg => arg.Split("="))
-                    .ToDictionary(split => $"{split[0]}=", split => split[1]);
-
-                var baseFolderPath = dictionary["--bfp="];
-                var updateFolderPath = dictionary["--ufp="];
-                var mainApplicationName = dictionary["--man="];
-                var downloadedApplicationName = dictionary["--dan="];
-                
-                File.Move(
-                    Path.Combine(baseFolderPath, $"old_{mainApplicationName}"), 
-                    Path.Combine(updateFolderPath, $"old_{mainApplicationName}")
-                );
+                Console.WriteLine("Lunched after update!!!");
             }
             
             var environmentType = ArgumentsHelper.GetEnvironmentType(args);
@@ -60,21 +48,16 @@ internal static class Program
 
             await host.WaitForShutdownAsync();
 
-            if (environment.CustomArgs.ContainsKey("--upt="))
+            if (environment.CustomArgs.ContainsKey("--upd=") && !string.IsNullOrWhiteSpace(environment.CustomArgs["--upd="]))
             {
                 var baseFolderPath = environment.CustomArgs["--bfp="];
                 var updateFolderPath = environment.CustomArgs["--ufp="];
                 var mainApplicationName = environment.CustomArgs["--man="];
                 var downloadedApplicationName = environment.CustomArgs["--dan="];
-                
-                File.Move(
-                    Path.Combine(updateFolderPath, downloadedApplicationName), 
-                    Path.Combine(baseFolderPath, mainApplicationName)
-                );
 
                 var process = new Process();
-                process.StartInfo.FileName = Path.Combine(baseFolderPath, downloadedApplicationName);
-                process.StartInfo.Arguments = $"--upt=re-lunch --bfp={baseFolderPath} --ufp={updateFolderPath} --man={mainApplicationName} --dan={downloadedApplicationName}";
+                process.StartInfo.FileName = environment.CustomArgs["--upd="];
+                process.StartInfo.Arguments = $"--bfp={baseFolderPath} --ufp={updateFolderPath} --man={mainApplicationName} --dan={downloadedApplicationName}";
                 process.Start();
             }
         }

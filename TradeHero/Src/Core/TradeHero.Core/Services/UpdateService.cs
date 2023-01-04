@@ -57,18 +57,22 @@ internal class UpdateService : IUpdateService
                 return new GenericBaseResult<ReleaseVersion>(ActionResult.Null);
             }
 
-            ReleaseAsset appReleaseAsset;
+            ReleaseAsset appAsset;
+            ReleaseAsset updaterAsset;
 
             switch (_environmentService.GetCurrentOperationSystem())
             {
                 case OperationSystem.Windows:
-                    appReleaseAsset = latestReleases.Assets.Single(x => x.Name == "trade_hero_win.exe");
+                    appAsset = latestReleases.Assets.Single(x => x.Name == "trade_hero_win.exe");
+                    updaterAsset = latestReleases.Assets.Single(x => x.Name == "trade_hero_win.exe");
                     break;
                 case OperationSystem.Linux:
-                    appReleaseAsset = latestReleases.Assets.Single(x => x.Name == "trade_hero_linux");
+                    appAsset = latestReleases.Assets.Single(x => x.Name == "trade_hero_linux");
+                    updaterAsset = latestReleases.Assets.Single(x => x.Name == "trade_hero_linux");
                     break;
                 case OperationSystem.Osx:
-                    appReleaseAsset = latestReleases.Assets.Single(x => x.Name == "trade_hero_osx");
+                    appAsset = latestReleases.Assets.Single(x => x.Name == "trade_hero_osx");
+                    updaterAsset = latestReleases.Assets.Single(x => x.Name == "trade_hero_osx");
                     break;
                 case OperationSystem.None:
                 default:
@@ -84,8 +88,10 @@ internal class UpdateService : IUpdateService
             {
                 IsNewAvailable = currentVersion.CompareTo(remoteVersion) == -1,
                 Version = remoteVersion,
-                AppName = appReleaseAsset.Name,
-                AppDownloadUri = appReleaseAsset.Url,
+                AppName = appAsset.Name,
+                AppDownloadUri = appAsset.Url,
+                UpdaterName = updaterAsset.Name,
+                UpdaterDownloadUri = updaterAsset.Url
             };
 
             return new GenericBaseResult<ReleaseVersion>(releaseVersion);
@@ -137,30 +143,18 @@ internal class UpdateService : IUpdateService
                 OnDownloadProgress?.Invoke(sender, progress);
             };
 
-            using var client = new HttpClient();
-            client.Timeout = TimeSpan.FromMinutes(5);
-
-            using var request = new HttpRequestMessage(HttpMethod.Get, releaseVersion.AppDownloadUri);
-
-            request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
-            request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
-            request.Headers.Authorization = new AuthenticationHeaderValue("token", _environmentSettings.Github.Token);
-            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/octet-stream"));
-            request.Headers.UserAgent.Add(new ProductInfoHeaderValue(productName, productVersion));
-
-            await using var file = new FileStream(
-                filePath, 
-                FileMode.Create, FileAccess.Write, FileShare.None
-            );
+            await DownloadFileAsync(releaseVersion.UpdaterDownloadUri, releaseVersion.UpdaterName, productName,
+                productVersion, progressIndicator, cancellationToken);
             
-            // Use the custom extension method below to download the data.
-            // The passed progress-instance will receive the download status updates.
-            await client.DownloadAsync(request, file, progressIndicator, cancellationToken);
+            await DownloadFileAsync(releaseVersion.AppDownloadUri, releaseVersion.AppName, productName,
+                productVersion, progressIndicator, cancellationToken);
 
             var downloadResponse = new DownloadResponse
             {
                 AppFileName = releaseVersion.AppName,
-                AppFileLocation = _environmentService.GetUpdateFolderPath()
+                AppFileLocation = _environmentService.GetUpdateFolderPath(),
+                UpdaterFileName = releaseVersion.UpdaterName,
+                UpdaterFileLocation = _environmentService.GetUpdateFolderPath()
             };
             
             return new GenericBaseResult<DownloadResponse>(downloadResponse);
@@ -172,4 +166,32 @@ internal class UpdateService : IUpdateService
             return new GenericBaseResult<DownloadResponse>(ActionResult.SystemError);
         }
     }
+    
+    #region Private methods
+
+    private async Task DownloadFileAsync(string downloadUrl, string name, string productName, string productVersion, 
+        IProgress<decimal>? progressIndicator, CancellationToken cancellationToken)
+    {
+        using var client = new HttpClient();
+        client.Timeout = TimeSpan.FromMinutes(5);
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, downloadUrl);
+
+        request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
+        request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
+        request.Headers.Authorization = new AuthenticationHeaderValue("token", _environmentSettings.Github.Token);
+        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/octet-stream"));
+        request.Headers.UserAgent.Add(new ProductInfoHeaderValue(productName, productVersion));
+
+        await using var file = new FileStream(
+            Path.Combine(_environmentService.GetUpdateFolderPath(), name), 
+            FileMode.Create, FileAccess.Write, FileShare.None
+        );
+
+        // Use the custom extension method below to download the data.
+        // The passed progress-instance will receive the download status updates.
+        await client.DownloadAsync(request, file, progressIndicator, cancellationToken);
+    }
+
+    #endregion
 }

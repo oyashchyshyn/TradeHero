@@ -25,7 +25,7 @@ internal static class Program
 
             var process = new Process();
             process.StartInfo.FileName = Path.Combine(baseFolderPath, mainApplicationName);
-            process.StartInfo.Arguments = "--upt=true";
+            process.StartInfo.Arguments = "--upt=after-update";
             process.Start();
         }
         catch (Exception exception)

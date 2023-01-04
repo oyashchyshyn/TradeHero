@@ -146,30 +146,30 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
                 var previousProgress = 0.0m;
                 _updateService.OnDownloadProgress += async (_, progress) =>
                 {
-                    // if (downloadingProgressMessageId == 0)
-                    // {
-                    //     var newProgressMessage = await _telegramService.SendTextMessageToUserAsync(
-                    //         $"Downloading progress is: {Math.Round(progress, 0)}%",
-                    //         cancellationToken: cancellationToken
-                    //     );
-                    //
-                    //     downloadingProgressMessageId = newProgressMessage.Data.MessageId;
-                    //     
-                    //     return;
-                    // }
-                    //
-                    // if (progress <= previousProgress + 5)
-                    // {
-                    //     return;
-                    // }
-                    //
-                    // previousProgress = progress;
-                    //     
-                    // await _telegramService.EditTextMessageForUserAsync(
-                    //     downloadingProgressMessageId,
-                    //     $"Downloading progress is: {Math.Round(progress, 0)}%",
-                    //     cancellationToken
-                    // );
+                    if (downloadingProgressMessageId == 0)
+                    {
+                        var newProgressMessage = await _telegramService.SendTextMessageToUserAsync(
+                            $"Downloading progress is: {Math.Round(progress, 0)}%",
+                            cancellationToken: cancellationToken
+                        );
+                    
+                        downloadingProgressMessageId = newProgressMessage.Data.MessageId;
+                        
+                        return;
+                    }
+                    
+                    if (progress < previousProgress + 120)
+                    {
+                        return;
+                    }
+                    
+                    previousProgress = progress;
+                        
+                    await _telegramService.EditTextMessageForUserAsync(
+                        downloadingProgressMessageId,
+                        $"Downloading progress is: {Math.Round(progress, 0)}%",
+                        cancellationToken
+                    );
                 };
                 
                 var downloadResult = await _updateService.UpdateApplicationAsync(
@@ -190,7 +190,8 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
                 );
 
                 _environmentService.CustomArgs.Clear();
-                _environmentService.CustomArgs.Add("--upt=", "true");
+                _environmentService.CustomArgs.Add("--upt=", "run-updater");
+                _environmentService.CustomArgs.Add("--upd=", Path.Combine(downloadResult.Data.UpdaterFileLocation, downloadResult.Data.UpdaterFileName));
                 _environmentService.CustomArgs.Add("--bfp=", _environmentService.GetBasePath());
                 _environmentService.CustomArgs.Add("--ufp=", downloadResult.Data.AppFileLocation);
                 _environmentService.CustomArgs.Add("--man=", _environmentService.GetCurrentApplicationName());
