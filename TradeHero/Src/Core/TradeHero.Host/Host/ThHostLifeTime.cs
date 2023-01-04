@@ -94,10 +94,10 @@ internal class ThHostLifeTime : IHostLifetime, IDisposable
         _logger.LogInformation("Application environment: {GetEnvironmentType}", _environmentService.GetEnvironmentType());
         _logger.LogInformation("Base path: {GetBasePath}", _environmentService.GetBasePath());
 
-        if (Directory.Exists(_environmentService.GetUpdateFolderPath()))
-        {
-            Directory.Delete(_environmentService.GetUpdateFolderPath(), true);
-        }
+        // if (Directory.Exists(_environmentService.GetUpdateFolderPath()))
+        // {
+        //     Directory.Delete(_environmentService.GetUpdateFolderPath(), true);
+        // }
         
         await _internetConnectionService.StartInternetConnectionCheckAsync();
 

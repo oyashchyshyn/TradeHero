@@ -18,13 +18,20 @@ internal static class Program
         
         try
         {
-            if (args.Contains("--upt=after-update"))
+            if (args.Contains("--upt=relaunch-app"))
             {
+                var currentProcess = Process.GetCurrentProcess();
+                foreach (var tradeHeroProcess in Process.GetProcesses().Where(x => x.Id != currentProcess.Id && x.ProcessName.Contains("trade_hero")))
+                {
+                    tradeHeroProcess.Kill();
+                    tradeHeroProcess.Dispose();
+                }
+                
                 Console.WriteLine("Lunched after update!!!");
             }
             
             var environmentType = ArgumentsHelper.GetEnvironmentType(args);
-            
+
             var host = HostApp.CreateDefaultBuilder(args)
                 .UseEnvironment(environmentType.ToString())
                 .UseContentRoot(baseDirectory)
@@ -56,29 +63,31 @@ internal static class Program
                 var updateFolderPath = environmentService.CustomArgs["--ufp="];
                 var mainApplicationName = environmentService.CustomArgs["--man="];
                 var downloadedApplicationName = environmentService.CustomArgs["--dan="];
-                var workingDirectory = environmentService.CustomArgs["--urd="];
-                var fileName = environmentService.CustomArgs["--urn="];
 
-                var processStartInfo = new ProcessStartInfo();
-                switch (environmentService.GetCurrentOperationSystem())
-                {
-                    case OperationSystem.None:
-                        break;
-                    case OperationSystem.Linux:
-                        break;
-                    case OperationSystem.Osx:
-                        break;
-                    case OperationSystem.Windows:
-                        processStartInfo.FileName = "cmd.exe";
-                        processStartInfo.Arguments = $"/K {Path.Combine(workingDirectory, fileName)} " + 
-                            $"--bfp={baseFolderPath} --ufp={updateFolderPath} --man={mainApplicationName} --dan={downloadedApplicationName}";
-                        processStartInfo.UseShellExecute = false;
-                        processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                File.Move(
+                    Path.Combine(baseFolderPath, mainApplicationName), 
+                    Path.Combine(updateFolderPath, mainApplicationName)
+                );
                 
+                File.Move(
+                    Path.Combine(updateFolderPath, downloadedApplicationName), 
+                    Path.Combine(baseFolderPath, mainApplicationName)
+                );
+
+                var arguments = "--upt=relaunch-app";
+                
+                if (environmentService.GetEnvironmentType() == EnvironmentType.Development)
+                {
+                    arguments += " --env=Development";
+                }
+
+                var processStartInfo = new ProcessStartInfo
+                {
+                    FileName = Path.Combine(baseFolderPath, mainApplicationName),
+                    Arguments = arguments,
+                    UseShellExecute = false
+                };
+
                 var process = new Process
                 {
                     StartInfo = processStartInfo

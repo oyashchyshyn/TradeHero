@@ -13,15 +13,17 @@ internal static class Program
             var updateFolderPath = args.First(x => x.StartsWith("--ufp=")).Replace("--ufp=", string.Empty);
             var mainApplicationName = args.First(x => x.StartsWith("--man=")).Replace("--man=", string.Empty);
             var downloadedApplicationName = args.First(x => x.StartsWith("--dan=")).Replace("--dan=", string.Empty);
-
-            File.Move(
-                Path.Combine(baseFolderPath, mainApplicationName), 
-                Path.Combine(updateFolderPath, mainApplicationName)
-            );
-
+            
+            foreach (var tradeHeroProcess in Process.GetProcesses().Where(x => x.ProcessName.Contains("trade_hero")))
+            {
+                tradeHeroProcess.Kill();
+                tradeHeroProcess.Dispose();
+            }
+            
             File.Move(
                 Path.Combine(updateFolderPath, downloadedApplicationName), 
-                Path.Combine(baseFolderPath, mainApplicationName)
+                Path.Combine(baseFolderPath, mainApplicationName),
+                true
             );
             
             var processStartInfo = new ProcessStartInfo();
@@ -35,10 +37,10 @@ internal static class Program
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                processStartInfo.FileName = "cmd.exe";
-                processStartInfo.Arguments = $"/K {Path.Combine(baseFolderPath, mainApplicationName)} --upt=after-update";
+                processStartInfo.FileName = Path.Combine(baseFolderPath, mainApplicationName);
+                processStartInfo.Arguments = "--upt=after-update";
                 processStartInfo.UseShellExecute = false;
-                processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                processStartInfo.Verb = "runas";
             }
             
             var process = new Process
