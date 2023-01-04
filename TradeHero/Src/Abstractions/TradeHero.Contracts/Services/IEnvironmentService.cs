@@ -7,7 +7,6 @@ public interface IEnvironmentService
 {
     Dictionary<string, string> CustomArgs { get; }
     EnvironmentSettings GetEnvironmentSettings();
-    string? GetEnvironmentValueByKey(string key);
     Version GetCurrentApplicationVersion();
     string GetBasePath();
     string GetDataFolderPath();
@@ -16,6 +15,5 @@ public interface IEnvironmentService
     string GetUpdateFolderPath();
     EnvironmentType GetEnvironmentType();
     OperationSystem GetCurrentOperationSystem();
-    string GetApplicationNameByOperationSystem(OperationSystem operationSystem);
     string GetCurrentApplicationName();
 }

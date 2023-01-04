@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Globalization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -18,6 +19,11 @@ internal static class Program
         
         try
         {
+            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+            
             var processId = Environment.ProcessId;
 
             Console.WriteLine($"Current process id: {processId}");
@@ -70,39 +76,30 @@ internal static class Program
 
             await host.WaitForShutdownAsync();
 
-            if (environmentService.CustomArgs.ContainsKey("--upt=") && environmentService.CustomArgs["--upt="] == "run-update")
+            if (environmentService.CustomArgs.ContainsKey("--upd=") && environmentService.CustomArgs.ContainsKey("--upa="))
             {
-                var baseFolderPath = environmentService.CustomArgs["--bfp="];
-                var updateFolderPath = environmentService.CustomArgs["--ufp="];
-                var mainApplicationName = environmentService.CustomArgs["--man="];
-                var downloadedApplicationName = environmentService.CustomArgs["--dan="];
+                var arguments = environmentService.CustomArgs.Aggregate(string.Empty, (current, customArg) => 
+                    current + $"{customArg.Key}{customArg.Value} ");
 
-                File.Move(
-                    Path.Combine(baseFolderPath, mainApplicationName), 
-                    Path.Combine(updateFolderPath, mainApplicationName)
-                );
+                var updaterLocation = environmentService.CustomArgs["--upd="];
+                var updaterName = environmentService.CustomArgs["--upa="];
                 
-                File.Move(
-                    Path.Combine(updateFolderPath, downloadedApplicationName), 
-                    Path.Combine(baseFolderPath, mainApplicationName)
-                );
-
                 var processStartInfo = new ProcessStartInfo();
-                
+
                 switch (environmentService.GetCurrentOperationSystem())
                 {
                     case OperationSystem.Linux:
                         processStartInfo.FileName = "/bin/bash";
-                        processStartInfo.Arguments = $"{Path.Combine(baseFolderPath, mainApplicationName)} " +
-                                                     $"upt=relaunch-app env={environmentService.GetEnvironmentType()}";
+                        processStartInfo.Arguments = $"{Path.Combine(updaterLocation, updaterName)} {arguments}";
                         processStartInfo.UseShellExecute = false;
+                        processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
                         break;
                     case OperationSystem.Windows:
                     {
                         processStartInfo.FileName = "cmd.exe";
-                        processStartInfo.Arguments = $"/C start {Path.Combine(baseFolderPath, mainApplicationName)} " +
-                                                     $"upt=relaunch-app env={environmentService.GetEnvironmentType()}";
+                        processStartInfo.Arguments = $"/C start {Path.Combine(updaterLocation, updaterName)} {arguments}";
                         processStartInfo.UseShellExecute = false;
+                        processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
                         break;   
                     }
                     case OperationSystem.None:
