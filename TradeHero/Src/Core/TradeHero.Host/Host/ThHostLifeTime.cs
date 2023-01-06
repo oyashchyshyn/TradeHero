@@ -89,6 +89,7 @@ internal class ThHostLifeTime : IHostLifetime, IDisposable
     private async void OnApplicationStarted()
     {
         _logger.LogInformation("Application started. Press Ctrl+C to shut down");
+        _logger.LogInformation("Process id:  {ProcessId}", Environment.ProcessId);
         _logger.LogInformation("Application environment: {GetEnvironmentType}", _environmentService.GetEnvironmentType());
         _logger.LogInformation("Base path: {GetBasePath}", _environmentService.GetBasePath());
 

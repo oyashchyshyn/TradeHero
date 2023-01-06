@@ -43,8 +43,7 @@ internal static class Program
                 return;
             }
             
-            //var environmentType = Helper.GetEnvironmentType(args);
-            var environmentType = EnvironmentType.Development;
+            var environmentType = Helper.GetEnvironmentType(args);
 
             Helper.SetCulture();
             
