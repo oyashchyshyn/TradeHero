@@ -1,12 +1,10 @@
 ﻿using System.Diagnostics;
-using System.Globalization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Services;
 using TradeHero.DependencyResolver;
-using TradeHero.Runner.Helpers;
 using HostApp = Microsoft.Extensions.Hosting.Host;
 
 namespace TradeHero.Runner;
@@ -19,11 +17,6 @@ internal static class Program
         
         try
         {
-            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
-            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
-            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
-            
             var processId = Environment.ProcessId;
 
             Console.WriteLine($"Current process id: {processId}");
@@ -50,17 +43,23 @@ internal static class Program
                 return;
             }
             
-            var environmentType = ArgumentsHelper.GetEnvironmentType(args);
+            //var environmentType = Helper.GetEnvironmentType(args);
+            var environmentType = EnvironmentType.Development;
 
+            Helper.SetCulture();
+            
             var host = HostApp.CreateDefaultBuilder(args)
                 .UseEnvironment(environmentType.ToString())
                 .UseContentRoot(baseDirectory)
                 .ConfigureAppConfiguration((_, config) =>
                 {
-                    config.AddConfiguration(ConfigurationHelper.GenerateConfiguration(args));
+                    config.AddConfiguration(Helper.GenerateConfiguration(args));
                 })
                 .ConfigureServices((_, serviceCollection) =>
                 {
+                    serviceCollection.AddOptions<HostOptions>()
+                        .Configure(opts => opts.ShutdownTimeout = TimeSpan.FromSeconds(15));
+                    
                     serviceCollection.AddThDependencyCollection();
                 })
                 .Build();
@@ -115,7 +114,7 @@ internal static class Program
         }
         catch (Exception exception)
         {
-            await ExceptionHelper.WriteExceptionAsync(exception, baseDirectory);
+            await Helper.WriteExceptionAsync(exception, baseDirectory);
         }
     }
 }

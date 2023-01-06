@@ -67,8 +67,6 @@ internal class ThHostLifeTime : IHostLifetime, IDisposable
         _internetConnectionService.OnInternetDisconnected -= InternetConnectionServiceOnOnInternetDisconnected;
         
         _internetConnectionService.StopInternetConnectionChecking();
-        
-        _applicationLifetime.StopApplication();
     }
 
     public void Dispose()
@@ -129,20 +127,20 @@ internal class ThHostLifeTime : IHostLifetime, IDisposable
         _logger.LogInformation("Application is stopped");
     }
     
-    private async void OnProcessExit(object? sender, EventArgs e)
+    private void OnProcessExit(object? sender, EventArgs e)
     {
-        await StopAsync(CancellationToken.None);
+        _applicationLifetime.StopApplication();
 
         _shutdownBlock.WaitOne();
         
         Environment.ExitCode = 0;
     }
 
-    private async void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
+    private void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
     {
         e.Cancel = true;
 
-        await StopAsync(CancellationToken.None);
+        _applicationLifetime.StopApplication();
     }
 
     private void RegisterBackgroundJobs()
