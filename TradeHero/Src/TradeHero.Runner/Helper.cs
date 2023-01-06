@@ -12,16 +12,14 @@ internal static class Helper
 {
     public static EnvironmentType GetEnvironmentType(string[] args)
     {
-        const string environmentArgumentKey = $"--{ArgumentKeyConstants.Environment}=";
-        
-        if (!args.Any(x => x.StartsWith(environmentArgumentKey)))
+        if (!args.Any(x => x.StartsWith(ArgumentKeyConstants.Environment)))
         {
             return EnvironmentType.Production;
         }
         
         var argValue = args
-            .First(x => x.StartsWith(environmentArgumentKey))
-            .Replace(environmentArgumentKey, string.Empty);
+            .First(x => x.StartsWith(ArgumentKeyConstants.Environment))
+            .Replace(ArgumentKeyConstants.Environment, string.Empty);
 
         return (EnvironmentType)Enum.Parse(typeof(EnvironmentType), argValue);
     }
