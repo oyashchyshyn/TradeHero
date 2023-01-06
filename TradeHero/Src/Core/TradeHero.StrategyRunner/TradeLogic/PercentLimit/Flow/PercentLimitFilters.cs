@@ -2,7 +2,6 @@ using Binance.Net.Enums;
 using Binance.Net.Objects.Models.Futures;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using TradeHero.Contracts.Base.Constants;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.StrategyRunner.Models;
@@ -63,8 +62,9 @@ internal class PercentLimitFilters
 
             _logger.LogInformation("Filtered Longs: {FilteredLongsCount}. Filtered Shorts: {FilteredShortsCount}. In {Method}",
                 topLongKlines.Length, topShortKlines.Length, nameof(GetFilteredOrdersForOpenPositionAsync));
-            
-            var folderName = Path.Combine(_environmentService.GetBasePath(), FolderConstants.DataFolder, "ClusterResults");
+
+            var folderName = Path.Combine(_environmentService.GetBasePath(), 
+                _environmentService.GetEnvironmentSettings().Folder.DataFolder, "ClusterResults");
             var jsonShorts = _jsonService.SerializeObject(instanceResult.ShortSignals, Formatting.Indented).Data;
             var jsonLongs = _jsonService.SerializeObject(instanceResult.LongSignals, Formatting.Indented).Data;
             var jsonFilteredShorts = _jsonService.SerializeObject(topShortKlines, Formatting.Indented).Data;

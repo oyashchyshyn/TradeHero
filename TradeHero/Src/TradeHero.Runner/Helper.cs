@@ -1,8 +1,10 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics;
+using System.Globalization;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using TradeHero.Contracts.Base.Constants;
 using TradeHero.Contracts.Base.Enums;
+using TradeHero.Contracts.Services.Models.Environment;
 
 namespace TradeHero.Runner;
 
@@ -10,7 +12,7 @@ internal static class Helper
 {
     public static EnvironmentType GetEnvironmentType(string[] args)
     {
-        const string environmentArgumentKey = $"--{ArgumentConstants.EnvironmentKey}=";
+        const string environmentArgumentKey = $"--{ArgumentKeyConstants.Environment}=";
         
         if (!args.Any(x => x.StartsWith(environmentArgumentKey)))
         {
@@ -44,9 +46,9 @@ internal static class Helper
             .Build();
     }
     
-    public static async Task WriteExceptionAsync(Exception exception, string baseDirectory)
+    public static async Task WriteErrorAsync(Exception exception, string logsFolderPath)
     {            
-        var directoryPath = Path.Combine(baseDirectory, FolderConstants.LogsFolder);
+        var directoryPath = Path.Combine(logsFolderPath);
         if (!Directory.Exists(directoryPath))
         {
             Directory.CreateDirectory(directoryPath);
@@ -63,11 +65,60 @@ internal static class Helper
         Console.ReadLine();
     }
     
+    public static void WriteError(string message)
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine($"Error: {message}");
+        Console.ResetColor();
+        Console.WriteLine("Press any key for exit...");
+        Console.ReadLine();
+    }
+    
     public static void SetCulture()
     {
         Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
         Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
         CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
         CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+    }
+
+    public static EnvironmentSettings ConvertConfigurationToEnvironmentSettings(IConfiguration configuration)
+    {
+        return configuration.Get<EnvironmentSettings>() ?? new EnvironmentSettings();
+    }
+
+    public static void RunUpdateProcess(Dictionary<string, string> customArgs, OperationSystem operationSystem)
+    {
+        var arguments =
+            $"{customArgs[ArgumentKeyConstants.Environment]} {customArgs[ArgumentKeyConstants.OperationSystem]}" +
+            $"{customArgs[ArgumentKeyConstants.DownloadApplicationPath]} {customArgs[ArgumentKeyConstants.ApplicationPath]}" +
+            $"{customArgs[ArgumentKeyConstants.BaseApplicationName]}";
+
+        var processStartInfo = new ProcessStartInfo();
+
+        switch (operationSystem)
+        {
+            case OperationSystem.Linux:
+                processStartInfo.FileName = "/bin/bash";
+                processStartInfo.Arguments = $"{customArgs[ArgumentKeyConstants.UpdaterPath]} {arguments}";
+                processStartInfo.UseShellExecute = false;
+                processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                break;
+            case OperationSystem.Windows:
+            {
+                processStartInfo.FileName = "cmd.exe";
+                processStartInfo.Arguments = $"/C start {customArgs[ArgumentKeyConstants.UpdaterPath]} {arguments}";
+                processStartInfo.UseShellExecute = false;
+                processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                break;   
+            }
+            case OperationSystem.None:
+            case OperationSystem.Osx:
+                throw new Exception($"Cannot apply update process to operation system: {operationSystem}");
+            default:
+                return;
+        }
+
+        Process.Start(processStartInfo);
     }
 }

@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using TradeHero.Contracts.Base.Constants;
 using TradeHero.Contracts.Services;
+using TradeHero.Contracts.Services.Models.Environment;
 using TradeHero.Database.Entities;
 
 namespace TradeHero.Database.Worker;
@@ -11,6 +11,7 @@ internal class DatabaseFileWorker
 {
     private readonly ILogger<DatabaseFileWorker> _logger;
     private readonly IEnvironmentService _environmentService;
+    private readonly EnvironmentSettings _environmentSettings;
     
     public DatabaseFileWorker(
         ILogger<DatabaseFileWorker> logger, 
@@ -19,6 +20,7 @@ internal class DatabaseFileWorker
     {
         _logger = logger;
         _environmentService = environmentService;
+        _environmentSettings = environmentService.GetEnvironmentSettings();
     }
     
     public IEnumerable<T> GetDataFromFile<T>()
@@ -97,18 +99,18 @@ internal class DatabaseFileWorker
         File.WriteAllText(path, jsonData);
     }
 
-    private static string GetPathToDatafile(Type type)
+    private string GetPathToDatafile(Type type)
     {
         if (type == typeof(Connection))
         {
-            return DatabaseConstants.ConnectionFileName;
+            return _environmentSettings.Database.ConnectionFileName;
         }
 
         if (type == typeof(Strategy))
         {
-            return DatabaseConstants.StrategyFileName;
+            return _environmentSettings.Database.StrategyFileName;
         }
 
-        return type == typeof(User) ? DatabaseConstants.UserFileName : string.Empty;
+        return type == typeof(User) ? _environmentSettings.Database.UserFileName : string.Empty;
     }
 }

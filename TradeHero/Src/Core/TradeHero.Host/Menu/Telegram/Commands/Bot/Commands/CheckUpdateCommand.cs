@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types.ReplyMarkups;
+using TradeHero.Contracts.Base.Constants;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Menu.Commands;
 using TradeHero.Contracts.Services;
@@ -189,15 +190,16 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
                     cancellationToken: cancellationToken
                 );
 
+                var baseApplicationPath = Path.Combine(_environmentService.GetBasePath(),
+                    _environmentService.GetCurrentApplicationName());
+                
                 _environmentService.CustomArgs.Clear();
-                _environmentService.CustomArgs.Add("--upd=", downloadResult.Data.UpdaterFileLocation);
-                _environmentService.CustomArgs.Add("--upa=", downloadResult.Data.AppFileName);
-                _environmentService.CustomArgs.Add("--os=", _environmentService.GetCurrentOperationSystem().ToString());
-                _environmentService.CustomArgs.Add("--env=", _environmentService.GetEnvironmentType().ToString());
-                _environmentService.CustomArgs.Add("--bfp=", _environmentService.GetBasePath());
-                _environmentService.CustomArgs.Add("--ufp=", downloadResult.Data.AppFileLocation);
-                _environmentService.CustomArgs.Add("--man=", _environmentService.GetCurrentApplicationName());
-                _environmentService.CustomArgs.Add("--dan=", downloadResult.Data.AppFileName);
+                _environmentService.CustomArgs.Add(ArgumentKeyConstants.UpdaterPath, downloadResult.Data.UpdaterFilePath);
+                _environmentService.CustomArgs.Add(ArgumentKeyConstants.Environment, _environmentService.GetEnvironmentType().ToString());
+                _environmentService.CustomArgs.Add(ArgumentKeyConstants.OperationSystem, _environmentService.GetCurrentOperationSystem().ToString());
+                _environmentService.CustomArgs.Add(ArgumentKeyConstants.ApplicationPath, baseApplicationPath);
+                _environmentService.CustomArgs.Add(ArgumentKeyConstants.DownloadApplicationPath, downloadResult.Data.AppFilePath);
+                _environmentService.CustomArgs.Add(ArgumentKeyConstants.BaseApplicationName, _environmentService.GetCurrentApplicationName());
 
                 await _hostLifetime.StopAsync(cancellationToken);
             }

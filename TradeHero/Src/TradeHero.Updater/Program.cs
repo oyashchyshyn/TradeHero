@@ -4,28 +4,33 @@ namespace TradeHero.Updater;
 
 internal static class Program
 {
+    private static readonly string UpdaterLogsFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "updater.txt");
+    
     private static async Task Main(string[] args)
     {
         try
         {
-            var baseFolderPath = args.First(x => x.StartsWith("--bfp=")).Replace("--bfp=", string.Empty);
-            var updateFolderPath = args.First(x => x.StartsWith("--ufp=")).Replace("--ufp=", string.Empty);
-            var mainApplicationName = args.First(x => x.StartsWith("--man=")).Replace("--man=", string.Empty);
-            var downloadedApplicationName = args.First(x => x.StartsWith("--dan=")).Replace("--dan=", string.Empty);
-            var operationSystem = args.First(x => x.StartsWith("--os=")).Replace("--os=", string.Empty);
-            var environment = args.First(x => x.StartsWith("--env=")).Replace("--env=", string.Empty);
+            await WriteMessageToFileAsync($"Start update. Args: {string.Join(", ", args)}");
+            
+            const string environmentArg = "--env=";
+            const string operationSystemArg = "--os=";
+            const string downloadApplicationPathArg = "--dap=";
+            const string baseApplicationPathArg = "--ap=";
+            const string baseApplicationNameArg = "--ban=";
 
-            foreach (var tradeHeroProcess in Process.GetProcesses().Where(x => x.ProcessName.Contains("trade_hero")))
+            var environment = args.First(x => x.StartsWith(environmentArg)).Replace(environmentArg, string.Empty);
+            var operationSystem = args.First(x => x.StartsWith(operationSystemArg)).Replace(operationSystemArg, string.Empty);
+            var downloadApplicationPath = args.First(x => x.StartsWith(downloadApplicationPathArg)).Replace(downloadApplicationPathArg, string.Empty);
+            var applicationPath = args.First(x => x.StartsWith(baseApplicationPathArg)).Replace(baseApplicationPathArg, string.Empty);
+            var baseApplicationName = args.First(x => x.StartsWith(baseApplicationNameArg)).Replace(baseApplicationNameArg, string.Empty);
+
+            foreach (var tradeHeroProcess in Process.GetProcesses().Where(x => x.ProcessName.Contains(baseApplicationName)))
             {
                 tradeHeroProcess.Kill(true);
                 tradeHeroProcess.Dispose();
             }
             
-            File.Move(
-                Path.Combine(updateFolderPath, downloadedApplicationName), 
-                Path.Combine(baseFolderPath, mainApplicationName),
-                true
-            );
+            File.Move(downloadApplicationPath, applicationPath, true);
 
             var processStartInfo = new ProcessStartInfo();
             
@@ -33,41 +38,34 @@ internal static class Program
             {
                 case "Linux":
                     processStartInfo.FileName = "/bin/bash";                                                           
-                    processStartInfo.Arguments = $"{Path.Combine(baseFolderPath, mainApplicationName)} " +             
-                                                 $"--upt=relaunch-app --env={environment}";
-                    processStartInfo.UseShellExecute = false;
+                    processStartInfo.Arguments = $"{applicationPath} --update --env={environment}";
                     break;
                 case "Windows":
                     processStartInfo.FileName = "cmd.exe";                                                              
-                    processStartInfo.Arguments = $"/C start {Path.Combine(baseFolderPath, mainApplicationName)} " +     
-                                                 $"--upt=relaunch-app --env={environment}"; 
-                    processStartInfo.UseShellExecute = false;
+                    processStartInfo.Arguments = $"/C start {applicationPath} --update --env={environment}";
                     break;
                 default:
-                    return;
+                    throw new Exception($"Cannot apply update for operation system: {operationSystem}");
             }
 
+            processStartInfo.UseShellExecute = false;
+            
             Process.Start(processStartInfo);
+            
+            await WriteMessageToFileAsync("Finish update.");
             
             Environment.Exit(0);
         }
         catch (Exception exception)
         {
-            var parentDirectory = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory);
-            if (parentDirectory == null)
-            {
-                return;
-            }
-
-            var directoryPath = Path.Combine(parentDirectory.FullName, "logs");
-            if (!Directory.Exists(directoryPath))
-            {
-                Directory.CreateDirectory(directoryPath);
-            }
-
-            await File.WriteAllTextAsync(
-                Path.Combine(directoryPath, "updater-fatal.txt"), exception.ToString()
-            );
+            await WriteMessageToFileAsync(exception.ToString());
         }
+    }
+
+    private static async Task WriteMessageToFileAsync(string message)
+    {
+        message += Environment.NewLine;
+        
+        await File.AppendAllTextAsync(UpdaterLogsFile, message);
     }
 }

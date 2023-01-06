@@ -2,7 +2,6 @@
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using TradeHero.Contracts.Base.Constants;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.Services.Models.Environment;
@@ -14,7 +13,7 @@ internal class EnvironmentService : IEnvironmentService
     private readonly IHostEnvironment _hostingEnvironment;
     private readonly IConfiguration _configuration;
 
-    public Dictionary<string, string> CustomArgs { get; set; } = new();
+    public Dictionary<string, string> CustomArgs { get; } = new();
 
     public EnvironmentService(
         IHostEnvironment hostingEnvironment, 
@@ -23,16 +22,12 @@ internal class EnvironmentService : IEnvironmentService
     {
         _hostingEnvironment = hostingEnvironment;
         _configuration = configuration;
+       
     }
 
     public EnvironmentSettings GetEnvironmentSettings()
     {
         return _configuration.Get<EnvironmentSettings>() ?? new EnvironmentSettings();
-    }
-    
-    public string? GetEnvironmentValueByKey(string key)
-    {
-        return _configuration.GetValue<string>(key);
     }
 
     public Version GetCurrentApplicationVersion()
@@ -47,22 +42,28 @@ internal class EnvironmentService : IEnvironmentService
 
     public string GetDataFolderPath()
     {
-        return Path.Combine(_hostingEnvironment.ContentRootPath, FolderConstants.DataFolder);
+        return Path.Combine(_hostingEnvironment.ContentRootPath, GetEnvironmentSettings().Folder.DataFolder);
     }
 
     public string GetLogsFolderPath()
     {
-        return Path.Combine(_hostingEnvironment.ContentRootPath, FolderConstants.DataFolder, FolderConstants.LogsFolder);
+        var environmentSettings = GetEnvironmentSettings();
+        
+        return Path.Combine(_hostingEnvironment.ContentRootPath, environmentSettings.Folder.DataFolder, environmentSettings.Folder.DataFolder);
     }
     
     public string GetDatabaseFolderPath()
     {
-        return Path.Combine(_hostingEnvironment.ContentRootPath, FolderConstants.DataFolder, FolderConstants.DatabaseFolder);
+        var environmentSettings = GetEnvironmentSettings();
+        
+        return Path.Combine(_hostingEnvironment.ContentRootPath, environmentSettings.Folder.DataFolder, environmentSettings.Folder.DatabaseFolder);
     }
     
     public string GetUpdateFolderPath()
     {
-        return Path.Combine(_hostingEnvironment.ContentRootPath, FolderConstants.DataFolder, FolderConstants.UpdateFolder);
+        var environmentSettings = GetEnvironmentSettings();
+        
+        return Path.Combine(_hostingEnvironment.ContentRootPath, environmentSettings.Folder.DataFolder, environmentSettings.Folder.UpdateFolder);
     }
 
     public EnvironmentType GetEnvironmentType()
@@ -87,28 +88,16 @@ internal class EnvironmentService : IEnvironmentService
         var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         return isWindows ? OperationSystem.Windows : OperationSystem.None;
     }
-    
-    public string GetApplicationNameByOperationSystem(OperationSystem operationSystem)
-    {
-        var applicationName = operationSystem switch
-        {
-            OperationSystem.Windows => "trade_hero.exe",
-            OperationSystem.Linux => "trade_hero",
-            OperationSystem.Osx => "trade_hero",
-            OperationSystem.None => string.Empty,
-            _ => string.Empty
-        };
-
-        return applicationName;
-    }
 
     public string GetCurrentApplicationName()
     {
+        var environmentSettings = GetEnvironmentSettings();
+        
         var applicationName = GetCurrentOperationSystem() switch
         {
-            OperationSystem.Windows => "trade_hero.exe",
-            OperationSystem.Linux => "trade_hero",
-            OperationSystem.Osx => "trade_hero",
+            OperationSystem.Windows => environmentSettings.Application.WindowsAppName,
+            OperationSystem.Linux => environmentSettings.Application.LinuxAppName,
+            OperationSystem.Osx => environmentSettings.Application.LinuxAppName,
             OperationSystem.None => string.Empty,
             _ => string.Empty
         };

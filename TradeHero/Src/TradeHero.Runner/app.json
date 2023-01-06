@@ -1,4 +1,9 @@
 {
+    "Application": {
+        "BaseAppName": "trade_hero",
+        "WindowsAppName": "trade_hero.exe",
+        "LinuxAppName": "trade_hero"
+    },
     "Client": {
         "Server": "Default"
     },
@@ -19,5 +24,18 @@
         "Owner": "oyashchyshyn",
         "Repository": "TradeHero",
         "Token": "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"
+    },
+    "Folder": {
+        "DataFolder": "data",
+        "DatabaseFolder": "database",
+        "LogsFolder": "logs",
+        "UpdateFolder": "update"
+    },
+    "Database": {
+        "DatabaseName": "th_database",
+        "DatabasePassword": "HCqhp)&Wqsjd6A^B4rsH^8hZF^Yx#%xP",
+        "UserFileName": "strategy.data",
+        "ConnectionFileName": "strategy.data",
+        "StrategyFileName": "strategy.data"
     }
 }

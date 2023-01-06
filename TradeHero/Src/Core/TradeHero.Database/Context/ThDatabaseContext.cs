@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Base.Constants;
+using TradeHero.Contracts.Services;
+using TradeHero.Contracts.Services.Models.Environment;
 using TradeHero.Database.Entities;
 using TradeHero.Database.Worker;
 
@@ -9,6 +10,7 @@ namespace TradeHero.Database.Context;
 internal class ThDatabaseContext : DbContext
 {
     private readonly ILogger<ThDatabaseContext> _logger;
+    private readonly EnvironmentSettings _environmentSettings;
     private readonly DatabaseFileWorker _databaseFileWorker;
 
     public DbSet<User> Users { get; set; } = null!;
@@ -18,17 +20,19 @@ internal class ThDatabaseContext : DbContext
     public ThDatabaseContext(
         DbContextOptions<ThDatabaseContext> options, 
         ILogger<ThDatabaseContext> logger, 
+        IEnvironmentService environmentService,
         DatabaseFileWorker databaseFileWorker
         ) 
         : base(options)
     {
         _logger = logger;
+        _environmentSettings = environmentService.GetEnvironmentSettings();
         _databaseFileWorker = databaseFileWorker;
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseInMemoryDatabase(databaseName: DatabaseConstants.DatabaseName);
+        optionsBuilder.UseInMemoryDatabase(databaseName: _environmentSettings.Database.DatabaseName);
     }
     
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -107,7 +111,7 @@ internal class ThDatabaseContext : DbContext
                         Strategies.AsNoTracking().ToList()
                     );
                     break;
-                case nameof(Entities.User):
+                case nameof(User):
                     _databaseFileWorker.UpdateDataInFile(
                         Users.AsNoTracking().ToList()
                     );
