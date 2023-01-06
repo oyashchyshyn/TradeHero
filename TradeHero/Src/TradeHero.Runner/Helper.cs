@@ -91,7 +91,7 @@ internal static class Helper
             $"{ArgumentKeyConstants.Environment}{customArgs[ArgumentKeyConstants.Environment]} " +
             $"{ArgumentKeyConstants.OperationSystem}{customArgs[ArgumentKeyConstants.OperationSystem]} " +
             $"{ArgumentKeyConstants.DownloadApplicationPath}{customArgs[ArgumentKeyConstants.DownloadApplicationPath]} " +
-            $"{ArgumentKeyConstants.ApplicationPath}{customArgs[ArgumentKeyConstants.ApplicationPath]}" +
+            $"{ArgumentKeyConstants.ApplicationPath}{customArgs[ArgumentKeyConstants.ApplicationPath]} " +
             $"{ArgumentKeyConstants.BaseApplicationName}{customArgs[ArgumentKeyConstants.BaseApplicationName]}";
 
         var processStartInfo = new ProcessStartInfo();
