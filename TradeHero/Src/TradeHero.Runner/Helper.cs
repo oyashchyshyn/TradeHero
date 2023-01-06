@@ -1,0 +1,128 @@
+﻿using System.Diagnostics;
+using System.Globalization;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using Microsoft.Extensions.Configuration;
+using TradeHero.Contracts.Base.Constants;
+using TradeHero.Contracts.Base.Enums;
+using TradeHero.Contracts.Services.Models.Environment;
+
+namespace TradeHero.Runner;
+
+internal static class Helper
+{
+    [DllImport("libc", SetLastError = true)]
+    private static extern int chmod(string pathname, int mode);
+
+    public static EnvironmentType GetEnvironmentType(string[] args)
+    {
+        if (!args.Any(x => x.StartsWith(ArgumentKeyConstants.Environment)))
+        {
+            return EnvironmentType.Production;
+        }
+        
+        var argValue = args
+            .First(x => x.StartsWith(ArgumentKeyConstants.Environment))
+            .Replace(ArgumentKeyConstants.Environment, string.Empty);
+
+        return (EnvironmentType)Enum.Parse(typeof(EnvironmentType), argValue);
+    }
+    
+    public static IConfiguration GenerateConfiguration(string[] args)
+    {
+        var assembly = Assembly.GetEntryAssembly();
+        if (assembly == null)
+        {
+            throw new Exception("Cannot load main assembly");
+        }
+        
+        using var stream = assembly.GetManifestResourceStream("TradeHero.Runner.app.json");
+        if (stream == null)
+        {
+            throw new Exception("Cannot find app.json");
+        }
+
+        return new ConfigurationBuilder()
+            .AddJsonStream(stream)
+            .AddCommandLine(args)
+            .Build();
+    }
+    
+    public static async Task WriteErrorAsync(Exception exception, string logsFolderPath)
+    {            
+        var directoryPath = Path.Combine(logsFolderPath);
+        if (!Directory.Exists(directoryPath))
+        {
+            Directory.CreateDirectory(directoryPath);
+        }
+            
+        await File.WriteAllTextAsync(
+            Path.Combine(directoryPath, "fatal.txt"), exception.ToString()
+        );
+            
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine($"FATAL: {exception.Message}");
+        Console.ResetColor();
+        Console.WriteLine("Press any key for exit...");
+        Console.ReadLine();
+    }
+    
+    public static void WriteError(string message)
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine($"Error: {message}");
+        Console.ResetColor();
+        Console.WriteLine("Press any key for exit...");
+        Console.ReadLine();
+    }
+    
+    public static void SetCulture()
+    {
+        Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+        Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+        CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+        CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+    }
+
+    public static EnvironmentSettings ConvertConfigurationToEnvironmentSettings(IConfiguration configuration)
+    {
+        return configuration.Get<EnvironmentSettings>() ?? new EnvironmentSettings();
+    }
+
+    public static void RunUpdateProcess(Dictionary<string, string> customArgs, OperationSystem operationSystem)
+    {
+        var arguments =
+            $"{ArgumentKeyConstants.Environment}{customArgs[ArgumentKeyConstants.Environment]} " +
+            $"{ArgumentKeyConstants.OperationSystem}{customArgs[ArgumentKeyConstants.OperationSystem]} " +
+            $"{ArgumentKeyConstants.DownloadApplicationPath}{customArgs[ArgumentKeyConstants.DownloadApplicationPath]} " +
+            $"{ArgumentKeyConstants.ApplicationPath}{customArgs[ArgumentKeyConstants.ApplicationPath]} " +
+            $"{ArgumentKeyConstants.BaseApplicationName}{customArgs[ArgumentKeyConstants.BaseApplicationName]}";
+
+        var processStartInfo = new ProcessStartInfo();
+
+        var pathWithArgs = $"{customArgs[ArgumentKeyConstants.UpdaterPath]} {arguments}";
+        
+        switch (operationSystem)
+        {
+            case OperationSystem.Linux:
+                chmod(customArgs[ArgumentKeyConstants.UpdaterPath], 0x1 | 0x2 | 0x4 | 0x8 | 0x10 | 0x20 | 0x40 | 0x80 | 0x100);
+                processStartInfo.FileName = "/bin/bash";
+                processStartInfo.Arguments = $"-c \"{pathWithArgs}\"";
+                break;
+            case OperationSystem.Windows:
+                processStartInfo.FileName = "cmd.exe";
+                processStartInfo.Arguments = $"/C start {pathWithArgs}";
+                break;
+            case OperationSystem.None:
+            case OperationSystem.Osx:
+                throw new Exception($"Cannot apply update process to operation system: {operationSystem}");
+            default:
+                return;
+        }
+
+        processStartInfo.UseShellExecute = false;
+        processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+        
+        Process.Start(processStartInfo);
+    }
+}

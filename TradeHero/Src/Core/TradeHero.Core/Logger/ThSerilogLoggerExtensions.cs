@@ -4,7 +4,6 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
 using Serilog.Sinks.SystemConsole.Themes;
-using TradeHero.Contracts.Base.Constants;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.Store;
@@ -31,8 +30,8 @@ internal static class ThSerilogLoggerExtensions
 
             if (environmentSettings.Logger.LogLevel != LogLevel.None)
             {
-                var loggerFilePath = Path.Combine(environmentService.GetBasePath(), FolderConstants.DataFolder, 
-                    FolderConstants.LogsFolder, environmentSettings.Logger.FileName);
+                var loggerFilePath = Path.Combine(environmentService.GetLogsFolderPath(), 
+                    environmentSettings.Logger.FileName);
 
                 loggerConfiguration = new LoggerConfiguration()
                     .MinimumLevel.Is((LogEventLevel)environmentSettings.Logger.LogLevel)
@@ -50,7 +49,8 @@ internal static class ThSerilogLoggerExtensions
 
                 if (environmentService.GetEnvironmentType() == EnvironmentType.Development)
                 {
-                    loggerConfiguration.WriteTo.Console(outputTemplate: environmentSettings.Logger.LogTemplate, theme: AnsiConsoleTheme.Code);
+                    loggerConfiguration.WriteTo.Console(outputTemplate: environmentSettings.Logger.LogTemplate, 
+                        theme: AnsiConsoleTheme.Code);
                 }
             }
             else

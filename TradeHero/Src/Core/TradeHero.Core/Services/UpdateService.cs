@@ -136,25 +136,24 @@ internal class UpdateService : IUpdateService
             var productName = $"TradeHero_{telegramUserId}";
             var productVersion = _environmentService.GetCurrentApplicationVersion().ToString();
             var progressIndicator = new Progress<decimal>();
-            var filePath = Path.Combine(_environmentService.GetUpdateFolderPath(), releaseVersion.AppName);
+            var appFilePath = Path.Combine(_environmentService.GetUpdateFolderPath(), releaseVersion.AppName);
+            var updaterFilePath = Path.Combine(_environmentService.GetUpdateFolderPath(), releaseVersion.UpdaterName);
 
             progressIndicator.ProgressChanged += (sender, progress) =>
             {
                 OnDownloadProgress?.Invoke(sender, progress);
             };
 
-            await DownloadFileAsync(releaseVersion.UpdaterDownloadUri, releaseVersion.UpdaterName, productName,
+            await DownloadFileAsync(releaseVersion.UpdaterDownloadUri, updaterFilePath, productName,
                 productVersion, progressIndicator, cancellationToken);
             
-            await DownloadFileAsync(releaseVersion.AppDownloadUri, releaseVersion.AppName, productName,
+            await DownloadFileAsync(releaseVersion.AppDownloadUri, appFilePath, productName,
                 productVersion, progressIndicator, cancellationToken);
 
             var downloadResponse = new DownloadResponse
             {
-                AppFileName = releaseVersion.AppName,
-                AppFileLocation = _environmentService.GetUpdateFolderPath(),
-                UpdaterFileName = releaseVersion.UpdaterName,
-                UpdaterFileLocation = _environmentService.GetUpdateFolderPath()
+                AppFilePath = appFilePath,
+                UpdaterFilePath = updaterFilePath
             };
             
             return new GenericBaseResult<DownloadResponse>(downloadResponse);
@@ -169,7 +168,7 @@ internal class UpdateService : IUpdateService
     
     #region Private methods
 
-    private async Task DownloadFileAsync(string downloadUrl, string name, string productName, string productVersion, 
+    private async Task DownloadFileAsync(string downloadUrl, string filePath, string productName, string productVersion, 
         IProgress<decimal>? progressIndicator, CancellationToken cancellationToken)
     {
         using var client = new HttpClient();
@@ -184,7 +183,7 @@ internal class UpdateService : IUpdateService
         request.Headers.UserAgent.Add(new ProductInfoHeaderValue(productName, productVersion));
 
         await using var file = new FileStream(
-            Path.Combine(_environmentService.GetUpdateFolderPath(), name), 
+            filePath, 
             FileMode.Create, FileAccess.Write, FileShare.None
         );
 

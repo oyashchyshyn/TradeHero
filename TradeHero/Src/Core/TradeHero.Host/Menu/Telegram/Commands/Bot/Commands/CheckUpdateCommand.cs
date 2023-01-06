@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types.ReplyMarkups;
+using TradeHero.Contracts.Base.Constants;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Menu.Commands;
 using TradeHero.Contracts.Services;
@@ -16,7 +17,7 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
     private readonly IUpdateService _updateService;
     private readonly IStore _store;
     private readonly IEnvironmentService _environmentService;
-    private readonly IHostLifetime _hostLifetime;
+    private readonly IHostApplicationLifetime _hostApplicationLifetime;
     private readonly TelegramMenuStore _telegramMenuStore;
 
     public CheckUpdateCommand(
@@ -25,7 +26,7 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
         IUpdateService updateService,
         IStore store,
         IEnvironmentService environmentService,
-        IHostLifetime hostLifetime,
+        IHostApplicationLifetime hostApplicationLifetime,
         TelegramMenuStore telegramMenuStore
         )
     {
@@ -34,7 +35,7 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
         _updateService = updateService;
         _store = store;
         _environmentService = environmentService;
-        _hostLifetime = hostLifetime;
+        _hostApplicationLifetime = hostApplicationLifetime;
         _telegramMenuStore = telegramMenuStore;
     }
 
@@ -189,17 +190,20 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
                     cancellationToken: cancellationToken
                 );
 
+                var baseApplicationPath = Path.Combine(_environmentService.GetBasePath(),
+                    _environmentService.GetCurrentApplicationName());
+                
                 _environmentService.CustomArgs.Clear();
-                _environmentService.CustomArgs.Add("--upd=", downloadResult.Data.UpdaterFileLocation);
-                _environmentService.CustomArgs.Add("--upa=", downloadResult.Data.AppFileName);
-                _environmentService.CustomArgs.Add("--os=", _environmentService.GetCurrentOperationSystem().ToString());
-                _environmentService.CustomArgs.Add("--env=", _environmentService.GetEnvironmentType().ToString());
-                _environmentService.CustomArgs.Add("--bfp=", _environmentService.GetBasePath());
-                _environmentService.CustomArgs.Add("--ufp=", downloadResult.Data.AppFileLocation);
-                _environmentService.CustomArgs.Add("--man=", _environmentService.GetCurrentApplicationName());
-                _environmentService.CustomArgs.Add("--dan=", downloadResult.Data.AppFileName);
+                _environmentService.CustomArgs.Add(ArgumentKeyConstants.UpdaterPath, downloadResult.Data.UpdaterFilePath);
+                _environmentService.CustomArgs.Add(ArgumentKeyConstants.Environment, _environmentService.GetEnvironmentType().ToString());
+                _environmentService.CustomArgs.Add(ArgumentKeyConstants.OperationSystem, _environmentService.GetCurrentOperationSystem().ToString());
+                _environmentService.CustomArgs.Add(ArgumentKeyConstants.ApplicationPath, baseApplicationPath);
+                _environmentService.CustomArgs.Add(ArgumentKeyConstants.DownloadApplicationPath, downloadResult.Data.AppFilePath);
+                _environmentService.CustomArgs.Add(ArgumentKeyConstants.BaseApplicationName, _environmentService.GetEnvironmentSettings().Application.BaseAppName);
 
-                await _hostLifetime.StopAsync(cancellationToken);
+                _hostApplicationLifetime.StopApplication();
+                
+                return;
             }
 
             await SendMessageWithClearDataAsync("There was an error during process, please, try later.", cancellationToken);

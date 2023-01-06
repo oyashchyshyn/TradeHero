@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Repositories;
+using TradeHero.Contracts.Services;
 using TradeHero.Database.Context;
 using TradeHero.Database.Entities;
 using TradeHero.Database.Repositories;
@@ -18,11 +19,13 @@ public static class ThDatabaseServiceCollectionExtensions
         serviceCollection.AddTransient(serviceProvider =>
         {
             var logger = serviceProvider.GetRequiredService<ILoggerFactory>();
+            var environmentService = serviceProvider.GetRequiredService<IEnvironmentService>();
             var databaseFileWorker = serviceProvider.GetRequiredService<DatabaseFileWorker>();
-            
+
             var context = new ThDatabaseContext(
                 new DbContextOptions<ThDatabaseContext>(),
                 logger.CreateLogger<ThDatabaseContext>(),
+                environmentService,
                 databaseFileWorker
             );
 
