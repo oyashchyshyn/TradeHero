@@ -81,6 +81,8 @@ internal class ThHostedService : IHostedService
         _internetConnectionService.OnInternetDisconnected -= InternetConnectionServiceOnOnInternetDisconnected;
         
         _internetConnectionService.StopInternetConnectionChecking();
+        
+        _logger.LogInformation("Application stopped");
     }
 
     #region Private methods
