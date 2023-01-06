@@ -78,7 +78,10 @@ internal static class Program
         }
         catch (Exception exception)
         {
-            await Helper.WriteErrorAsync(exception, AppDomain.CurrentDomain.BaseDirectory);
+            var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, 
+                environmentSettings.Folder.DataFolder, environmentSettings.Folder.LogsFolder);
+            
+            await Helper.WriteErrorAsync(exception, path);
             
             Environment.Exit(-1);
         }
