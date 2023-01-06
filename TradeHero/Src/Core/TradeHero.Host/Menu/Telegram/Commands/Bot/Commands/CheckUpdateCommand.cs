@@ -202,6 +202,8 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
                 _environmentService.CustomArgs.Add(ArgumentKeyConstants.BaseApplicationName, _environmentService.GetEnvironmentSettings().Application.BaseAppName);
 
                 _hostApplicationLifetime.StopApplication();
+                
+                return;
             }
 
             await SendMessageWithClearDataAsync("There was an error during process, please, try later.", cancellationToken);
