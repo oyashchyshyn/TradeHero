@@ -25,6 +25,11 @@ internal class EnvironmentService : IEnvironmentService
        
     }
 
+    public string[] GetEnvironmentArgs()
+    {
+        return Environment.GetCommandLineArgs();
+    }
+    
     public EnvironmentSettings GetEnvironmentSettings()
     {
         return _configuration.Get<EnvironmentSettings>() ?? new EnvironmentSettings();
