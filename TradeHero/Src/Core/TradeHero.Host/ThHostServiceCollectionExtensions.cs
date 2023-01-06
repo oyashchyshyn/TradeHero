@@ -19,6 +19,7 @@ public static class ThLogicServiceCollectionExtensions
     public static void AddThHost(this IServiceCollection serviceCollection)
     {
         // Host
+        serviceCollection.AddHostedService<ThHostedService>();
         serviceCollection.AddSingleton<IHostLifetime, ThHostLifeTime>();
 
         // Menu factory
