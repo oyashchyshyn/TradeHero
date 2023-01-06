@@ -88,9 +88,11 @@ internal static class Helper
     public static void RunUpdateProcess(Dictionary<string, string> customArgs, OperationSystem operationSystem)
     {
         var arguments =
-            $"{customArgs[ArgumentKeyConstants.Environment]} {customArgs[ArgumentKeyConstants.OperationSystem]}" +
-            $"{customArgs[ArgumentKeyConstants.DownloadApplicationPath]} {customArgs[ArgumentKeyConstants.ApplicationPath]}" +
-            $"{customArgs[ArgumentKeyConstants.BaseApplicationName]}";
+            $"{ArgumentKeyConstants.Environment}{customArgs[ArgumentKeyConstants.Environment]} " +
+            $"{ArgumentKeyConstants.OperationSystem}{customArgs[ArgumentKeyConstants.OperationSystem]} " +
+            $"{ArgumentKeyConstants.DownloadApplicationPath}{customArgs[ArgumentKeyConstants.DownloadApplicationPath]} " +
+            $"{ArgumentKeyConstants.ApplicationPath}{customArgs[ArgumentKeyConstants.ApplicationPath]}" +
+            $"{ArgumentKeyConstants.BaseApplicationName}{customArgs[ArgumentKeyConstants.BaseApplicationName]}";
 
         var processStartInfo = new ProcessStartInfo();
 

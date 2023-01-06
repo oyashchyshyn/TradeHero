@@ -53,6 +53,7 @@ internal static class Program
                 {
                     serviceCollection.AddThDependencyCollection();
                 })
+                .UseConsoleLifetime()
                 .Build();
             
             if (!await host.Services.GetRequiredService<IStartupService>().CheckIsFirstRunAsync())
