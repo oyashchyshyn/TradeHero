@@ -51,9 +51,6 @@ internal static class Program
                 })
                 .ConfigureServices((_, serviceCollection) =>
                 {
-                    serviceCollection.AddOptions<HostOptions>()
-                        .Configure(opts => opts.ShutdownTimeout = TimeSpan.FromSeconds(15));
-                    
                     serviceCollection.AddThDependencyCollection();
                 })
                 .Build();

@@ -17,7 +17,7 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
     private readonly IUpdateService _updateService;
     private readonly IStore _store;
     private readonly IEnvironmentService _environmentService;
-    private readonly IHostLifetime _hostLifetime;
+    private readonly IHostApplicationLifetime _hostApplicationLifetime;
     private readonly TelegramMenuStore _telegramMenuStore;
 
     public CheckUpdateCommand(
@@ -26,7 +26,7 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
         IUpdateService updateService,
         IStore store,
         IEnvironmentService environmentService,
-        IHostLifetime hostLifetime,
+        IHostApplicationLifetime hostApplicationLifetime,
         TelegramMenuStore telegramMenuStore
         )
     {
@@ -35,7 +35,7 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
         _updateService = updateService;
         _store = store;
         _environmentService = environmentService;
-        _hostLifetime = hostLifetime;
+        _hostApplicationLifetime = hostApplicationLifetime;
         _telegramMenuStore = telegramMenuStore;
     }
 
@@ -201,7 +201,7 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
                 _environmentService.CustomArgs.Add(ArgumentKeyConstants.DownloadApplicationPath, downloadResult.Data.AppFilePath);
                 _environmentService.CustomArgs.Add(ArgumentKeyConstants.BaseApplicationName, _environmentService.GetCurrentApplicationName());
 
-                await _hostLifetime.StopAsync(cancellationToken);
+                _hostApplicationLifetime.StopApplication();
             }
 
             await SendMessageWithClearDataAsync("There was an error during process, please, try later.", cancellationToken);
