@@ -33,16 +33,18 @@ internal static class Program
             File.Move(downloadApplicationPath, applicationPath, true);
 
             var processStartInfo = new ProcessStartInfo();
+
+            var pathWithArgs = $"{applicationPath} --update --env={environment}";
             
             switch (operationSystem)
             {
                 case "Linux":
                     processStartInfo.FileName = "/bin/bash";                                                           
-                    processStartInfo.Arguments = $"{applicationPath} --update --env={environment}";
+                    processStartInfo.Arguments = $"-c \"{pathWithArgs}\"";
                     break;
                 case "Windows":
                     processStartInfo.FileName = "cmd.exe";                                                              
-                    processStartInfo.Arguments = $"/C start {applicationPath} --update --env={environment}";
+                    processStartInfo.Arguments = $"/C start {pathWithArgs}";
                     break;
                 default:
                     throw new Exception($"Cannot apply update for operation system: {operationSystem}");

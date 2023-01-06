@@ -96,22 +96,18 @@ internal static class Helper
 
         var processStartInfo = new ProcessStartInfo();
 
+        var pathWithArgs = $"{customArgs[ArgumentKeyConstants.UpdaterPath]} {arguments}";
+        
         switch (operationSystem)
         {
             case OperationSystem.Linux:
                 processStartInfo.FileName = "/bin/bash";
-                processStartInfo.Arguments = $"{customArgs[ArgumentKeyConstants.UpdaterPath]} {arguments}";
-                processStartInfo.UseShellExecute = false;
-                processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                processStartInfo.Arguments = $"-c \"{pathWithArgs}\"";
                 break;
             case OperationSystem.Windows:
-            {
                 processStartInfo.FileName = "cmd.exe";
-                processStartInfo.Arguments = $"/C start {customArgs[ArgumentKeyConstants.UpdaterPath]} {arguments}";
-                processStartInfo.UseShellExecute = false;
-                processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                break;   
-            }
+                processStartInfo.Arguments = $"/C start {pathWithArgs}";
+                break;
             case OperationSystem.None:
             case OperationSystem.Osx:
                 throw new Exception($"Cannot apply update process to operation system: {operationSystem}");
@@ -119,6 +115,9 @@ internal static class Helper
                 return;
         }
 
+        processStartInfo.UseShellExecute = false;
+        processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+        
         Process.Start(processStartInfo);
     }
 }
