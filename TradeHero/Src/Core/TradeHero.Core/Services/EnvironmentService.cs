@@ -22,14 +22,13 @@ internal class EnvironmentService : IEnvironmentService
     {
         _hostingEnvironment = hostingEnvironment;
         _configuration = configuration;
-       
     }
 
     public string[] GetEnvironmentArgs()
     {
         return Environment.GetCommandLineArgs();
     }
-    
+
     public EnvironmentSettings GetEnvironmentSettings()
     {
         return _configuration.Get<EnvironmentSettings>() ?? new EnvironmentSettings();
@@ -54,7 +53,7 @@ internal class EnvironmentService : IEnvironmentService
     {
         var environmentSettings = GetEnvironmentSettings();
         
-        return Path.Combine(_hostingEnvironment.ContentRootPath, environmentSettings.Folder.DataFolder, environmentSettings.Folder.DataFolder);
+        return Path.Combine(_hostingEnvironment.ContentRootPath, environmentSettings.Folder.DataFolder, environmentSettings.Folder.LogsFolder);
     }
     
     public string GetDatabaseFolderPath()
