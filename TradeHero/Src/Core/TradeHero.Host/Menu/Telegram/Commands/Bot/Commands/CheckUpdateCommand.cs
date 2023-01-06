@@ -199,7 +199,7 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
                 _environmentService.CustomArgs.Add(ArgumentKeyConstants.OperationSystem, _environmentService.GetCurrentOperationSystem().ToString());
                 _environmentService.CustomArgs.Add(ArgumentKeyConstants.ApplicationPath, baseApplicationPath);
                 _environmentService.CustomArgs.Add(ArgumentKeyConstants.DownloadApplicationPath, downloadResult.Data.AppFilePath);
-                _environmentService.CustomArgs.Add(ArgumentKeyConstants.BaseApplicationName, _environmentService.GetCurrentApplicationName());
+                _environmentService.CustomArgs.Add(ArgumentKeyConstants.BaseApplicationName, _environmentService.GetEnvironmentSettings().Application.BaseAppName);
 
                 _hostApplicationLifetime.StopApplication();
             }
