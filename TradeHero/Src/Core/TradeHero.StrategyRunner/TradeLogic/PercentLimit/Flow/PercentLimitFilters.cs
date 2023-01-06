@@ -64,7 +64,7 @@ internal class PercentLimitFilters
                 topLongKlines.Length, topShortKlines.Length, nameof(GetFilteredOrdersForOpenPositionAsync));
 
             var folderName = Path.Combine(_environmentService.GetBasePath(), 
-                _environmentService.GetEnvironmentSettings().Folder.DataFolder, "ClusterResults");
+                _environmentService.GetEnvironmentSettings().Folder.DataFolderName, "ClusterResults");
             var jsonShorts = _jsonService.SerializeObject(instanceResult.ShortSignals, Formatting.Indented).Data;
             var jsonLongs = _jsonService.SerializeObject(instanceResult.LongSignals, Formatting.Indented).Data;
             var jsonFilteredShorts = _jsonService.SerializeObject(topShortKlines, Formatting.Indented).Data;

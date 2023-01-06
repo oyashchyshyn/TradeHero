@@ -46,28 +46,28 @@ internal class EnvironmentService : IEnvironmentService
 
     public string GetDataFolderPath()
     {
-        return Path.Combine(_hostingEnvironment.ContentRootPath, GetEnvironmentSettings().Folder.DataFolder);
+        return Path.Combine(_hostingEnvironment.ContentRootPath, GetEnvironmentSettings().Folder.DataFolderName);
     }
 
     public string GetLogsFolderPath()
     {
         var environmentSettings = GetEnvironmentSettings();
         
-        return Path.Combine(_hostingEnvironment.ContentRootPath, environmentSettings.Folder.DataFolder, environmentSettings.Folder.LogsFolder);
+        return Path.Combine(_hostingEnvironment.ContentRootPath, environmentSettings.Folder.DataFolderName, environmentSettings.Folder.LogsFolderName);
     }
     
     public string GetDatabaseFolderPath()
     {
         var environmentSettings = GetEnvironmentSettings();
         
-        return Path.Combine(_hostingEnvironment.ContentRootPath, environmentSettings.Folder.DataFolder, environmentSettings.Folder.DatabaseFolder);
+        return Path.Combine(_hostingEnvironment.ContentRootPath, environmentSettings.Folder.DataFolderName, environmentSettings.Folder.DatabaseFolderName);
     }
     
     public string GetUpdateFolderPath()
     {
         var environmentSettings = GetEnvironmentSettings();
         
-        return Path.Combine(_hostingEnvironment.ContentRootPath, environmentSettings.Folder.DataFolder, environmentSettings.Folder.UpdateFolder);
+        return Path.Combine(_hostingEnvironment.ContentRootPath, environmentSettings.Folder.DataFolderName, environmentSettings.Folder.UpdateFolderName);
     }
 
     public EnvironmentType GetEnvironmentType()

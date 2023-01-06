@@ -26,16 +26,16 @@
         "Token": "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"
     },
     "Folder": {
-        "DataFolder": "data",
-        "DatabaseFolder": "database",
-        "LogsFolder": "logs",
-        "UpdateFolder": "update"
+        "DataFolderName": "data",
+        "DatabaseFolderName": "database",
+        "LogsFolderName": "logs",
+        "UpdateFolderName": "update"
     },
     "Database": {
         "DatabaseName": "th_database",
         "DatabasePassword": "HCqhp)&Wqsjd6A^B4rsH^8hZF^Yx#%xP",
-        "UserFileName": "strategy.data",
-        "ConnectionFileName": "strategy.data",
+        "UserFileName": "user.data",
+        "ConnectionFileName": "connection.data",
         "StrategyFileName": "strategy.data"
     }
 }

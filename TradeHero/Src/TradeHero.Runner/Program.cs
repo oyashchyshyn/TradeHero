@@ -79,7 +79,7 @@ internal static class Program
         catch (Exception exception)
         {
             var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, 
-                environmentSettings.Folder.DataFolder, environmentSettings.Folder.LogsFolder);
+                environmentSettings.Folder.DataFolderName, environmentSettings.Folder.LogsFolderName);
             
             await Helper.WriteErrorAsync(exception, path);
             

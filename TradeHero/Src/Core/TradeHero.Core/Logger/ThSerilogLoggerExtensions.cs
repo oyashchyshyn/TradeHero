@@ -30,7 +30,7 @@ internal static class ThSerilogLoggerExtensions
 
             if (environmentSettings.Logger.LogLevel != LogLevel.None)
             {
-                var loggerFilePath = Path.Combine(environmentService.GetEnvironmentSettings().Folder.LogsFolder, 
+                var loggerFilePath = Path.Combine(environmentService.GetLogsFolderPath(), 
                     environmentSettings.Logger.FileName);
 
                 loggerConfiguration = new LoggerConfiguration()
