@@ -1,9 +1,13 @@
 ﻿using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace TradeHero.Updater;
 
 internal static class Program
 {
+    [DllImport("libc", SetLastError = true)]
+    private static extern int chmod(string pathname, int mode);
+    
     private static readonly string UpdaterLogsFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "updater.txt");
     
     private static async Task Main(string[] args)
@@ -39,6 +43,7 @@ internal static class Program
             switch (operationSystem)
             {
                 case "Linux":
+                    chmod(applicationPath, 0x1 | 0x2 | 0x4 | 0x8 | 0x10 | 0x20 | 0x40 | 0x80 | 0x100);
                     processStartInfo.FileName = "/bin/bash";                                                           
                     processStartInfo.Arguments = $"-c \"{pathWithArgs}\"";
                     break;
