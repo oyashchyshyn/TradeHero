@@ -16,6 +16,13 @@ env:
   PUBLISH_UPDATER_OSX_PATH: TradeHero/Src/TradeHero.Updater/publish/osx-x64/updater
 
 jobs:
+  delete-old-artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: kolpav/purge-artifacts-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          expire-in: 0
   build-publish-dotnet:
     runs-on: windows-latest
     steps:
