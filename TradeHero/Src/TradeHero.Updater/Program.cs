@@ -66,6 +66,8 @@ internal static class Program
         catch (Exception exception)
         {
             await WriteMessageToFileAsync(exception.ToString());
+            
+            Environment.Exit(-1);
         }
     }
 
