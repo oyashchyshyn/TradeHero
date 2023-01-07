@@ -17,13 +17,18 @@ env:
 
 jobs:
   delete-old-artifacts:
+    name: delete-old-artifacts
     runs-on: ubuntu-latest
     steps:
-      - uses: kolpav/purge-artifacts-action@v1
+      - name: deleteting-process
+        uses: kolpav/purge-artifacts-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           expire-in: 0
+      - run: echo "Finish 'delete-old-artifacts'"
   build-publish-dotnet:
+    name: build-publish-dotnet
+    needs: delete-old-artifacts
     runs-on: windows-latest
     steps:
       - name: Checkout to git directory
