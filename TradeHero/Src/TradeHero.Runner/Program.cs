@@ -69,9 +69,9 @@ internal static class Program
             if (environmentService.CustomArgs.ContainsKey(ArgumentKeyConstants.UpdaterPath))
             {
                 Helper.RunUpdateProcess(environmentService.CustomArgs, environmentService.GetCurrentOperationSystem());
-                
-                Environment.Exit(0);
             }
+            
+            Environment.Exit(0);
         }
         catch (Exception exception)
         {
