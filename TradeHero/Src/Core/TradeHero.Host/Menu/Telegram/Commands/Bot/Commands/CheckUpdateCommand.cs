@@ -173,7 +173,7 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
                     );
                 };
                 
-                var downloadResult = await _updateService.UpdateApplicationAsync(
+                var downloadResult = await _updateService.DownloadUpdateAsync(
                     _telegramMenuStore.CheckUpdateData.ReleaseVersion, 
                     cancellationToken
                 );
@@ -201,6 +201,8 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
                 _environmentService.CustomArgs.Add(ArgumentKeyConstants.DownloadApplicationPath, downloadResult.Data.AppFilePath);
                 _environmentService.CustomArgs.Add(ArgumentKeyConstants.BaseApplicationName, _environmentService.GetEnvironmentSettings().Application.BaseAppName);
 
+                _updateService.SetIsNeedToUpdate();
+                
                 _hostApplicationLifetime.StopApplication();
                 
                 return;

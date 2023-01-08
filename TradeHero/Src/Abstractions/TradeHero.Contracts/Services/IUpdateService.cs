@@ -7,7 +7,10 @@ public interface IUpdateService
 {
     event EventHandler<decimal> OnDownloadProgress;
 
+    bool IsNeedToUpdate { get; }
+
     Task<GenericBaseResult<ReleaseVersion>> GetLatestReleaseAsync();
-    Task<GenericBaseResult<DownloadResponse>> UpdateApplicationAsync(ReleaseVersion releaseVersion,
-        CancellationToken cancellationToken = default);
+    Task<GenericBaseResult<DownloadResponse>> DownloadUpdateAsync(ReleaseVersion releaseVersion, CancellationToken cancellationToken = default);
+    void SetIsNeedToUpdate();
+    Task StartUpdateAsync();
 }

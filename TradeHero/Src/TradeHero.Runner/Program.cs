@@ -62,13 +62,13 @@ internal static class Program
                 return;
             }
             
-            var environmentService = host.Services.GetRequiredService<IEnvironmentService>();
+            var updateService = host.Services.GetRequiredService<IUpdateService>();
             
             await host.RunAsync();
 
-            if (environmentService.CustomArgs.ContainsKey(ArgumentKeyConstants.UpdaterPath))
+            if (updateService.IsNeedToUpdate)
             {
-                Helper.RunUpdateProcess(environmentService.CustomArgs, environmentService.GetCurrentOperationSystem());
+                await updateService.StartUpdateAsync();
             }
             
             Environment.Exit(0);

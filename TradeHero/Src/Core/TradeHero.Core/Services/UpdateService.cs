@@ -1,13 +1,16 @@
+using System.Diagnostics;
 using System.Net.Http.Headers;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using Octokit;
+using TradeHero.Contracts.Base.Constants;
 using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Base.Models;
 using TradeHero.Contracts.Extensions;
 using TradeHero.Contracts.Repositories;
 using TradeHero.Contracts.Services;
-using TradeHero.Contracts.Services.Models.Environment;
 using TradeHero.Contracts.Services.Models.Update;
+using Credentials = Octokit.Credentials;
 using FileMode = System.IO.FileMode;
 using ProductHeaderValue = Octokit.ProductHeaderValue;
 
@@ -18,8 +21,11 @@ internal class UpdateService : IUpdateService
     private readonly ILogger<UpdateService> _logger;
     private readonly IEnvironmentService _environmentService;
     private readonly IUserRepository _userRepository;
+
+    [DllImport("libc", SetLastError = true)]
+    private static extern int chmod(string pathname, int mode);
     
-    private readonly EnvironmentSettings _environmentSettings;
+    public bool IsNeedToUpdate { get; private set; }
 
     public UpdateService(
         ILogger<UpdateService> logger,
@@ -30,8 +36,6 @@ internal class UpdateService : IUpdateService
         _logger = logger;
         _environmentService = environmentService;
         _userRepository = userRepository;
-
-        _environmentSettings = _environmentService.GetEnvironmentSettings();
     }
     
     public event EventHandler<decimal>? OnDownloadProgress;
@@ -40,19 +44,21 @@ internal class UpdateService : IUpdateService
     {
         try
         {
-            var client = new GitHubClient(new ProductHeaderValue(_environmentSettings.Github.Owner))
+            var environmentSettings = _environmentService.GetEnvironmentSettings();
+            
+            var client = new GitHubClient(new ProductHeaderValue(environmentSettings.Github.Owner))
             {
-                Credentials = new Credentials(_environmentSettings.Github.Token)
+                Credentials = new Credentials(environmentSettings.Github.Token)
             };
 
             var latestReleases = await client.Repository.Release.GetLatest(
-                _environmentSettings.Github.Owner, 
-                _environmentSettings.Github.Repository
+                environmentSettings.Github.Owner, 
+                environmentSettings.Github.Repository
             );
             
             if (latestReleases == null)
             {
-                _logger.LogInformation("There is no releases. In {Method}", nameof(UpdateApplicationAsync));
+                _logger.LogInformation("There is no releases. In {Method}", nameof(DownloadUpdateAsync));
                 
                 return new GenericBaseResult<ReleaseVersion>(ActionResult.Null);
             }
@@ -77,7 +83,7 @@ internal class UpdateService : IUpdateService
                 case OperationSystem.None:
                 default:
                     _logger.LogError("Cannot get correct operation system. Current operation system is: {OperationSystem}. In {Method}", 
-                        _environmentService.GetCurrentOperationSystem(), nameof(UpdateApplicationAsync));
+                        _environmentService.GetCurrentOperationSystem(), nameof(DownloadUpdateAsync));
                     return new GenericBaseResult<ReleaseVersion>(ActionResult.Null);
             }
 
@@ -104,7 +110,7 @@ internal class UpdateService : IUpdateService
         }
     }
 
-    public async Task<GenericBaseResult<DownloadResponse>> UpdateApplicationAsync(ReleaseVersion releaseVersion, 
+    public async Task<GenericBaseResult<DownloadResponse>> DownloadUpdateAsync(ReleaseVersion releaseVersion, 
         CancellationToken cancellationToken = default)
     {
         try
@@ -114,7 +120,7 @@ internal class UpdateService : IUpdateService
             if (currentVersion.CompareTo(releaseVersion.Version) >= 0)
             {
                 _logger.LogWarning("Latest release version {ReleaseVersion} is not higher than current version {CurrentVersion}. In {Method}", 
-                    releaseVersion.Version.ToString(), currentVersion.ToString(), nameof(UpdateApplicationAsync));
+                    releaseVersion.Version.ToString(), currentVersion.ToString(), nameof(DownloadUpdateAsync));
 
                 return new GenericBaseResult<DownloadResponse>(ActionResult.Error);
             }
@@ -122,7 +128,7 @@ internal class UpdateService : IUpdateService
             var activeUser = await _userRepository.GetActiveUserAsync();
             if (activeUser == null)
             {
-                _logger.LogError("There is no active user. In {Method}", nameof(UpdateApplicationAsync));
+                _logger.LogError("There is no active user. In {Method}", nameof(DownloadUpdateAsync));
 
                 return new GenericBaseResult<DownloadResponse>(ActionResult.Error);
             }
@@ -144,11 +150,13 @@ internal class UpdateService : IUpdateService
                 OnDownloadProgress?.Invoke(sender, progress);
             };
 
+            var environmentSettings = _environmentService.GetEnvironmentSettings();
+            
             await DownloadFileAsync(releaseVersion.UpdaterDownloadUri, updaterFilePath, productName,
-                productVersion, progressIndicator, cancellationToken);
+                productVersion, progressIndicator, environmentSettings.Github.Token, cancellationToken);
             
             await DownloadFileAsync(releaseVersion.AppDownloadUri, appFilePath, productName,
-                productVersion, progressIndicator, cancellationToken);
+                productVersion, progressIndicator, environmentSettings.Github.Token, cancellationToken);
 
             var downloadResponse = new DownloadResponse
             {
@@ -160,16 +168,52 @@ internal class UpdateService : IUpdateService
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, "Error in {Method}", nameof(UpdateApplicationAsync));
+            _logger.LogError(exception, "Error in {Method}", nameof(DownloadUpdateAsync));
 
             return new GenericBaseResult<DownloadResponse>(ActionResult.SystemError);
         }
     }
-    
+
+    public void SetIsNeedToUpdate()
+    {
+        IsNeedToUpdate = true;
+    }
+
+    public Task StartUpdateAsync()
+    {
+        var customArgs = _environmentService.CustomArgs;
+        var operationSystem = _environmentService.GetCurrentOperationSystem();
+        
+        var arguments =
+            $"{ArgumentKeyConstants.Environment}{customArgs[ArgumentKeyConstants.Environment]} " +
+            $"{ArgumentKeyConstants.OperationSystem}{customArgs[ArgumentKeyConstants.OperationSystem]} " +
+            $"{ArgumentKeyConstants.DownloadApplicationPath}{customArgs[ArgumentKeyConstants.DownloadApplicationPath]} " +
+            $"{ArgumentKeyConstants.ApplicationPath}{customArgs[ArgumentKeyConstants.ApplicationPath]} " +
+            $"{ArgumentKeyConstants.BaseApplicationName}{customArgs[ArgumentKeyConstants.BaseApplicationName]}";
+
+        if (operationSystem == OperationSystem.Linux)
+        {
+            chmod(customArgs[ArgumentKeyConstants.UpdaterPath], 0x1 | 0x2 | 0x4 | 0x8 | 0x10 | 0x20 | 0x40 | 0x80 | 0x100);
+        }
+
+        var processStartInfo = new ProcessStartInfo
+        {
+            FileName = customArgs[ArgumentKeyConstants.UpdaterPath],
+            Arguments = arguments,
+            WindowStyle = ProcessWindowStyle.Hidden,
+            CreateNoWindow = true,
+            UseShellExecute = false
+        };
+        
+        Process.Start(processStartInfo);
+        
+        return Task.CompletedTask;
+    }
+
     #region Private methods
 
-    private async Task DownloadFileAsync(string downloadUrl, string filePath, string productName, string productVersion, 
-        IProgress<decimal>? progressIndicator, CancellationToken cancellationToken)
+    private static async Task DownloadFileAsync(string downloadUrl, string filePath, string productName, string productVersion, 
+        IProgress<decimal>? progressIndicator, string githubToken, CancellationToken cancellationToken)
     {
         using var client = new HttpClient();
         client.Timeout = TimeSpan.FromMinutes(5);
@@ -178,7 +222,7 @@ internal class UpdateService : IUpdateService
 
         request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
         request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
-        request.Headers.Authorization = new AuthenticationHeaderValue("token", _environmentSettings.Github.Token);
+        request.Headers.Authorization = new AuthenticationHeaderValue("token", githubToken);
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/octet-stream"));
         request.Headers.UserAgent.Add(new ProductInfoHeaderValue(productName, productVersion));
 
