@@ -33,5 +33,12 @@
     <ItemGroup>
       <ProjectReference Include="..\..\Abstractions\TradeHero.Contracts\TradeHero.Contracts.csproj" />
     </ItemGroup>
+    
+    <ItemGroup>
+      <None Remove="Scripts\updater_linux.sh" />
+      <EmbeddedResource Include="Scripts\updater_linux.sh" />
+      <None Remove="Scripts\updater_win.bat" />
+      <EmbeddedResource Include="Scripts\updater_win.bat" />
+    </ItemGroup>
 
 </Project>

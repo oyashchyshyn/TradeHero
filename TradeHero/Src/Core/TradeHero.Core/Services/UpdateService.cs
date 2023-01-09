@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using Octokit;
@@ -179,35 +180,56 @@ internal class UpdateService : IUpdateService
         IsNeedToUpdate = true;
     }
 
-    public Task StartUpdateAsync()
+    public async Task StartUpdateAsync()
     {
-        var customArgs = _environmentService.CustomArgs;
-        var operationSystem = _environmentService.GetCurrentOperationSystem();
-        
-        var arguments =
-            $"{ArgumentKeyConstants.Environment}{customArgs[ArgumentKeyConstants.Environment]} " +
-            $"{ArgumentKeyConstants.OperationSystem}{customArgs[ArgumentKeyConstants.OperationSystem]} " +
-            $"{ArgumentKeyConstants.DownloadApplicationPath}{customArgs[ArgumentKeyConstants.DownloadApplicationPath]} " +
-            $"{ArgumentKeyConstants.ApplicationPath}{customArgs[ArgumentKeyConstants.ApplicationPath]} " +
-            $"{ArgumentKeyConstants.BaseApplicationName}{customArgs[ArgumentKeyConstants.BaseApplicationName]}";
-
-        if (operationSystem == OperationSystem.Linux)
+        try
         {
-            chmod(customArgs[ArgumentKeyConstants.UpdaterPath], 0x1 | 0x2 | 0x4 | 0x8 | 0x10 | 0x20 | 0x40 | 0x80 | 0x100);
+            string scriptPath; 
+            var operationSystem = _environmentService.GetCurrentOperationSystem();
+            var processStartInfo = new ProcessStartInfo();
+            
+            switch (operationSystem)
+            {
+                case OperationSystem.Linux:
+                {
+                    scriptPath = await GenerateUpdateScriptAsync(
+                        _environmentService.GetUpdateFolderPath(),
+                        "updater_linux.sh"
+                    );
+                    chmod(scriptPath, 0x1 | 0x2 | 0x4 | 0x8 | 0x10 | 0x20 | 0x40 | 0x80 | 0x100);
+                    processStartInfo.FileName = "sh";
+                }
+                break;
+                case OperationSystem.Windows:
+                {
+                    scriptPath = await GenerateUpdateScriptAsync(
+                        _environmentService.GetUpdateFolderPath(),
+                        "updater_win.bat"
+                    );
+                    processStartInfo.FileName = "cmd";
+                }
+                break;
+                case OperationSystem.None:
+                case OperationSystem.Osx:
+                default:
+                    throw new Exception($"Current operation system is: {operationSystem}.");
+            }
+
+            processStartInfo.Arguments = $"{scriptPath} {_environmentService.GetEnvironmentType()} {_environmentService.GetCurrentProcessId()} " +
+                 $"{_environmentService.CustomArgs[ArgumentKeyConstants.DownloadApplicationPath]} {_environmentService.GetBasePath()} " +
+                 $"{_environmentService.GetCurrentApplicationName()}";
+            processStartInfo.CreateNoWindow = true;
+            processStartInfo.UseShellExecute = false;
+            
+            _logger.LogInformation("Preparing to run process for: {OperationSystem}. Args: {Arguments}. In {Method}", 
+                operationSystem, processStartInfo.Arguments, nameof(StartUpdateAsync));
+
+            Process.Start(processStartInfo);
         }
-
-        var processStartInfo = new ProcessStartInfo
+        catch (Exception exception)
         {
-            FileName = customArgs[ArgumentKeyConstants.UpdaterPath],
-            Arguments = arguments,
-            WindowStyle = ProcessWindowStyle.Hidden,
-            CreateNoWindow = true,
-            UseShellExecute = false
-        };
-        
-        Process.Start(processStartInfo);
-        
-        return Task.CompletedTask;
+            _logger.LogError(exception, "Error in {Method}", nameof(StartUpdateAsync));
+        }
     }
 
     #region Private methods
@@ -234,6 +256,25 @@ internal class UpdateService : IUpdateService
         // Use the custom extension method below to download the data.
         // The passed progress-instance will receive the download status updates.
         await client.DownloadAsync(request, file, progressIndicator, cancellationToken);
+    }
+
+    private async Task<string> GenerateUpdateScriptAsync(string pathToFolder, string fileName)
+    {
+        await using var manifestResourceStream = Assembly.GetExecutingAssembly()
+            .GetManifestResourceStream($"TradeHero.Core.Scripts.{fileName}");
+        
+        if (manifestResourceStream == null)
+        {
+            throw new Exception($"TradeHero.Core.Scripts.{fileName}");
+        }
+
+        var scriptPath = Path.Combine(pathToFolder, fileName);
+
+        await using var fileStream = File.Create(scriptPath);
+        manifestResourceStream.Seek(0, SeekOrigin.Begin);
+        await manifestResourceStream.CopyToAsync(fileStream);
+
+        return scriptPath;
     }
 
     #endregion

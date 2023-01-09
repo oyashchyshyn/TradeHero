@@ -74,7 +74,12 @@ internal class EnvironmentService : IEnvironmentService
     {
         return (EnvironmentType)Enum.Parse(typeof(EnvironmentType), _hostingEnvironment.EnvironmentName);
     }
-    
+
+    public int GetCurrentProcessId()
+    {
+        return Environment.ProcessId;
+    }
+
     public OperationSystem GetCurrentOperationSystem()
     {
         var isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);

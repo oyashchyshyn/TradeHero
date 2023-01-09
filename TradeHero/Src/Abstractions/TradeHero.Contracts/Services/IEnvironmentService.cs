@@ -15,6 +15,7 @@ public interface IEnvironmentService
     string GetDatabaseFolderPath();
     string GetUpdateFolderPath();
     EnvironmentType GetEnvironmentType();
+    int GetCurrentProcessId();
     OperationSystem GetCurrentOperationSystem();
     string GetCurrentApplicationName();
 }

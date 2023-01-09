@@ -190,16 +190,9 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
                     cancellationToken: cancellationToken
                 );
 
-                var baseApplicationPath = Path.Combine(_environmentService.GetBasePath(),
-                    _environmentService.GetCurrentApplicationName());
-                
                 _environmentService.CustomArgs.Clear();
                 _environmentService.CustomArgs.Add(ArgumentKeyConstants.UpdaterPath, downloadResult.Data.UpdaterFilePath);
-                _environmentService.CustomArgs.Add(ArgumentKeyConstants.Environment, _environmentService.GetEnvironmentType().ToString());
-                _environmentService.CustomArgs.Add(ArgumentKeyConstants.OperationSystem, _environmentService.GetCurrentOperationSystem().ToString());
-                _environmentService.CustomArgs.Add(ArgumentKeyConstants.ApplicationPath, baseApplicationPath);
                 _environmentService.CustomArgs.Add(ArgumentKeyConstants.DownloadApplicationPath, downloadResult.Data.AppFilePath);
-                _environmentService.CustomArgs.Add(ArgumentKeyConstants.BaseApplicationName, _environmentService.GetEnvironmentSettings().Application.BaseAppName);
 
                 _updateService.SetIsNeedToUpdate();
                 
