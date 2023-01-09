@@ -11,7 +11,6 @@ using TradeHero.Contracts.Extensions;
 using TradeHero.Contracts.Repositories;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.Services.Models.Update;
-using Credentials = Octokit.Credentials;
 using FileMode = System.IO.FileMode;
 using ProductHeaderValue = Octokit.ProductHeaderValue;
 
@@ -26,6 +25,8 @@ internal class UpdateService : IUpdateService
     [DllImport("libc", SetLastError = true)]
     private static extern int chmod(string pathname, int mode);
     
+    public event EventHandler<decimal>? OnDownloadProgress;
+    
     public bool IsNeedToUpdate { get; private set; }
 
     public UpdateService(
@@ -38,8 +39,6 @@ internal class UpdateService : IUpdateService
         _environmentService = environmentService;
         _userRepository = userRepository;
     }
-    
-    public event EventHandler<decimal>? OnDownloadProgress;
 
     public async Task<GenericBaseResult<ReleaseVersion>> GetLatestReleaseAsync()
     {
@@ -220,11 +219,11 @@ internal class UpdateService : IUpdateService
                  $"{_environmentService.GetCurrentApplicationName()}";
             processStartInfo.CreateNoWindow = true;
             processStartInfo.UseShellExecute = false;
-            
-            _logger.LogInformation("Preparing to run process for: {OperationSystem}. Args: {Arguments}. In {Method}", 
-                operationSystem, processStartInfo.Arguments, nameof(StartUpdateAsync));
 
             Process.Start(processStartInfo);
+
+            _logger.LogInformation("Preparing to run process for: {OperationSystem}. Args: {Arguments}. In {Method}", 
+                operationSystem, processStartInfo.Arguments, nameof(StartUpdateAsync));
         }
         catch (Exception exception)
         {
@@ -258,7 +257,7 @@ internal class UpdateService : IUpdateService
         await client.DownloadAsync(request, file, progressIndicator, cancellationToken);
     }
 
-    private async Task<string> GenerateUpdateScriptAsync(string pathToFolder, string fileName)
+    private static async Task<string> GenerateUpdateScriptAsync(string pathToFolder, string fileName)
     {
         await using var manifestResourceStream = Assembly.GetExecutingAssembly()
             .GetManifestResourceStream($"TradeHero.Core.Scripts.{fileName}");
