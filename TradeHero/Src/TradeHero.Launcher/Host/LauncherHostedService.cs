@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
+using TradeHero.Core.Exceptions;
 using TradeHero.Launcher.Services;
 
 namespace TradeHero.Launcher.Host;
@@ -50,7 +51,7 @@ internal class LauncherHostedService : IHostedService
                     var latestRelease = await _githubService.GetLatestReleaseAsync();
                     if (latestRelease.ActionResult != ActionResult.Success)
                     {
-                        throw new Exception();
+                        throw new ThException("Cannot get info about application!");
                     }
                     
                     var downloadResult = await _githubService.DownloadReleaseAsync(latestRelease.Data.DownloadUri, 
@@ -58,7 +59,7 @@ internal class LauncherHostedService : IHostedService
 
                     if (downloadResult != ActionResult.Success)
                     {
-                        throw new Exception();
+                        throw new ThException("Cannot download application!");
                     }
                 }
 
@@ -82,7 +83,7 @@ internal class LauncherHostedService : IHostedService
                 _runningProcess = Process.Start(processStartInfo);
                 if (_runningProcess == null)
                 {
-                    throw new Exception();
+                    throw new ThException("Cannot start application!");
                 }
             
                 await _runningProcess.WaitForExitAsync(cancellationToken);
@@ -100,6 +101,8 @@ internal class LauncherHostedService : IHostedService
         catch (Exception exception)
         {
             _logger.LogCritical(exception, "In {Method}", nameof(StartAsync));
+            
+            throw;
         }
     }
 
@@ -108,6 +111,7 @@ internal class LauncherHostedService : IHostedService
         try
         {
             _runningProcess?.Close();
+            _runningProcess?.Dispose();
         }
         catch (Exception exception)
         {
