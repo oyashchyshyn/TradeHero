@@ -3,8 +3,8 @@ using System.Runtime.InteropServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using TradeHero.Contracts.Services;
-using TradeHero.Contracts.Services.Models.Environment;
 using TradeHero.Core.Enums;
+using TradeHero.Core.Settings.AppSettings;
 
 namespace TradeHero.Services.Services;
 
@@ -29,9 +29,9 @@ internal class EnvironmentService : IEnvironmentService
         return Environment.GetCommandLineArgs();
     }
 
-    public EnvironmentSettings GetEnvironmentSettings()
+    public AppSettings GetEnvironmentSettings()
     {
-        return _configuration.Get<EnvironmentSettings>() ?? new EnvironmentSettings();
+        return _configuration.Get<AppSettings>() ?? new AppSettings();
     }
 
     public Version GetCurrentApplicationVersion()

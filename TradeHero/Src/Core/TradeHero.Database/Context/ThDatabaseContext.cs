@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Services;
-using TradeHero.Contracts.Services.Models.Environment;
+using TradeHero.Core.Settings.AppSettings;
 using TradeHero.Database.Entities;
 using TradeHero.Database.Worker;
 
@@ -10,7 +10,7 @@ namespace TradeHero.Database.Context;
 internal class ThDatabaseContext : DbContext
 {
     private readonly ILogger<ThDatabaseContext> _logger;
-    private readonly EnvironmentSettings _environmentSettings;
+    private readonly AppSettings _appSettings;
     private readonly DatabaseFileWorker _databaseFileWorker;
 
     public DbSet<User> Users { get; set; } = null!;
@@ -26,13 +26,13 @@ internal class ThDatabaseContext : DbContext
         : base(options)
     {
         _logger = logger;
-        _environmentSettings = environmentService.GetEnvironmentSettings();
+        _appSettings = environmentService.GetEnvironmentSettings();
         _databaseFileWorker = databaseFileWorker;
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseInMemoryDatabase(databaseName: _environmentSettings.Database.DatabaseName);
+        optionsBuilder.UseInMemoryDatabase(databaseName: _appSettings.Database.DatabaseName);
     }
     
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

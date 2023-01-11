@@ -30,9 +30,5 @@
       <ProjectReference Include="..\Abstractions\TradeHero.Contracts\TradeHero.Contracts.csproj" />
       <ProjectReference Include="..\Abstractions\TradeHero.DependencyResolver\TradeHero.DependencyResolver.csproj" />
     </ItemGroup>
-    
-    <ItemGroup>
-      <EmbeddedResource Include="app.json" />
-    </ItemGroup>
 
 </Project>

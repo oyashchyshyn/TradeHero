@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TradeHero.Contracts.Services;
-using TradeHero.Core.Constants;
+using TradeHero.Core.Helpers;
 using TradeHero.DependencyResolver;
 using HostApp = Microsoft.Extensions.Hosting.Host;
 
@@ -13,34 +13,21 @@ internal static class Program
 {
     private static async Task Main(string[] args)
     {
-        var configuration = Helper.GenerateConfiguration(args);
-        var environmentSettings = Helper.ConvertConfigurationToEnvironmentSettings(configuration);
+        var configuration = ConfigurationHelper.GenerateConfiguration(args);
+        var environmentSettings = ConfigurationHelper.ConvertConfigurationToAppSettings(configuration);
 
         try
         {
-            Helper.SetCulture();
-            
-            if (args.Contains(ArgumentKeyConstants.Update))
-            {
-                var processes = Process.GetProcesses().Where(x =>
-                    x.Id != Environment.ProcessId &&
-                    x.ProcessName.Contains(environmentSettings.Application.BaseAppName));
-                
-                foreach (var tradeHeroProcess in processes)
-                {
-                    tradeHeroProcess.Kill(true);
-                    tradeHeroProcess.Dispose();
-                }
-            }
-            
+            EnvironmentHelper.SetCulture();
+
             if (Process.GetProcesses().Count(x => x.ProcessName == environmentSettings.Application.BaseAppName) > 1)
             {
-                Helper.WriteError("Bot already running!");
+                MessageHelper.WriteError("Bot already running!");
                 
                 return;
             }
             
-            var environmentType = Helper.GetEnvironmentType(args);
+            var environmentType = ArgsHelper.GetEnvironmentType(args);
 
             var host = HostApp.CreateDefaultBuilder(args)
                 .UseEnvironment(environmentType.ToString())
@@ -57,7 +44,7 @@ internal static class Program
             
             if (!await host.Services.GetRequiredService<IStartupService>().CheckIsFirstRunAsync())
             {
-                Helper.WriteError("There is an error during user creation. Please see logs.");
+                MessageHelper.WriteError("There is an error during user creation. Please see logs.");
 
                 return;
             }
@@ -78,7 +65,7 @@ internal static class Program
             var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, 
                 environmentSettings.Folder.DataFolderName, environmentSettings.Folder.LogsFolderName);
             
-            await Helper.WriteErrorAsync(exception, path);
+            await MessageHelper.WriteErrorAsync(exception, path);
             
             Environment.Exit(-1);
         }

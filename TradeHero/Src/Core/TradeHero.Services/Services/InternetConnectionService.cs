@@ -1,14 +1,14 @@
 using System.Net.NetworkInformation;
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Services;
-using TradeHero.Contracts.Services.Models.Environment;
+using TradeHero.Core.Settings.AppSettings;
 
 namespace TradeHero.Services.Services;
 
 internal class InternetConnectionService : IInternetConnectionService
 {
     private readonly ILogger<InternetConnectionService> _logger;
-    private readonly EnvironmentSettings _environmentSettings;
+    private readonly AppSettings _appSettings;
 
     private bool _isNeedToStopInternetConnectionChecking;
     private int _currentInternetConnectionAttempts;
@@ -24,7 +24,7 @@ internal class InternetConnectionService : IInternetConnectionService
         )
     {
         _logger = logger;
-        _environmentSettings = environmentSettings.GetEnvironmentSettings();
+        _appSettings = environmentSettings.GetEnvironmentSettings();
     }
 
     public async Task StartInternetConnectionCheckAsync()
@@ -87,8 +87,8 @@ internal class InternetConnectionService : IInternetConnectionService
     {
         using var ping = new Ping();
 
-        if (await PingRequestAsync(ping, _environmentSettings.InternetConnection.PingUrl, 
-                _environmentSettings.InternetConnection.PingTimeOutMilliseconds))
+        if (await PingRequestAsync(ping, _appSettings.InternetConnection.PingUrl, 
+                _appSettings.InternetConnection.PingTimeOutMilliseconds))
         {
             _isInternetConnectionExist = true;
 
@@ -118,8 +118,8 @@ internal class InternetConnectionService : IInternetConnectionService
                         break;
                     }
 
-                    if (await PingRequestAsync(ping, _environmentSettings.InternetConnection.PingUrl, 
-                            _environmentSettings.InternetConnection.PingTimeOutMilliseconds))
+                    if (await PingRequestAsync(ping, _appSettings.InternetConnection.PingUrl, 
+                            _appSettings.InternetConnection.PingTimeOutMilliseconds))
                     {
                         if (_isInternetConnectionExist)
                         {
@@ -140,7 +140,7 @@ internal class InternetConnectionService : IInternetConnectionService
                         continue;
                     }
 
-                    if (_currentInternetConnectionAttempts >= _environmentSettings.InternetConnection.ReconnectionAttempts)
+                    if (_currentInternetConnectionAttempts >= _appSettings.InternetConnection.ReconnectionAttempts)
                     {
                         _logger.LogWarning("Internet connection is disconnected");
 
@@ -159,7 +159,7 @@ internal class InternetConnectionService : IInternetConnectionService
                 }
                 finally
                 {
-                    await Task.Delay(_environmentSettings.InternetConnection.IterationWaitMilliseconds);
+                    await Task.Delay(_appSettings.InternetConnection.IterationWaitMilliseconds);
                 }
             }
         });

@@ -8,8 +8,8 @@ using TradeHero.Client.Clients;
 using TradeHero.Client.Resolvers;
 using TradeHero.Contracts.Client.Resolvers;
 using TradeHero.Contracts.Services;
-using TradeHero.Contracts.Services.Models.Environment;
 using TradeHero.Core.Enums;
+using TradeHero.Core.Settings.AppSettings;
 
 namespace TradeHero.Client;
 
@@ -66,16 +66,16 @@ public static class ThClientServiceCollectionExtensions
 
     #region Private methods
 
-    private static BinanceClientOptions GetBinanceClientOptions(EnvironmentSettings environmentSettings, 
+    private static BinanceClientOptions GetBinanceClientOptions(AppSettings appSettings, 
         string apiKey, string secretKey, ILogger logger)
     {
         var clientOptions = new BinanceClientOptions
         {
             ApiCredentials = new ApiCredentials(apiKey, secretKey),
-            LogLevel = environmentSettings.Logger.RestClientLogLevel
+            LogLevel = appSettings.Logger.RestClientLogLevel
         };
         
-        if (environmentSettings.Client.Server == ClientServer.TestNet)
+        if (appSettings.Client.Server == ClientServer.TestNet)
         {
             clientOptions = new BinanceClientOptions
             {
@@ -101,16 +101,16 @@ public static class ThClientServiceCollectionExtensions
         return clientOptions;
     }
     
-    private static BinanceSocketClientOptions GetBinanceSocketClientOptions(EnvironmentSettings environmentSettings, 
+    private static BinanceSocketClientOptions GetBinanceSocketClientOptions(AppSettings appSettings, 
         string apiKey, string secretKey, ILogger logger)
     {
         var clientOptions = new BinanceSocketClientOptions
         {
             ApiCredentials = new ApiCredentials(apiKey, secretKey),
-            LogLevel = environmentSettings.Logger.SocketClientLogLevel
+            LogLevel = appSettings.Logger.SocketClientLogLevel
         };
         
-        if (environmentSettings.Client.Server == ClientServer.TestNet)
+        if (appSettings.Client.Server == ClientServer.TestNet)
         {
             clientOptions = new BinanceSocketClientOptions
             {
