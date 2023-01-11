@@ -29,7 +29,7 @@ public static class ThSerilogLoggerExtensions
             if (environmentSettings.Logger.LogLevel != LogLevel.None)
             {
                 var loggerFilePath = Path.Combine(environmentService.GetLogsFolderPath(), 
-                    environmentSettings.Logger.FileName);
+                    environmentSettings.Logger.AppFileName);
 
                 loggerConfiguration = new LoggerConfiguration()
                     .MinimumLevel.Is((LogEventLevel)environmentSettings.Logger.LogLevel)

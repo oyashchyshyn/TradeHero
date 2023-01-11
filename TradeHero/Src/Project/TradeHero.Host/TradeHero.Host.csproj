@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AssemblyName>trade_hero</AssemblyName>
+        <AssemblyVersion>1.0.0</AssemblyVersion>
+        <FileVersion>1.0.0</FileVersion>
+        <ApplicationIcon>trade_hero.ico</ApplicationIcon>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="FluentValidation" Version="11.4.0" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\Abstractions\TradeHero.Contracts\TradeHero.Contracts.csproj" />
+      <ProjectReference Include="..\TradeHero.Client\TradeHero.Client.csproj" />
+      <ProjectReference Include="..\TradeHero.Database\TradeHero.Database.csproj" />
+      <ProjectReference Include="..\TradeHero.Services\TradeHero.Services.csproj" />
+      <ProjectReference Include="..\TradeHero.StrategyRunner\TradeHero.StrategyRunner.csproj" />
+    </ItemGroup>
+
+</Project>

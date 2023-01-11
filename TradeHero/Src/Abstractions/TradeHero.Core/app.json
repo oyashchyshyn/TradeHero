@@ -17,7 +17,8 @@
         "LogLevel": "Information",
         "RestClientLogLevel": "Warning",
         "SocketClientLogLevel": "Warning",
-        "FileName": "logs.txt",
+        "AppFileName": "app_logs.txt",
+        "LauncherFileName": "launcher_logs.txt",
         "LogTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext}: {Message}{NewLine}{Exception}"
     },
     "Github": {
@@ -28,8 +29,7 @@
     "Folder": {
         "DataFolderName": "data",
         "DatabaseFolderName": "database",
-        "LogsFolderName": "logs",
-        "UpdateFolderName": "update"
+        "LogsFolderName": "logs"
     },
     "Database": {
         "DatabaseName": "th_database",

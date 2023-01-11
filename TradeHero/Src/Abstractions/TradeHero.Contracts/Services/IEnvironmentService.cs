@@ -10,10 +10,8 @@ public interface IEnvironmentService
     AppSettings GetEnvironmentSettings();
     Version GetCurrentApplicationVersion();
     string GetBasePath();
-    string GetDataFolderPath();
     string GetLogsFolderPath();
     string GetDatabaseFolderPath();
-    string GetUpdateFolderPath();
     EnvironmentType GetEnvironmentType();
     int GetCurrentProcessId();
     OperationSystem GetCurrentOperationSystem();
