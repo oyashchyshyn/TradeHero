@@ -1,32 +1,24 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using TradeHero.Contracts.Services;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Settings.AppSettings;
 
-namespace TradeHero.Services.Services;
+namespace TradeHero.Launcher.Services;
 
-internal class EnvironmentService : IEnvironmentService
+internal class EnvironmentService
 {
-    private readonly IHostEnvironment _hostingEnvironment;
+    private readonly IHostEnvironment _hostEnvironment;
     private readonly IConfiguration _configuration;
-
-    public Dictionary<string, string> CustomArgs { get; } = new();
-
+    
     public EnvironmentService(
-        IHostEnvironment hostingEnvironment, 
+        IHostEnvironment hostEnvironment, 
         IConfiguration configuration
         )
     {
-        _hostingEnvironment = hostingEnvironment;
+        _hostEnvironment = hostEnvironment;
         _configuration = configuration;
-    }
-
-    public string[] GetEnvironmentArgs()
-    {
-        return Environment.GetCommandLineArgs();
     }
 
     public AppSettings GetAppSettings()
@@ -41,12 +33,12 @@ internal class EnvironmentService : IEnvironmentService
     
     public string GetBasePath()
     {
-        return _hostingEnvironment.ContentRootPath;
+        return _hostEnvironment.ContentRootPath;
     }
 
     public EnvironmentType GetEnvironmentType()
     {
-        return (EnvironmentType)Enum.Parse(typeof(EnvironmentType), _hostingEnvironment.EnvironmentName);
+        return (EnvironmentType)Enum.Parse(typeof(EnvironmentType), _hostEnvironment.EnvironmentName);
     }
 
     public int GetCurrentProcessId()

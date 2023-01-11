@@ -7,6 +7,7 @@
         <Nullable>enable</Nullable>
         <AssemblyVersion>1.0.0</AssemblyVersion>
         <FileVersion>1.0.0</FileVersion>
+        <AssemblyName>launcher</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>
@@ -16,11 +17,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Abstractions\TradeHero.Core\TradeHero.Core.csproj" />
-      <ProjectReference Include="..\Project\TradeHero.Services\TradeHero.Services.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Logger" />
     </ItemGroup>
 
 </Project>

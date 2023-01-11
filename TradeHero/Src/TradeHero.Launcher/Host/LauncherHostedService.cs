@@ -1,25 +1,25 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Services;
 using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
+using TradeHero.Launcher.Services;
 
 namespace TradeHero.Launcher.Host;
 
 internal class LauncherHostedService : IHostedService
 {
     private readonly ILogger<LauncherHostedService> _logger;
-    private readonly IEnvironmentService _environmentService;
-    private readonly IGithubService _githubService;
+    private readonly EnvironmentService _environmentService;
+    private readonly GithubService _githubService;
 
     private Process? _runningProcess;
     private bool _isNeedToUpdatedApp;
     
     public LauncherHostedService(
         ILogger<LauncherHostedService> logger, 
-        IEnvironmentService environmentService, 
-        IGithubService githubService
+        EnvironmentService environmentService, 
+        GithubService githubService
         )
     {
         _logger = logger;
@@ -31,6 +31,8 @@ internal class LauncherHostedService : IHostedService
     {
         try
         {
+            _githubService.OnDownloadProgress += GithubServiceOnOnDownloadProgress;
+            
             var appSettings = _environmentService.GetAppSettings();
             var dataDirectoryPath = Path.Combine(_environmentService.GetBasePath(), appSettings.Folder.DataFolderName);
             var appPath = Path.Combine(dataDirectoryPath, _environmentService.GetCurrentApplicationName());
@@ -50,11 +52,11 @@ internal class LauncherHostedService : IHostedService
                     {
                         throw new Exception();
                     }
-        
-                    var downloadResult = await _githubService.DownloadReleaseAsync(latestRelease.Data.AppDownloadUri, 
+                    
+                    var downloadResult = await _githubService.DownloadReleaseAsync(latestRelease.Data.DownloadUri, 
                         appPath, cancellationToken);
 
-                    if (downloadResult.ActionResult != ActionResult.Success)
+                    if (downloadResult != ActionResult.Success)
                     {
                         throw new Exception();
                     }
@@ -114,4 +116,13 @@ internal class LauncherHostedService : IHostedService
         
         return Task.CompletedTask;
     }
+
+    #region Private methods
+
+    private void GithubServiceOnOnDownloadProgress(object? sender, decimal e)
+    {
+        
+    }
+
+    #endregion
 }

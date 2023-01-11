@@ -1,32 +1,31 @@
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Logging;
 using Octokit;
-using TradeHero.Contracts.Services;
-using TradeHero.Contracts.Services.Models.Update;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Extensions;
 using TradeHero.Core.Models;
+using TradeHero.Launcher.Models;
 using FileMode = System.IO.FileMode;
 using ProductHeaderValue = Octokit.ProductHeaderValue;
 
-namespace TradeHero.Services.Services;
+namespace TradeHero.Launcher.Services;
 
-internal class GithubService : IGithubService
+internal class GithubService
 {
     private readonly ILogger<GithubService> _logger;
-    private readonly IEnvironmentService _environmentService;
-
+    private readonly EnvironmentService _environmentService;
+    
     public event EventHandler<decimal>? OnDownloadProgress;
-
+    
     public GithubService(
-        ILogger<GithubService> logger,
-        IEnvironmentService environmentService
-    )
+        ILogger<GithubService> logger, 
+        EnvironmentService environmentService
+        )
     {
         _logger = logger;
         _environmentService = environmentService;
     }
-
+    
     public async Task<GenericBaseResult<ReleaseVersion>> GetLatestReleaseAsync()
     {
         try
@@ -51,16 +50,13 @@ internal class GithubService : IGithubService
             }
 
             ReleaseAsset appAsset;
-            ReleaseAsset updaterAsset;
 
             switch (_environmentService.GetCurrentOperationSystem())
             {
                 case OperationSystem.Windows:
-                    updaterAsset = latestReleases.Assets.Single(x => x.Name == "launcher.exe");
                     appAsset = latestReleases.Assets.Single(x => x.Name == "trade_hero_release.exe");
                     break;
                 case OperationSystem.Linux:
-                    updaterAsset = latestReleases.Assets.Single(x => x.Name == "launcher");
                     appAsset = latestReleases.Assets.Single(x => x.Name == "trade_hero_release");
                     break;
                 case OperationSystem.None:
@@ -77,11 +73,7 @@ internal class GithubService : IGithubService
             var releaseVersion = new ReleaseVersion
             {
                 IsNewAvailable = currentVersion.CompareTo(remoteVersion) == -1,
-                Version = remoteVersion,
-                AppName = appAsset.Name,
-                AppDownloadUri = appAsset.Url,
-                LauncherName = updaterAsset.Name,
-                LauncherDownloadUri = updaterAsset.Url
+                DownloadUri = appAsset.Url
             };
 
             return new GenericBaseResult<ReleaseVersion>(releaseVersion);
@@ -94,13 +86,11 @@ internal class GithubService : IGithubService
         }
     }
 
-    public async Task<GenericBaseResult<DownloadResponse>> DownloadReleaseAsync(string downloadUri, string filePath, 
+    public async Task<ActionResult> DownloadReleaseAsync(string downloadUri, string filePath, 
         CancellationToken cancellationToken = default)
     {
         try
         {
-            var currentVersion = _environmentService.GetCurrentApplicationVersion();
-            
             var productVersion = _environmentService.GetCurrentApplicationVersion().ToString();
             var progressIndicator = new Progress<decimal>();
 
@@ -131,18 +121,13 @@ internal class GithubService : IGithubService
             // The passed progress-instance will receive the download status updates.
             await client.DownloadAsync(request, file, progressIndicator, cancellationToken);
 
-            var downloadResponse = new DownloadResponse
-            {
-                FilePath = filePath
-            };
-            
-            return new GenericBaseResult<DownloadResponse>(downloadResponse);
+            return ActionResult.Success;
         }
         catch (Exception exception)
         {
             _logger.LogError(exception, "Error in {Method}", nameof(DownloadReleaseAsync));
 
-            return new GenericBaseResult<DownloadResponse>(ActionResult.SystemError);
+            return ActionResult.SystemError;
         }
     }
 }

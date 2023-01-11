@@ -4,11 +4,10 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
 using Serilog.Sinks.SystemConsole.Themes;
-using TradeHero.Contracts.Logger;
-using TradeHero.Contracts.Services;
 using TradeHero.Core.Enums;
+using TradeHero.Launcher.Services;
 
-namespace TradeHero.Host.Logger;
+namespace TradeHero.Launcher.Logger;
 
 public static class SerilogLoggerExtensions
 {
@@ -21,8 +20,7 @@ public static class SerilogLoggerExtensions
         
         builder.Services.AddSingleton<ILoggerProvider, SerilogLoggerProvider>(serviceProvider =>
         {
-            var store = serviceProvider.GetRequiredService<IStoreService>();
-            var environmentService = serviceProvider.GetRequiredService<IEnvironmentService>();
+            var environmentService = serviceProvider.GetRequiredService<EnvironmentService>();
             var appSettings = environmentService.GetAppSettings();
             
             LoggerConfiguration loggerConfiguration;
@@ -30,14 +28,12 @@ public static class SerilogLoggerExtensions
             if (appSettings.Logger.LogLevel != LogLevel.None)
             {
                 var loggerFilePath = Path.Combine(environmentService.GetBasePath(),
-                    appSettings.Folder.LogsFolderName,
+                    appSettings.Folder.DataFolderName, appSettings.Folder.LogsFolderName,
                     appSettings.Logger.AppFileName);
                 
                 loggerConfiguration = new LoggerConfiguration()
                     .MinimumLevel.Is((LogEventLevel)appSettings.Logger.LogLevel)
-                    .MinimumLevel.Override("System.Net.Http.HttpClient", LogEventLevel.Warning) 
                     .Enrich.FromLogContext()
-                    .WriteTo.Sink(new StoreEventSink(store))
                     .WriteTo.File
                     (
                         loggerFilePath,
