@@ -1,7 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Telegram.Bot;
-using TradeHero.Contracts.Logger;
 using TradeHero.Contracts.Repositories;
 using TradeHero.Contracts.Services;
 using TradeHero.Services.Services;
@@ -12,10 +10,6 @@ public static class ThServiceServiceCollectionExtensions
 {
     public static void AddThServices(this IServiceCollection serviceCollection)
     {
-        // Store
-        serviceCollection.AddSingleton<IStore, StoreService>();
-
-        // Services
         serviceCollection.AddSingleton<IJsonService, JsonService>();
         serviceCollection.AddSingleton<ICalculatorService, CalculatorService>();
         serviceCollection.AddSingleton<IDateTimeService, DateTimeService>();
@@ -27,6 +21,7 @@ public static class ThServiceServiceCollectionExtensions
         serviceCollection.AddSingleton<IGithubService, GithubService>();
         serviceCollection.AddSingleton<ITerminalService, TerminalService>();
         serviceCollection.AddSingleton<IStartupService, StartupService>();
+        serviceCollection.AddSingleton<IStoreService, StoreServiceService>();
         
         serviceCollection.AddHttpClient("TelegramBotClient")
             .AddTypedClient<ITelegramBotClient>((httpClient, serviceProvider) =>
@@ -41,12 +36,5 @@ public static class ThServiceServiceCollectionExtensions
                 var options = new TelegramBotClientOptions(botToken);
                 return new TelegramBotClient(options, httpClient);
             });
-        
-        // Logger
-        serviceCollection.AddLogging(loggingBuilder =>
-        {
-            loggingBuilder.ClearProviders();
-            loggingBuilder.AddThSerilog();
-        });
     }
 }

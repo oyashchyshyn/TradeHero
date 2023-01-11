@@ -15,7 +15,7 @@ internal class StartCommand : ITelegramMenuCommand
     private readonly IStrategyRepository _strategyRepository;
     private readonly IConnectionRepository _connectionRepository;
     private readonly ITradeLogicFactory _tradeLogicFactory;
-    private readonly IStore _store;
+    private readonly IStoreService _storeService;
     private readonly TelegramMenuStore _telegramMenuStore;
 
     public StartCommand(
@@ -24,7 +24,7 @@ internal class StartCommand : ITelegramMenuCommand
         IStrategyRepository strategyRepository, 
         IConnectionRepository connectionRepository,
         ITradeLogicFactory tradeLogicFactory, 
-        IStore store, 
+        IStoreService storeService, 
         TelegramMenuStore telegramMenuStore
         )
     {
@@ -33,7 +33,7 @@ internal class StartCommand : ITelegramMenuCommand
         _strategyRepository = strategyRepository;
         _connectionRepository = connectionRepository;
         _tradeLogicFactory = tradeLogicFactory;
-        _store = store;
+        _storeService = storeService;
         _telegramMenuStore = telegramMenuStore;
     }
     
@@ -85,7 +85,7 @@ internal class StartCommand : ITelegramMenuCommand
                 return;
             }
         
-            _store.Bot.SetTradeLogic(tradeLogic, TradeLogicStatus.Running);
+            _storeService.Bot.SetTradeLogic(tradeLogic, TradeLogicStatus.Running);
         
             await _telegramService.SendTextMessageToUserAsync(
                 "Strategy started! Enjoy lazy pidor.", 

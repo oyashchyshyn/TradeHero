@@ -12,21 +12,21 @@ internal class SetActiveConnectionCommand : ITelegramMenuCommand
 {
     private readonly ILogger<SetActiveConnectionCommand> _logger;
     private readonly ITelegramService _telegramService;
-    private readonly IStore _store;
+    private readonly IStoreService _storeService;
     private readonly IConnectionRepository _connectionRepository;
     private readonly TelegramMenuStore _telegramMenuStore;
 
     public SetActiveConnectionCommand(
         ILogger<SetActiveConnectionCommand> logger,
         ITelegramService telegramService,
-        IStore store,
+        IStoreService storeService,
         IConnectionRepository connectionRepository,
         TelegramMenuStore telegramMenuStore
         )
     {
         _logger = logger;
         _telegramService = telegramService;
-        _store = store;
+        _storeService = storeService;
         _connectionRepository = connectionRepository;
         _telegramMenuStore = telegramMenuStore;
     }
@@ -118,7 +118,7 @@ internal class SetActiveConnectionCommand : ITelegramMenuCommand
                 return;
             }
 
-            if (_store.Bot.TradeLogicStatus == TradeLogicStatus.Running)
+            if (_storeService.Bot.TradeLogicStatus == TradeLogicStatus.Running)
             {
                 await SendMessageWithClearDataAsync(
                     $"You cannot change connection when bot in trading process.{Environment.NewLine}" +

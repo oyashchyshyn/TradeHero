@@ -7,7 +7,7 @@ namespace TradeHero.Host.Menu.Telegram.Store;
 
 internal class TelegramMenuStore
 {
-    private readonly IStore _store;
+    private readonly IStoreService _storeService;
     
     private readonly Dictionary<string, ReplyMarkupBase> _keyboards = new();
     private readonly List<string> _handleIncomeData = new();
@@ -20,9 +20,9 @@ internal class TelegramMenuStore
     public string LastCommandId { get; set; } = string.Empty;
     public string GoBackCommandId { get; private set; } = string.Empty;
 
-    public TelegramMenuStore(IStore store)
+    public TelegramMenuStore(IStoreService storeService)
     {
-        _store = store;
+        _storeService = storeService;
         
         TelegramButtons = new TelegramButtonIds();
         _telegramKeyboards = new TelegramKeyboards(TelegramButtons);
@@ -40,7 +40,7 @@ internal class TelegramMenuStore
     {
         if (telegramMenuId == TelegramButtons.Bot)
         {
-            return _telegramKeyboards.GetBotKeyboard(_store.Bot.TradeLogic == null);
+            return _telegramKeyboards.GetBotKeyboard(_storeService.Bot.TradeLogic == null);
         }
         
         return _keyboards.ContainsKey(telegramMenuId) 

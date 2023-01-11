@@ -3,7 +3,7 @@ using TradeHero.Contracts.Services.Models.Store;
 
 namespace TradeHero.Services.Services;
 
-internal class StoreService : IStore
+internal class StoreServiceService : IStoreService
 {
     public BotInstance Bot { get; } = new();
     public InformationInstance Information { get; } = new();

@@ -11,19 +11,19 @@ internal class WatchingPositionsCommand : ITelegramMenuCommand
 {
     private readonly ILogger<WatchingPositionsCommand> _logger;
     private readonly ITelegramService _telegramService;
-    private readonly IStore _store;
+    private readonly IStoreService _storeService;
     private readonly TelegramMenuStore _telegramMenuStore;
     
     public WatchingPositionsCommand(
         ILogger<WatchingPositionsCommand> logger,
         ITelegramService telegramService, 
-        IStore store, 
+        IStoreService storeService, 
         TelegramMenuStore telegramMenuStore
         )
     {
         _logger = logger;
         _telegramService = telegramService;
-        _store = store;
+        _storeService = storeService;
         _telegramMenuStore = telegramMenuStore;
     }
 
@@ -35,7 +35,7 @@ internal class WatchingPositionsCommand : ITelegramMenuCommand
         {
             _telegramMenuStore.LastCommandId = Id;
         
-            var positions = _store.Bot.TradeLogic?.Store.Positions;
+            var positions = _storeService.Bot.TradeLogic?.Store.Positions;
 
             if (positions == null || !positions.Any())
             {

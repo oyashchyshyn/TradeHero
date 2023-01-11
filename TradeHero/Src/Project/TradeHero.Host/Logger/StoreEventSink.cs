@@ -6,13 +6,13 @@ namespace TradeHero.Contracts.Logger;
 
 internal class StoreEventSink : ILogEventSink
 {
-    private readonly IStore _store;
+    private readonly IStoreService _storeService;
 
     public StoreEventSink(
-        IStore store
+        IStoreService storeService
         )
     {
-        _store = store;
+        _storeService = storeService;
     }
     
     public void Emit(LogEvent logEvent)
@@ -20,13 +20,13 @@ internal class StoreEventSink : ILogEventSink
         switch (logEvent.Level)
         {
             case LogEventLevel.Warning:
-                _store.Information.WarningCount += 1;
+                _storeService.Information.WarningCount += 1;
                 break;
             case LogEventLevel.Error:
-                _store.Information.ErrorCount += 1;
+                _storeService.Information.ErrorCount += 1;
                 break;
             case LogEventLevel.Fatal:
-                _store.Information.CriticalCount += 1;
+                _storeService.Information.CriticalCount += 1;
                 break;
         }
     }

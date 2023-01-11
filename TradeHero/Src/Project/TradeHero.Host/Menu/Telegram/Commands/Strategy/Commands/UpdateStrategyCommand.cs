@@ -19,7 +19,7 @@ internal class UpdateStrategyCommand : ITelegramMenuCommand
 {
     private readonly ILogger<UpdateStrategyCommand> _logger;
     private readonly ITelegramService _telegramService;
-    private readonly IStore _store;
+    private readonly IStoreService _storeService;
     private readonly IJsonService _jsonService;
     private readonly IStrategyRepository _strategyRepository;
     private readonly DtoValidator _dtoValidator;
@@ -29,7 +29,7 @@ internal class UpdateStrategyCommand : ITelegramMenuCommand
     public UpdateStrategyCommand(
         ILogger<UpdateStrategyCommand> logger,
         ITelegramService telegramService,
-        IStore store,
+        IStoreService storeService,
         IJsonService jsonService,
         IStrategyRepository strategyRepository,
         DtoValidator dtoValidator,
@@ -39,7 +39,7 @@ internal class UpdateStrategyCommand : ITelegramMenuCommand
     {
         _logger = logger;
         _telegramService = telegramService;
-        _store = store;
+        _storeService = storeService;
         _jsonService = jsonService;
         _strategyRepository = strategyRepository;
         _dtoValidator = dtoValidator;
@@ -504,7 +504,7 @@ internal class UpdateStrategyCommand : ITelegramMenuCommand
             cancellationToken: cancellationToken
         );
 
-        if (_store.Bot is { TradeLogicStatus: TradeLogicStatus.Running, TradeLogic: { } } && strategyDto.IsActive)
+        if (_storeService.Bot is { TradeLogicStatus: TradeLogicStatus.Running, TradeLogic: { } } && strategyDto.IsActive)
         {
             await _telegramService.SendTextMessageToUserAsync(
                 "Applying new data for running strategy...",
@@ -512,7 +512,7 @@ internal class UpdateStrategyCommand : ITelegramMenuCommand
                 cancellationToken: cancellationToken
             );
                     
-            await _store.Bot.TradeLogic.UpdateTradeSettingsAsync(strategyDto);
+            await _storeService.Bot.TradeLogic.UpdateTradeSettingsAsync(strategyDto);
                     
             await _telegramService.SendTextMessageToUserAsync(
                 "Data applied.",

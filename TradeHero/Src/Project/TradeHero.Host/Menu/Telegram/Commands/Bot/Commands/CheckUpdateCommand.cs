@@ -14,7 +14,7 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
     private readonly ILogger<CheckUpdateCommand> _logger;
     private readonly ITelegramService _telegramService;
     private readonly IGithubService _githubService;
-    private readonly IStore _store;
+    private readonly IStoreService _storeService;
     private readonly IEnvironmentService _environmentService;
     private readonly IHostApplicationLifetime _hostApplicationLifetime;
     private readonly TelegramMenuStore _telegramMenuStore;
@@ -23,7 +23,7 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
         ILogger<CheckUpdateCommand> logger,
         ITelegramService telegramService,
         IGithubService githubService,
-        IStore store,
+        IStoreService storeService,
         IEnvironmentService environmentService,
         IHostApplicationLifetime hostApplicationLifetime,
         TelegramMenuStore telegramMenuStore
@@ -32,7 +32,7 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
         _logger = logger;
         _telegramService = telegramService;
         _githubService = githubService;
-        _store = store;
+        _storeService = storeService;
         _environmentService = environmentService;
         _hostApplicationLifetime = hostApplicationLifetime;
         _telegramMenuStore = telegramMenuStore;
@@ -125,7 +125,7 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
                     cancellationToken: cancellationToken
                 );
                 
-                if (_store.Bot.TradeLogicStatus == TradeLogicStatus.Running)
+                if (_storeService.Bot.TradeLogicStatus == TradeLogicStatus.Running)
                 {
                     await SendMessageWithClearDataAsync("You cannot perform update when bot is running. Please, first of all stop bot trading.", cancellationToken);
 

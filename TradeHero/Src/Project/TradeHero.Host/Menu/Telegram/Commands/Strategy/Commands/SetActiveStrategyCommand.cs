@@ -13,21 +13,21 @@ internal class SetActiveStrategyCommand : ITelegramMenuCommand
     private readonly ILogger<SetActiveStrategyCommand> _logger;
     private readonly ITelegramService _telegramService;
     private readonly IStrategyRepository _strategyRepository;
-    private readonly IStore _store;
+    private readonly IStoreService _storeService;
     private readonly TelegramMenuStore _telegramMenuStore;
 
     public SetActiveStrategyCommand(
         ILogger<SetActiveStrategyCommand> logger,
         ITelegramService telegramService,
         IStrategyRepository strategyRepository,
-        IStore store,
+        IStoreService storeService,
         TelegramMenuStore telegramMenuStore
         )
     {
         _logger = logger;
         _telegramService = telegramService;
         _strategyRepository = strategyRepository;
-        _store = store;
+        _storeService = storeService;
         _telegramMenuStore = telegramMenuStore;
     }
     
@@ -118,7 +118,7 @@ internal class SetActiveStrategyCommand : ITelegramMenuCommand
                 return;
             }
 
-            if (_store.Bot.TradeLogicStatus == TradeLogicStatus.Running)
+            if (_storeService.Bot.TradeLogicStatus == TradeLogicStatus.Running)
             {
                 await SendMessageWithClearDataAsync(
                     $"You cannot change strategy when bot in trading process.{Environment.NewLine}" +

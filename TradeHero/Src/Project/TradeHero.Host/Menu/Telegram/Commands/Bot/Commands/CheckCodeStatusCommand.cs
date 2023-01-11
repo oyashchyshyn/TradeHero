@@ -9,19 +9,19 @@ internal class CheckCodeStatusCommand : ITelegramMenuCommand
 {
     private readonly ILogger<CheckCodeStatusCommand> _logger;
     private readonly ITelegramService _telegramService;
-    private readonly IStore _store;
+    private readonly IStoreService _storeService;
     private readonly TelegramMenuStore _telegramMenuStore;
 
     public CheckCodeStatusCommand(
         ILogger<CheckCodeStatusCommand> logger,
         ITelegramService telegramService, 
-        IStore store,
+        IStoreService storeService,
         TelegramMenuStore telegramMenuStore
         )
     {
         _logger = logger;
         _telegramService = telegramService;
-        _store = store;
+        _storeService = storeService;
         _telegramMenuStore = telegramMenuStore;
     }
 
@@ -34,11 +34,11 @@ internal class CheckCodeStatusCommand : ITelegramMenuCommand
             _telegramMenuStore.LastCommandId = Id; 
         
             var message = string.Format("Critical: {0}{1}Errors {2}{3}Warnings: {4}{5}",
-                _store.Information.CriticalCount,
+                _storeService.Information.CriticalCount,
                 Environment.NewLine,
-                _store.Information.ErrorCount,
+                _storeService.Information.ErrorCount,
                 Environment.NewLine,
-                _store.Information.WarningCount,
+                _storeService.Information.WarningCount,
                 Environment.NewLine
             );
 
