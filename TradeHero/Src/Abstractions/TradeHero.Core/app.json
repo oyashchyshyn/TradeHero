@@ -1,8 +1,9 @@
 {
     "Application": {
-        "BaseAppName": "trade_hero",
-        "WindowsAppName": "trade_hero.exe",
-        "LinuxAppName": "trade_hero"
+        "WindowsAppName": "trade_hero_app.exe",
+        "LinuxAppName": "trade_hero_app",
+        "DownloadedWindowsAppName": "trade_hero_release.exe",
+        "DownloadedLinuxAppName": "trade_hero_release"
     },
     "Client": {
         "Server": "Default"

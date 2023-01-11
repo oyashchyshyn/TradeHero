@@ -24,7 +24,7 @@ internal class InternetConnectionService : IInternetConnectionService
         )
     {
         _logger = logger;
-        _appSettings = environmentSettings.GetEnvironmentSettings();
+        _appSettings = environmentSettings.GetAppSettings();
     }
 
     public async Task StartInternetConnectionCheckAsync()

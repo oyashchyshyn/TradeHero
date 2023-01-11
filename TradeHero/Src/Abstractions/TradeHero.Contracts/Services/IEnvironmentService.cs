@@ -7,13 +7,11 @@ public interface IEnvironmentService
 {
     Dictionary<string, string> CustomArgs { get; }
     string[] GetEnvironmentArgs();
-    AppSettings GetEnvironmentSettings();
+    AppSettings GetAppSettings();
     Version GetCurrentApplicationVersion();
     string GetBasePath();
-    string GetLogsFolderPath();
-    string GetDatabaseFolderPath();
     EnvironmentType GetEnvironmentType();
-    int GetCurrentProcessId();
     OperationSystem GetCurrentOperationSystem();
     string GetCurrentApplicationName();
+    string GetDownloadedApplicationName();
 }

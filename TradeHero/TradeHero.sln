@@ -24,7 +24,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeHero.Host", "Src\Proje
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeHero.Services", "Src\Project\TradeHero.Services\TradeHero.Services.csproj", "{9DBCCD6F-4BFE-44B3-BBEE-777524438989}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeHero.StrategyRunner", "Src\Project\TradeHero.StrategyRunner\TradeHero.StrategyRunner.csproj", "{5A2F5ED8-3A62-4500-9D03-EA533A2AB981}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeHero.Trading", "Src\Project\TradeHero.Trading\TradeHero.Trading.csproj", "{5A2F5ED8-3A62-4500-9D03-EA533A2AB981}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeHero.Launcher", "Src\TradeHero.Launcher\TradeHero.Launcher.csproj", "{C3B5CA32-CF0C-4055-A8C3-C7F47349555C}"
 EndProject

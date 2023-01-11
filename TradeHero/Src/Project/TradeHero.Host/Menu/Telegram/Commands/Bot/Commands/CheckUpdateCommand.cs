@@ -13,7 +13,7 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
 {
     private readonly ILogger<CheckUpdateCommand> _logger;
     private readonly ITelegramService _telegramService;
-    private readonly IUpdateService _updateService;
+    private readonly IGithubService _githubService;
     private readonly IStore _store;
     private readonly IEnvironmentService _environmentService;
     private readonly IHostApplicationLifetime _hostApplicationLifetime;
@@ -22,7 +22,7 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
     public CheckUpdateCommand(
         ILogger<CheckUpdateCommand> logger,
         ITelegramService telegramService,
-        IUpdateService updateService,
+        IGithubService githubService,
         IStore store,
         IEnvironmentService environmentService,
         IHostApplicationLifetime hostApplicationLifetime,
@@ -31,7 +31,7 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
     {
         _logger = logger;
         _telegramService = telegramService;
-        _updateService = updateService;
+        _githubService = githubService;
         _store = store;
         _environmentService = environmentService;
         _hostApplicationLifetime = hostApplicationLifetime;
@@ -46,7 +46,7 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
         {
             _telegramMenuStore.LastCommandId = Id;
 
-            var latestReleaseResult = await _updateService.GetLatestReleaseAsync();
+            var latestReleaseResult = await _githubService.GetLatestReleaseAsync();
             if (latestReleaseResult.ActionResult != ActionResult.Success)
             {
                 await _telegramService.SendTextMessageToUserAsync(
@@ -144,7 +144,7 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
 
                 var downloadingProgressMessageId = 0;
                 var previousProgress = 0.0m;
-                _updateService.OnDownloadProgress += async (_, progress) =>
+                _githubService.OnDownloadProgress += async (_, progress) =>
                 {
                     if (progress < previousProgress + 120)
                     {
@@ -171,9 +171,13 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
                         cancellationToken
                     );
                 };
+
+                var downloadedAppPath = Path.Combine(_environmentService.GetBasePath(),
+                    _telegramMenuStore.CheckUpdateData.ReleaseVersion.AppName);
                 
-                var downloadResult = await _updateService.DownloadUpdateAsync(
-                    _telegramMenuStore.CheckUpdateData.ReleaseVersion, 
+                var downloadResult = await _githubService.DownloadReleaseAsync(
+                    _telegramMenuStore.CheckUpdateData.ReleaseVersion.AppDownloadUri, 
+                    downloadedAppPath,
                     cancellationToken
                 );
 
@@ -190,8 +194,7 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
                 );
 
                 _environmentService.CustomArgs.Clear();
-                _environmentService.CustomArgs.Add(ArgumentKeyConstants.UpdaterPath, downloadResult.Data.UpdaterFilePath);
-                _environmentService.CustomArgs.Add(ArgumentKeyConstants.DownloadApplicationPath, downloadResult.Data.AppFilePath);
+                _environmentService.CustomArgs.Add(ArgumentKeyConstants.Update, string.Empty);
 
                 _hostApplicationLifetime.StopApplication();
                 

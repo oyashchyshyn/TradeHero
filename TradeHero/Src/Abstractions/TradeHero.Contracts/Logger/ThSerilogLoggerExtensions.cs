@@ -22,13 +22,14 @@ public static class ThSerilogLoggerExtensions
         {
             var store = serviceProvider.GetRequiredService<IStore>();
             var environmentService = serviceProvider.GetRequiredService<IEnvironmentService>();
-            var environmentSettings = environmentService.GetEnvironmentSettings();
+            var environmentSettings = environmentService.GetAppSettings();
 
             LoggerConfiguration loggerConfiguration;
 
             if (environmentSettings.Logger.LogLevel != LogLevel.None)
             {
-                var loggerFilePath = Path.Combine(environmentService.GetLogsFolderPath(), 
+                var loggerFilePath = Path.Combine(environmentService.GetBasePath(),
+                    environmentService.GetAppSettings().Folder.LogsFolderName,
                     environmentSettings.Logger.AppFileName);
 
                 loggerConfiguration = new LoggerConfiguration()

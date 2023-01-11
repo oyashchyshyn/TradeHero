@@ -5,7 +5,7 @@
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <AssemblyName>trade_hero</AssemblyName>
+        <AssemblyName>trade_hero_app</AssemblyName>
         <AssemblyVersion>1.0.0</AssemblyVersion>
         <FileVersion>1.0.0</FileVersion>
         <ApplicationIcon>trade_hero.ico</ApplicationIcon>
@@ -23,7 +23,7 @@
       <ProjectReference Include="..\TradeHero.Client\TradeHero.Client.csproj" />
       <ProjectReference Include="..\TradeHero.Database\TradeHero.Database.csproj" />
       <ProjectReference Include="..\TradeHero.Services\TradeHero.Services.csproj" />
-      <ProjectReference Include="..\TradeHero.StrategyRunner\TradeHero.StrategyRunner.csproj" />
+      <ProjectReference Include="..\TradeHero.Trading\TradeHero.Trading.csproj" />
     </ItemGroup>
 
 </Project>

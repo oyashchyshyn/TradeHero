@@ -1,18 +1,62 @@
-﻿namespace TradeHero.Launcher;
+﻿using System.Diagnostics;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using TradeHero.Core.Enums;
+using TradeHero.Core.Helpers;
+using TradeHero.Launcher.Host;
+using TradeHero.Services;
+using HostApp = Microsoft.Extensions.Hosting.Host;
+
+namespace TradeHero.Launcher;
 
 internal static class Program
 {
-    private static Task Main(string[] args)
+    private static async Task<int> Main(string[] args)
     {
+        var configuration = ConfigurationHelper.GenerateConfiguration(args);
+        var environmentSettings = ConfigurationHelper.ConvertConfigurationToAppSettings(configuration);
+
         try
         {
-            Environment.Exit(0);
-        }
-        catch (Exception)
-        {
-            Environment.Exit(-1);
-        }
+            if (Process.GetProcesses().Count(x => x.ProcessName == Process.GetCurrentProcess().ProcessName) > 1)
+            {
+                MessageHelper.WriteError("Bot already running!");
+                
+                return (int)AppExitCode.Failure;
+            }
+            
+            EnvironmentHelper.SetCulture();
+            
+            var environmentType = ArgsHelper.GetEnvironmentType(args);
 
-        return Task.CompletedTask;
+            var host = HostApp.CreateDefaultBuilder(args)
+                .UseEnvironment(environmentType.ToString())
+                .UseContentRoot(AppDomain.CurrentDomain.BaseDirectory)
+                .ConfigureAppConfiguration((_, config) =>
+                {
+                    config.AddConfiguration(configuration);
+                })
+                .ConfigureServices((_, serviceCollection) =>
+                {
+                    serviceCollection.AddThServices();
+                    serviceCollection.AddSingleton<IHostLifetime, LauncherHostedLifeTime>();
+                    serviceCollection.AddHostedService<LauncherHostedService>();
+                })
+                .Build();
+
+            await host.RunAsync();
+
+            return (int)AppExitCode.Success;
+        }
+        catch (Exception exception)
+        {
+            var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, 
+                environmentSettings.Folder.DataFolderName, environmentSettings.Folder.LogsFolderName);
+            
+            await MessageHelper.WriteErrorAsync(exception, path);
+            
+            return (int)AppExitCode.Failure;
+        }
     }
 }

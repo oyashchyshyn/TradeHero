@@ -77,10 +77,12 @@ internal class ThHostedService : IHostedService
 
     private void RegisterBackgroundJobs()
     {
+        var appSettings = _environmentService.GetAppSettings();
+        
         async Task DeleteOldFilesFunction()
         {
             await _fileService.DeleteFilesInFolderAsync(
-                _environmentService.GetLogsFolderPath(), 
+                Path.Combine(_environmentService.GetBasePath(), appSettings.Folder.LogsFolderName), 
                 TimeSpan.FromDays(30).TotalMilliseconds
             );
         }

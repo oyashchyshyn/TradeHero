@@ -1,48 +1,37 @@
-﻿using System.Diagnostics;
-using FluentValidation;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TradeHero.Client;
-using TradeHero.Contracts.Repositories.Models;
 using TradeHero.Contracts.Services;
+using TradeHero.Core.Constants;
+using TradeHero.Core.Enums;
 using TradeHero.Core.Helpers;
 using TradeHero.Database;
-using TradeHero.Host.Data;
-using TradeHero.Host.Data.Dtos.Instance;
-using TradeHero.Host.Data.Dtos.TradeLogic;
-using TradeHero.Host.Data.Validations;
-using TradeHero.Host.Dictionary;
-using TradeHero.Host.Host;
-using TradeHero.Host.Menu;
-using TradeHero.Host.Menu.Console;
-using TradeHero.Host.Menu.Telegram;
 using TradeHero.Services;
-using TradeHero.StrategyRunner;
+using TradeHero.Trading;
 using HostApp = Microsoft.Extensions.Hosting.Host;
 
 namespace TradeHero.Host;
 
 internal static class Program
 {
-    private static async Task Main(string[] args)
+    private static async Task<int> Main(string[] args)
     {
+        EnvironmentHelper.SetCulture();
+
+        if (!args.Contains(ArgumentKeyConstants.RunApp))
+        {
+            MessageHelper.WriteError("Cannot start app!");
+                
+            return (int)AppExitCode.Failure;
+        }
+        
         var configuration = ConfigurationHelper.GenerateConfiguration(args);
         var environmentSettings = ConfigurationHelper.ConvertConfigurationToAppSettings(configuration);
+        var environmentType = ArgsHelper.GetEnvironmentType(args);
 
         try
         {
-            EnvironmentHelper.SetCulture();
-
-            if (Process.GetProcesses().Count(x => x.ProcessName == environmentSettings.Application.BaseAppName) > 1)
-            {
-                MessageHelper.WriteError("Bot already running!");
-                
-                return;
-            }
-            
-            var environmentType = ArgsHelper.GetEnvironmentType(args);
-
             var host = HostApp.CreateDefaultBuilder(args)
                 .UseEnvironment(environmentType.ToString())
                 .UseContentRoot(AppDomain.CurrentDomain.BaseDirectory)
@@ -57,26 +46,7 @@ internal static class Program
                     serviceCollection.AddThDatabase();
                     serviceCollection.AddThStrategyRunner();
                     
-                    // Host
-                    serviceCollection.AddHostedService<ThHostedService>();
-                    serviceCollection.AddSingleton<IHostLifetime, ThHostLifeTime>();
-
-                    // Menu factory
-                    serviceCollection.AddSingleton<MenuFactory>();
-        
-                    // Menus
-                    ConsoleDiContainer.Register(serviceCollection);
-                    TelegramDiContainer.Register(serviceCollection);
-
-                    // Dictionary
-                    serviceCollection.AddSingleton<EnumDictionary>();
-
-                    // Data validation
-                    serviceCollection.AddTransient<IValidator<ConnectionDto>, ConnectionDtoValidation>();
-                    serviceCollection.AddTransient<IValidator<PercentLimitTradeLogicDto>, PercentLimitStrategyDtoValidation>();
-                    serviceCollection.AddTransient<IValidator<PercentMoveTradeLogicDto>, PercentMoveStrategyDtoValidation>();
-                    serviceCollection.AddTransient<IValidator<SpotClusterVolumeOptionsDto>, SpotClusterVolumeOptionsDtoValidation>();
-                    serviceCollection.AddSingleton<DtoValidator>();
+                    HostDiContainer.Register(serviceCollection);
                 })
                 .Build();
             
@@ -84,21 +54,28 @@ internal static class Program
             {
                 MessageHelper.WriteError("There is an error during user creation. Please see logs.");
 
-                return;
+                return (int)AppExitCode.Failure;
             }
 
+            var environmentServices = host.Services.GetRequiredService<IEnvironmentService>();
+            
             await host.RunAsync();
 
-            Environment.Exit(0);
+            if (environmentServices.CustomArgs.ContainsKey(ArgumentKeyConstants.Update))
+            {
+                return (int)AppExitCode.Update;
+            }
+            
+            return (int)AppExitCode.Success;
         }
         catch (Exception exception)
         {
-            var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, 
+            var logsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, 
                 environmentSettings.Folder.DataFolderName, environmentSettings.Folder.LogsFolderName);
             
-            await MessageHelper.WriteErrorAsync(exception, path);
+            await MessageHelper.WriteErrorAsync(exception, logsPath);
             
-            Environment.Exit(-1);
+            return (int)AppExitCode.Failure;
         }
     }
 }

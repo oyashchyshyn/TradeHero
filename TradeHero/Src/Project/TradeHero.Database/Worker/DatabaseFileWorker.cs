@@ -20,7 +20,7 @@ internal class DatabaseFileWorker
     {
         _logger = logger;
         _environmentService = environmentService;
-        _appSettings = environmentService.GetEnvironmentSettings();
+        _appSettings = environmentService.GetAppSettings();
     }
     
     public IEnumerable<T> GetDataFromFile<T>()
@@ -31,8 +31,8 @@ internal class DatabaseFileWorker
         {
             throw new Exception("Wrong file name!");
         }
-
-        var directoryPath = _environmentService.GetDatabaseFolderPath();
+        
+        var directoryPath = Path.Combine(_environmentService.GetBasePath(), _appSettings.Folder.DatabaseFolderName);
         if (!Directory.Exists(directoryPath))
         {
             Directory.CreateDirectory(directoryPath);
@@ -78,10 +78,8 @@ internal class DatabaseFileWorker
             throw new Exception("Wrong file name!");
         }
         
-        var path = Path.Combine(
-            _environmentService.GetDatabaseFolderPath(),
-            fileName
-        );
+        var directoryPath = Path.Combine(_environmentService.GetBasePath(), _appSettings.Folder.DatabaseFolderName);
+        var path = Path.Combine(directoryPath, fileName);
 
         var jsonSettings = new JsonSerializerSettings();
         jsonSettings.Converters.Add(new StringEnumConverter());

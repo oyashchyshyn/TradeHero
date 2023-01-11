@@ -29,7 +29,7 @@ internal class EnvironmentService : IEnvironmentService
         return Environment.GetCommandLineArgs();
     }
 
-    public AppSettings GetEnvironmentSettings()
+    public AppSettings GetAppSettings()
     {
         return _configuration.Get<AppSettings>() ?? new AppSettings();
     }
@@ -44,18 +44,25 @@ internal class EnvironmentService : IEnvironmentService
         return _hostingEnvironment.ContentRootPath;
     }
 
-    public string GetLogsFolderPath()
+    public string GetDataFolderPath()
     {
-        var environmentSettings = GetEnvironmentSettings();
+        var environmentSettings = GetAppSettings();
         
-        return Path.Combine(_hostingEnvironment.ContentRootPath, environmentSettings.Folder.DataFolderName, environmentSettings.Folder.LogsFolderName);
+        return Path.Combine(GetBasePath(), environmentSettings.Folder.DataFolderName);
     }
     
+    public string GetLogsFolderPath()
+    {
+        var environmentSettings = GetAppSettings();
+        
+        return Path.Combine(GetBasePath(), environmentSettings.Folder.DataFolderName, environmentSettings.Folder.LogsFolderName);
+    }
+
     public string GetDatabaseFolderPath()
     {
-        var environmentSettings = GetEnvironmentSettings();
+        var environmentSettings = GetAppSettings();
         
-        return Path.Combine(_hostingEnvironment.ContentRootPath, environmentSettings.Folder.DataFolderName, environmentSettings.Folder.DatabaseFolderName);
+        return Path.Combine(GetBasePath(), environmentSettings.Folder.DataFolderName, environmentSettings.Folder.DatabaseFolderName);
     }
 
     public EnvironmentType GetEnvironmentType()
@@ -88,13 +95,29 @@ internal class EnvironmentService : IEnvironmentService
 
     public string GetCurrentApplicationName()
     {
-        var environmentSettings = GetEnvironmentSettings();
+        var environmentSettings = GetAppSettings();
         
         var applicationName = GetCurrentOperationSystem() switch
         {
             OperationSystem.Windows => environmentSettings.Application.WindowsAppName,
             OperationSystem.Linux => environmentSettings.Application.LinuxAppName,
             OperationSystem.Osx => environmentSettings.Application.LinuxAppName,
+            OperationSystem.None => string.Empty,
+            _ => string.Empty
+        };
+
+        return applicationName;
+    }
+    
+    public string GetDownloadedApplicationName()
+    {
+        var environmentSettings = GetAppSettings();
+        
+        var applicationName = GetCurrentOperationSystem() switch
+        {
+            OperationSystem.Windows => environmentSettings.Application.DownloadedWindowsAppName,
+            OperationSystem.Linux => environmentSettings.Application.DownloadedLinuxAppName,
+            OperationSystem.Osx => environmentSettings.Application.DownloadedLinuxAppName,
             OperationSystem.None => string.Empty,
             _ => string.Empty
         };

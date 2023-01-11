@@ -5,7 +5,7 @@ using TradeHero.Contracts.Menu.Commands;
 using TradeHero.Contracts.Repositories;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.Services.Models.Telegram;
-using TradeHero.Contracts.StrategyRunner;
+using TradeHero.Contracts.Trading;
 using TradeHero.Core.Enums;
 using TradeHero.Host.Menu.Telegram.Store;
 

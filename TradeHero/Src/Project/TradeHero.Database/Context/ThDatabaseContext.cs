@@ -26,7 +26,7 @@ internal class ThDatabaseContext : DbContext
         : base(options)
     {
         _logger = logger;
-        _appSettings = environmentService.GetEnvironmentSettings();
+        _appSettings = environmentService.GetAppSettings();
         _databaseFileWorker = databaseFileWorker;
     }
 

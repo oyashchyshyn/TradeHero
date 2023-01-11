@@ -33,7 +33,7 @@ public static class ThClientServiceCollectionExtensions
                 secretKey = connection.SecretKey;
             }
             
-            var restClientOptions = GetBinanceClientOptions(environmentService.GetEnvironmentSettings(), apiKey, 
+            var restClientOptions = GetBinanceClientOptions(environmentService.GetAppSettings(), apiKey, 
                 secretKey, loggerFactory.CreateLogger<ThRestBinanceClient>());
             
             return new ThRestBinanceClient(restClientOptions, serviceProvider);
@@ -55,7 +55,7 @@ public static class ThClientServiceCollectionExtensions
                 secretKey = connection.SecretKey;
             }
             
-            var socketClientOptions = GetBinanceSocketClientOptions(environmentService.GetEnvironmentSettings(), apiKey, 
+            var socketClientOptions = GetBinanceSocketClientOptions(environmentService.GetAppSettings(), apiKey, 
                 secretKey, loggerFactory.CreateLogger<ThSocketBinanceClient>());
 
             return new ThSocketBinanceClient(socketClientOptions);

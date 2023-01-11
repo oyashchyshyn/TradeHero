@@ -24,7 +24,7 @@ public static class ThServiceServiceCollectionExtensions
         serviceCollection.AddSingleton<IInternetConnectionService, InternetConnectionService>();
         serviceCollection.AddSingleton<IEnvironmentService, EnvironmentService>();
         serviceCollection.AddSingleton<IFileService, FileService>();
-        serviceCollection.AddSingleton<IUpdateService, UpdateService>();
+        serviceCollection.AddSingleton<IGithubService, GithubService>();
         serviceCollection.AddSingleton<ITerminalService, TerminalService>();
         serviceCollection.AddSingleton<IStartupService, StartupService>();
         

@@ -1,4 +1,4 @@
-using TradeHero.Contracts.StrategyRunner;
+using TradeHero.Contracts.Trading;
 using TradeHero.Core.Enums;
 
 namespace TradeHero.Contracts.Services.Models.Store;
