@@ -9,7 +9,7 @@ using TradeHero.Launcher.Services;
 
 namespace TradeHero.Launcher.Logger;
 
-public static class SerilogLoggerExtensions
+internal static class SerilogLoggerExtensions
 {
     public static void AddSerilog(this ILoggingBuilder builder)
     {

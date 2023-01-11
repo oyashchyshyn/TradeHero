@@ -2,7 +2,7 @@ using Serilog.Core;
 using Serilog.Events;
 using TradeHero.Contracts.Services;
 
-namespace TradeHero.Contracts.Logger;
+namespace TradeHero.Host.Logger;
 
 internal class StoreEventSink : ILogEventSink
 {

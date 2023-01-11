@@ -4,13 +4,12 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
 using Serilog.Sinks.SystemConsole.Themes;
-using TradeHero.Contracts.Logger;
 using TradeHero.Contracts.Services;
 using TradeHero.Core.Enums;
 
 namespace TradeHero.Host.Logger;
 
-public static class SerilogLoggerExtensions
+internal static class SerilogLoggerExtensions
 {
     public static void AddSerilog(this ILoggingBuilder builder)
     {
