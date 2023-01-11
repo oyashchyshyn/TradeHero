@@ -1,13 +1,12 @@
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Telegram.Bot.Types.ReplyMarkups;
-using TradeHero.Contracts.Base.Enums;
-using TradeHero.Contracts.Extensions;
-using TradeHero.Contracts.Menu;
 using TradeHero.Contracts.Menu.Commands;
 using TradeHero.Contracts.Repositories;
 using TradeHero.Contracts.Repositories.Models;
 using TradeHero.Contracts.Services;
+using TradeHero.Core.Enums;
+using TradeHero.Core.Extensions;
 using TradeHero.Host.Data;
 using TradeHero.Host.Data.Dtos.Base;
 using TradeHero.Host.Dictionary;

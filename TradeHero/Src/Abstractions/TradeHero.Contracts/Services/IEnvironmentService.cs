@@ -1,5 +1,5 @@
-﻿using TradeHero.Contracts.Base.Enums;
-using TradeHero.Contracts.Services.Models.Environment;
+﻿using TradeHero.Contracts.Services.Models.Environment;
+using TradeHero.Core.Enums;
 
 namespace TradeHero.Contracts.Services;
 

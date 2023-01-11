@@ -2,14 +2,14 @@ using System.Diagnostics;
 using Binance.Net.Enums;
 using Binance.Net.Objects.Models;
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Base.Enums;
-using TradeHero.Contracts.Base.Exceptions;
-using TradeHero.Contracts.Base.Models;
 using TradeHero.Contracts.Client;
-using TradeHero.Contracts.Extensions;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.StrategyRunner;
 using TradeHero.Contracts.StrategyRunner.Models.Instance;
+using TradeHero.Core.Enums;
+using TradeHero.Core.Exceptions;
+using TradeHero.Core.Extensions;
+using TradeHero.Core.Models;
 using TradeHero.StrategyRunner.Instances.Options;
 
 namespace TradeHero.StrategyRunner.Instances;

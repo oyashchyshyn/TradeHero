@@ -1,5 +1,5 @@
 using Binance.Net.Objects.Models.Futures.Socket;
-using TradeHero.Contracts.Base.Enums;
+using TradeHero.Core.Enums;
 
 namespace TradeHero.Contracts.StrategyRunner.Models.Args;
 

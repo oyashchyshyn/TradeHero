@@ -2,7 +2,6 @@ using Binance.Net.Objects;
 using CryptoExchange.Net.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Client;
 using TradeHero.Contracts.Repositories;
 using TradeHero.Client.Clients;
@@ -10,6 +9,7 @@ using TradeHero.Client.Resolvers;
 using TradeHero.Contracts.Client.Resolvers;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.Services.Models.Environment;
+using TradeHero.Core.Enums;
 
 namespace TradeHero.Client;
 

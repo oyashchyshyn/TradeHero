@@ -1,11 +1,10 @@
 ﻿using System.Text;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types.ReplyMarkups;
-using TradeHero.Contracts.Base.Enums;
-using TradeHero.Contracts.Extensions;
-using TradeHero.Contracts.Menu;
 using TradeHero.Contracts.Menu.Commands;
 using TradeHero.Contracts.Services;
+using TradeHero.Core.Enums;
+using TradeHero.Core.Extensions;
 using TradeHero.Host.Data.Dtos.Instance;
 using TradeHero.Host.Data.Dtos.TradeLogic;
 using TradeHero.Host.Dictionary;

@@ -1,5 +1,5 @@
-using TradeHero.Contracts.Base.Models;
 using TradeHero.Contracts.Services.Models.Update;
+using TradeHero.Core.Models;
 
 namespace TradeHero.Contracts.Services;
 

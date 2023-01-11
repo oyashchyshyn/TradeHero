@@ -1,5 +1,5 @@
 using Telegram.Bot.Types.ReplyMarkups;
-using TradeHero.Contracts.Store;
+using TradeHero.Contracts.Services;
 
 // ReSharper disable ConvertToConstant.Global
 

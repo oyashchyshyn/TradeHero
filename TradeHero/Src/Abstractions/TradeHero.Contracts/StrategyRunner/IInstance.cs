@@ -1,5 +1,5 @@
-using TradeHero.Contracts.Base.Models;
 using TradeHero.Contracts.StrategyRunner.Models.Instance;
+using TradeHero.Core.Models;
 
 namespace TradeHero.Contracts.StrategyRunner;
 

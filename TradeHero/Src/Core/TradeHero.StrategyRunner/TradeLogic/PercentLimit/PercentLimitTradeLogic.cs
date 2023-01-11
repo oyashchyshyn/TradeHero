@@ -1,12 +1,12 @@
 using System.Text;
 using Binance.Net.Enums;
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Base.Constants;
-using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Client;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.StrategyRunner;
 using TradeHero.Contracts.StrategyRunner.Models.Instance;
+using TradeHero.Core.Constants;
+using TradeHero.Core.Enums;
 using TradeHero.StrategyRunner.Base;
 using TradeHero.StrategyRunner.Endpoints.Rest;
 using TradeHero.StrategyRunner.Endpoints.Socket;

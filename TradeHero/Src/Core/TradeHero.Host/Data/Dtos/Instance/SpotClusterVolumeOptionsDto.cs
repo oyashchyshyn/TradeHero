@@ -2,7 +2,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using Binance.Net.Enums;
 using Newtonsoft.Json;
-using TradeHero.Contracts.Attributes;
+using TradeHero.Core.Attributes;
 
 namespace TradeHero.Host.Data.Dtos.Instance;
 

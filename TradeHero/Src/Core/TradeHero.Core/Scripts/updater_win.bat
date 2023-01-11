@@ -1,1 +1,0 @@
-xcopy "C:\Users\ADMIN\Desktop\*.*" "D:\Backup\" /K /D /H /Y

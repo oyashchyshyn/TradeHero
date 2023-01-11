@@ -1,8 +1,8 @@
 using System.ComponentModel;
 using Binance.Net.Enums;
 using Newtonsoft.Json;
-using TradeHero.Contracts.Attributes;
-using TradeHero.Contracts.Base.Enums;
+using TradeHero.Core.Attributes;
+using TradeHero.Core.Enums;
 using TradeHero.Host.Data.Dtos.Base;
 
 namespace TradeHero.Host.Data.Dtos.TradeLogic;

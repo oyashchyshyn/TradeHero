@@ -1,5 +1,5 @@
 using Binance.Net.Enums;
-using TradeHero.Contracts.Base.Enums;
+using TradeHero.Core.Enums;
 
 namespace TradeHero.Contracts.Services;
 

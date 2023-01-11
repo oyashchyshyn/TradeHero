@@ -1,10 +1,8 @@
 using System.Text;
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Base.Constants;
-using TradeHero.Contracts.Menu;
 using TradeHero.Contracts.Menu.Commands;
 using TradeHero.Contracts.Services;
-using TradeHero.Contracts.Store;
+using TradeHero.Core.Constants;
 using TradeHero.Host.Menu.Telegram.Store;
 
 namespace TradeHero.Host.Menu.Telegram.Commands.Positions.Commands;

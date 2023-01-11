@@ -3,7 +3,7 @@ using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Base.Enums;
+using TradeHero.Core.Enums;
 using TradeHero.Host.Data.Dtos.Instance;
 using TradeHero.Host.Data.Dtos.TradeLogic;
 

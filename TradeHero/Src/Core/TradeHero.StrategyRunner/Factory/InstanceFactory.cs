@@ -1,8 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.StrategyRunner;
 using TradeHero.Contracts.StrategyRunner.Models.Instance;
+using TradeHero.Core.Enums;
 using TradeHero.StrategyRunner.Instances;
 using TradeHero.StrategyRunner.Instances.Options;
 

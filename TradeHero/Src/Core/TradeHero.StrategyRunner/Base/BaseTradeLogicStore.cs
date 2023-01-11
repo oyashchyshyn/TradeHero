@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
-using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Repositories.Models;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.StrategyRunner;
@@ -8,6 +7,7 @@ using TradeHero.Contracts.StrategyRunner.Models;
 using TradeHero.Contracts.StrategyRunner.Models.FuturesUsd;
 using TradeHero.Contracts.StrategyRunner.Models.Instance;
 using TradeHero.Contracts.StrategyRunner.Models.Spot;
+using TradeHero.Core.Enums;
 
 namespace TradeHero.StrategyRunner.Base;
 

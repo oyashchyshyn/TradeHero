@@ -2,12 +2,12 @@ using Binance.Net.Enums;
 using Binance.Net.Objects.Models.Futures;
 using Binance.Net.Objects.Models.Futures.Socket;
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Base.Enums;
-using TradeHero.Contracts.Base.Exceptions;
 using TradeHero.Contracts.Client;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.StrategyRunner;
 using TradeHero.Contracts.StrategyRunner.Models;
+using TradeHero.Core.Enums;
+using TradeHero.Core.Exceptions;
 using TradeHero.StrategyRunner.Base;
 using TradeHero.StrategyRunner.TradeLogic.PercentMove.Factory;
 

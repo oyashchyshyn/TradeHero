@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Base.Enums;
-using TradeHero.Contracts.Base.Exceptions;
 using TradeHero.Contracts.Client;
 using TradeHero.Contracts.StrategyRunner;
+using TradeHero.Core.Enums;
+using TradeHero.Core.Exceptions;
 
 namespace TradeHero.StrategyRunner.Endpoints.Rest.Implementation;
 

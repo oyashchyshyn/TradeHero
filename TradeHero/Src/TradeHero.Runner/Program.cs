@@ -2,8 +2,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using TradeHero.Contracts.Base.Constants;
 using TradeHero.Contracts.Services;
+using TradeHero.Core.Constants;
 using TradeHero.DependencyResolver;
 using HostApp = Microsoft.Extensions.Hosting.Host;
 

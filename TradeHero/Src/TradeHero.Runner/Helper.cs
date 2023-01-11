@@ -1,11 +1,9 @@
-﻿using System.Diagnostics;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using Microsoft.Extensions.Configuration;
-using TradeHero.Contracts.Base.Constants;
-using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Services.Models.Environment;
+using TradeHero.Core.Constants;
+using TradeHero.Core.Enums;
 
 namespace TradeHero.Runner;
 

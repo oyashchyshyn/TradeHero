@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Menu;
+using TradeHero.Core.Enums;
 
 namespace TradeHero.Host.Menu.Console;
 
