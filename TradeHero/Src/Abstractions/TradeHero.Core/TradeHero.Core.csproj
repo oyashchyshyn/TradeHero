@@ -4,8 +4,10 @@
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <NeutralLanguage>en-001</NeutralLanguage>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     </PropertyGroup>
-
+    
     <ItemGroup>
       <PackageReference Include="CryptoExchange.Net" Version="5.3.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
@@ -19,9 +21,17 @@
       <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
       <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
     </ItemGroup>
-
+    
     <ItemGroup>
       <EmbeddedResource Include="app.json" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Folder Include="Properties" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Include="..\..\..\SharedAssemblyInfo.cs" Link="Properties\AssemblyInfo.cs" />
+    </ItemGroup>
+    
 </Project>

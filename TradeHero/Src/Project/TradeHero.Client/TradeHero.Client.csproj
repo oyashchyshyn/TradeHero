@@ -4,9 +4,8 @@
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <AssemblyVersion>1.0.0</AssemblyVersion>
-        <FileVersion>1.0.0</FileVersion>
         <NeutralLanguage>en-001</NeutralLanguage>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     </PropertyGroup>
     
     <ItemGroup>
@@ -17,6 +16,14 @@
     
     <ItemGroup>
       <ProjectReference Include="..\..\Abstractions\TradeHero.Contracts\TradeHero.Contracts.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="Properties" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Include="..\..\..\SharedAssemblyInfo.cs" Link="Properties\AssemblyInfo.cs" />
     </ItemGroup>
 
 </Project>

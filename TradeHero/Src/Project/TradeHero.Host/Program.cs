@@ -49,7 +49,7 @@ internal static class Program
                     HostDiContainer.Register(serviceCollection);
                 })
                 .Build();
-            
+
             if (!await host.Services.GetRequiredService<IStartupService>().CheckIsFirstRunAsync())
             {
                 MessageHelper.WriteError("There is an error during user creation. Please see logs.");
@@ -57,10 +57,10 @@ internal static class Program
                 return (int)AppExitCode.Failure;
             }
 
-            var environmentServices = host.Services.GetRequiredService<IEnvironmentService>();
-            
             await host.RunAsync();
 
+            var environmentServices = host.Services.GetRequiredService<IEnvironmentService>();
+            
             if (environmentServices.CustomArgs.ContainsKey(ArgumentKeyConstants.Update))
             {
                 return (int)AppExitCode.Update;
