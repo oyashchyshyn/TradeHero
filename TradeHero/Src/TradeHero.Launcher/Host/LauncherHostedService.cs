@@ -123,7 +123,7 @@ internal class LauncherHostedService : IHostedService
 
     #region Private methods
 
-    private void GithubServiceOnOnDownloadProgress(object? sender, decimal e)
+    private static void GithubServiceOnOnDownloadProgress(object? sender, decimal e)
     {
         
     }
