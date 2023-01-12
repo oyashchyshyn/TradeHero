@@ -32,14 +32,12 @@ internal class AppService
 
     public async Task StartAppRunningAsync()
     {
-        _githubService.OnDownloadProgress += GithubServiceOnOnDownloadProgress;
-    
         var appPath = Path.Combine(_environmentService.GetBasePath(), _environmentService.GetRunningApplicationName());
         var releaseAppPath = Path.Combine(_environmentService.GetBasePath(), _environmentService.GetReleaseApplicationName());
 
         while (true)
         {
-            if (!await _startupService.CheckIsFirstRunAsync())
+            if (!await _startupService.ManageDatabaseDataAsync())
             {
                 throw new Exception("There is an error during user creation. Please see logs.");
             }
@@ -114,13 +112,4 @@ internal class AppService
         
         return Task.CompletedTask;
     }
-    
-    #region Private methods
-
-    private static void GithubServiceOnOnDownloadProgress(object? sender, decimal e)
-    {
-        
-    }
-
-    #endregion
 }

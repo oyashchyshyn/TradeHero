@@ -3,6 +3,8 @@ using Telegram.Bot;
 using TradeHero.Contracts.Repositories;
 using TradeHero.Contracts.Repositories.Models;
 using TradeHero.Contracts.Services;
+using TradeHero.Core.Enums;
+using TradeHero.Core.Exceptions;
 
 namespace TradeHero.Services.Services;
 
@@ -13,7 +15,7 @@ internal class StartupService : IStartupService
     private readonly ITerminalService _terminalService;
 
     public StartupService(
-        ILogger<StartupService> logger, 
+        ILogger<StartupService> logger,
         IUserRepository userRepository, 
         ITerminalService terminalService
         )
@@ -22,8 +24,8 @@ internal class StartupService : IStartupService
         _userRepository = userRepository;
         _terminalService = terminalService;
     }
-    
-    public async Task<bool> CheckIsFirstRunAsync()
+
+    public async Task<bool> ManageDatabaseDataAsync()
     {
         try
         {
@@ -208,7 +210,7 @@ internal class StartupService : IStartupService
         }
         catch (Exception exception)
         {
-            _logger.LogCritical(exception, "In {Method}", nameof(CheckIsFirstRunAsync));
+            _logger.LogCritical(exception, "In {Method}", nameof(ManageDatabaseDataAsync));
 
             return false;
         }
