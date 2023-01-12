@@ -65,7 +65,7 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: trade_hero_release
-          path: ${{ env.LAUNCHER_LINUX_PATH }}
+          path: ${{ env.APP_LINUX_PATH }}
      
       - name: Restore LAUNCHER dependencies
         working-directory: ${{ env.LAUNCHER_PROJECT_PATH }}
