@@ -154,7 +154,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }} 
-          asset_path: ./win/trade_hero_release
+          asset_path: ./win/trade_hero_release.exe
           asset_name: trade_hero_release.exe
           asset_content_type: application/vnd.microsoft.portable-executable
           
