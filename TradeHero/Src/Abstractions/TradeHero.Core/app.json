@@ -26,8 +26,8 @@
         "LogLevel": "Information",
         "RestClientLogLevel": "Warning",
         "SocketClientLogLevel": "Warning",
-        "AppFileName": "app_logs.txt",
-        "LauncherFileName": "launcher_logs.txt",
+        "AppFileName": "app_logs_.txt",
+        "LauncherFileName": "launcher_logs_.txt",
         "LogTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext}: {Message}{NewLine}{Exception}"
     },
     "Github": {
