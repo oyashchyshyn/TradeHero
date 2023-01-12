@@ -7,7 +7,8 @@
         <Nullable>enable</Nullable>
         <NeutralLanguage>en-001</NeutralLanguage>
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-        <AssemblyName>launcher</AssemblyName>
+        <AssemblyName>trade_hero</AssemblyName>
+        <ApplicationIcon>trade_hero.ico</ApplicationIcon>
     </PropertyGroup>
     
     <ItemGroup>
@@ -17,6 +18,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Abstractions\TradeHero.Core\TradeHero.Core.csproj" />
+      <ProjectReference Include="..\Abstractions\TradeHero.Dependencies\TradeHero.Dependencies.csproj" />
     </ItemGroup>
 
     <ItemGroup>

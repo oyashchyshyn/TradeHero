@@ -56,15 +56,14 @@ internal class GithubService : IGithubService
             switch (_environmentService.GetCurrentOperationSystem())
             {
                 case OperationSystem.Windows:
-                    updaterAsset = latestReleases.Assets.Single(x => x.Name == "launcher.exe");
-                    appAsset = latestReleases.Assets.Single(x => x.Name == "trade_hero_release.exe");
+                    updaterAsset = latestReleases.Assets.Single(x => x.Name == environmentSettings.Application.WindowsNames.ReleaseLauncher);
+                    appAsset = latestReleases.Assets.Single(x => x.Name == environmentSettings.Application.WindowsNames.ReleaseApp);
                     break;
                 case OperationSystem.Linux:
-                    updaterAsset = latestReleases.Assets.Single(x => x.Name == "launcher");
-                    appAsset = latestReleases.Assets.Single(x => x.Name == "trade_hero_release");
+                    updaterAsset = latestReleases.Assets.Single(x => x.Name == environmentSettings.Application.LinuxNames.ReleaseLauncher);
+                    appAsset = latestReleases.Assets.Single(x => x.Name == environmentSettings.Application.LinuxNames.ReleaseApp);
                     break;
                 case OperationSystem.None:
-                case OperationSystem.Osx:
                 default:
                     _logger.LogError("Cannot get correct operation system. Current operation system is: {OperationSystem}. In {Method}", 
                         _environmentService.GetCurrentOperationSystem(), nameof(DownloadReleaseAsync));
@@ -99,8 +98,6 @@ internal class GithubService : IGithubService
     {
         try
         {
-            var currentVersion = _environmentService.GetCurrentApplicationVersion();
-            
             var productVersion = _environmentService.GetCurrentApplicationVersion().ToString();
             var progressIndicator = new Progress<decimal>();
 
@@ -120,7 +117,7 @@ internal class GithubService : IGithubService
             request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
             request.Headers.Authorization = new AuthenticationHeaderValue("token", environmentSettings.Github.Token);
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/octet-stream"));
-            request.Headers.UserAgent.Add(new ProductInfoHeaderValue("TradeHero", productVersion));
+            request.Headers.UserAgent.Add(new ProductInfoHeaderValue("TradeHero-app", productVersion));
 
             await using var file = new FileStream(
                 filePath, 

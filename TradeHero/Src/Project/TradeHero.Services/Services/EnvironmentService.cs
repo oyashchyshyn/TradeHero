@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using TradeHero.Contracts.Services;
+using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Settings.AppSettings;
 
@@ -49,6 +50,11 @@ internal class EnvironmentService : IEnvironmentService
         return (EnvironmentType)Enum.Parse(typeof(EnvironmentType), _hostingEnvironment.EnvironmentName);
     }
 
+    public RunnerType GetRunnerType()
+    {
+        return (RunnerType)Enum.Parse(typeof(RunnerType), _configuration[HostConstants.RunningType] ?? string.Empty);
+    }
+    
     public int GetCurrentProcessId()
     {
         return Environment.ProcessId;
@@ -62,25 +68,18 @@ internal class EnvironmentService : IEnvironmentService
             return OperationSystem.Linux;
         }
 
-        var isIos = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
-        if (isIos)
-        {
-            return OperationSystem.Osx;
-        }
-
         var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         return isWindows ? OperationSystem.Windows : OperationSystem.None;
     }
 
-    public string GetCurrentApplicationName()
+    public string GetRunningApplicationName()
     {
         var environmentSettings = GetAppSettings();
         
         var applicationName = GetCurrentOperationSystem() switch
         {
-            OperationSystem.Windows => environmentSettings.Application.WindowsAppName,
-            OperationSystem.Linux => environmentSettings.Application.LinuxAppName,
-            OperationSystem.Osx => environmentSettings.Application.LinuxAppName,
+            OperationSystem.Windows => environmentSettings.Application.WindowsNames.App,
+            OperationSystem.Linux => environmentSettings.Application.LinuxNames.App,
             OperationSystem.None => string.Empty,
             _ => string.Empty
         };
@@ -88,15 +87,14 @@ internal class EnvironmentService : IEnvironmentService
         return applicationName;
     }
     
-    public string GetDownloadedApplicationName()
+    public string GetReleaseApplicationName()
     {
         var environmentSettings = GetAppSettings();
         
         var applicationName = GetCurrentOperationSystem() switch
         {
-            OperationSystem.Windows => environmentSettings.Application.DownloadedWindowsAppName,
-            OperationSystem.Linux => environmentSettings.Application.DownloadedLinuxAppName,
-            OperationSystem.Osx => environmentSettings.Application.DownloadedLinuxAppName,
+            OperationSystem.Windows => environmentSettings.Application.WindowsNames.ReleaseApp,
+            OperationSystem.Linux => environmentSettings.Application.LinuxNames.ReleaseApp,
             OperationSystem.None => string.Empty,
             _ => string.Empty
         };

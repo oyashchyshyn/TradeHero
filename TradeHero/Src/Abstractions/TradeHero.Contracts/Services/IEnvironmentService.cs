@@ -10,8 +10,10 @@ public interface IEnvironmentService
     AppSettings GetAppSettings();
     Version GetCurrentApplicationVersion();
     string GetBasePath();
+    int GetCurrentProcessId();
     EnvironmentType GetEnvironmentType();
+    RunnerType GetRunnerType();
     OperationSystem GetCurrentOperationSystem();
-    string GetCurrentApplicationName();
-    string GetDownloadedApplicationName();
+    string GetRunningApplicationName();
+    string GetReleaseApplicationName();
 }

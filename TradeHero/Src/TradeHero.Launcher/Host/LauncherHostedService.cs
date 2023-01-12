@@ -1,43 +1,50 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using TradeHero.Contracts.Services;
 using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Exceptions;
-using TradeHero.Launcher.Services;
 
 namespace TradeHero.Launcher.Host;
 
 internal class LauncherHostedService : IHostedService
 {
-    private readonly ILogger<LauncherHostedService> _logger;
-    private readonly EnvironmentService _environmentService;
-    private readonly GithubService _githubService;
+    private readonly ILogger _logger;
+    private readonly IEnvironmentService _environmentService;
+    private readonly IGithubService _githubService;
+    private readonly IStartupService _startupService;
 
     private Process? _runningProcess;
     private bool _isNeedToUpdatedApp;
     
     public LauncherHostedService(
-        ILogger<LauncherHostedService> logger, 
-        EnvironmentService environmentService, 
-        GithubService githubService
+        ILoggerFactory loggerFactory, 
+        IEnvironmentService environmentService, 
+        IGithubService githubService,
+        IStartupService startupService
         )
     {
-        _logger = logger;
+        _logger = loggerFactory.CreateLogger("TradeHero.Launcher");
         _environmentService = environmentService;
         _githubService = githubService;
+        _startupService = startupService;
     }
     
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         try
         {
+            _logger.LogInformation("Launcher started. Press Ctrl+C to shut down");
+            
             _githubService.OnDownloadProgress += GithubServiceOnOnDownloadProgress;
+
+            var t = _environmentService.GetRunnerType();
             
             var appSettings = _environmentService.GetAppSettings();
             var dataDirectoryPath = Path.Combine(_environmentService.GetBasePath(), appSettings.Folder.DataFolderName);
-            var appPath = Path.Combine(dataDirectoryPath, _environmentService.GetCurrentApplicationName());
-            var downloadedAppPath = Path.Combine(dataDirectoryPath, _environmentService.GetDownloadedApplicationName());
+            var appPath = Path.Combine(dataDirectoryPath, _environmentService.GetRunningApplicationName());
+            var releaseAppPath = Path.Combine(dataDirectoryPath, _environmentService.GetRunningApplicationName());
         
             while (true)
             {
@@ -46,6 +53,11 @@ internal class LauncherHostedService : IHostedService
                     Directory.CreateDirectory(dataDirectoryPath);
                 }
 
+                if (!await _startupService.CheckIsFirstRunAsync())
+                {
+                    throw new Exception("There is an error during user creation. Please see logs.");
+                }
+                
                 if (!File.Exists(appPath))
                 {
                     var latestRelease = await _githubService.GetLatestReleaseAsync();
@@ -54,10 +66,10 @@ internal class LauncherHostedService : IHostedService
                         throw new ThException("Cannot get info about application!");
                     }
                     
-                    var downloadResult = await _githubService.DownloadReleaseAsync(latestRelease.Data.DownloadUri, 
+                    var downloadResult = await _githubService.DownloadReleaseAsync(latestRelease.Data.AppDownloadUri, 
                         appPath, cancellationToken);
 
-                    if (downloadResult != ActionResult.Success)
+                    if (downloadResult.ActionResult != ActionResult.Success)
                     {
                         throw new ThException("Cannot download application!");
                     }
@@ -68,7 +80,7 @@ internal class LauncherHostedService : IHostedService
 
                 if (_isNeedToUpdatedApp)
                 {
-                    File.Move(downloadedAppPath, appPath, true);
+                    File.Move(releaseAppPath, appPath, true);
                     
                     arguments += $" {ArgumentKeyConstants.Update}";
                 }
@@ -112,10 +124,14 @@ internal class LauncherHostedService : IHostedService
         {
             _runningProcess?.Close();
             _runningProcess?.Dispose();
+            
+            _logger.LogInformation("Launcher stopped");
         }
         catch (Exception exception)
         {
             _logger.LogCritical(exception, "In {Method}", nameof(StopAsync));
+            
+            throw;
         }
         
         return Task.CompletedTask;
