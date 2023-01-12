@@ -5,17 +5,16 @@ on:
     branches: [ main ]
 
 env:
-  HOST_PROJECT_PATH: TradeHero/Src/TradeHero.Runner/
-  PUBLISH_WIN_FILE_PATH: TradeHero/Src/TradeHero.Runner/publish/win-x86/trade_hero.exe
-  PUBLISH_LINUX_FILE_PATH: TradeHero/Src/TradeHero.Runner/publish/linux-x64/trade_hero
-  PUBLISH_OSX_FILE_PATH: TradeHero/Src/TradeHero.Runner/publish/osx-x64/trade_hero
+  APP_PROJECT_PATH: TradeHero/Src/Project/TradeHero.App/
+  APP_WIN_PATH: TradeHero/Src/Project/TradeHero.App/publish/win-x86/trade_hero_release.exe
+  APP_LINUX_PATH: TradeHero/Src/Project/TradeHero.App/publish/linux-x64/trade_hero_release
   
-  UPDATER_PROJECT_PATH: TradeHero/Src/TradeHero.Updater/
-  PUBLISH_UPDATER_WIN_PATH: TradeHero/Src/TradeHero.Updater/publish/win-x86/updater.exe
-  PUBLISH_UPDATER_LINUX_PATH: TradeHero/Src/TradeHero.Updater/publish/linux-x64/updater
-  PUBLISH_UPDATER_OSX_PATH: TradeHero/Src/TradeHero.Updater/publish/osx-x64/updater
+  LAUNCHER_PROJECT_PATH: TradeHero/Src/TradeHero.Launcher/
+  LAUNCHER_WIN_PATH: TradeHero/Src/TradeHero.Launcher/publish/win-x86/launcher_release.exe
+  LAUNCHER_LINUX_PATH: TradeHero/Src/TradeHero.Launcher/publish/linux-x64/launcher_release
 
 jobs:
+
   delete-old-artifacts:
     name: delete-old-artifacts
     runs-on: ubuntu-latest
@@ -26,6 +25,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           expire-in: 0
       - run: echo "Finish 'delete-old-artifacts'"
+      
   build-publish-dotnet:
     name: build-publish-dotnet
     needs: delete-old-artifacts
@@ -33,66 +33,83 @@ jobs:
     steps:
       - name: Checkout to git directory
         uses: actions/checkout@v3
+        
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 7.0.x
-      - name: Restore application dependencies
-        working-directory: ${{ env.HOST_PROJECT_PATH }}
+          
+      - name: Restore APP dependencies
+        working-directory: ${{ env.APP_PROJECT_PATH }}
         run: dotnet restore
-      - name: Build application
-        working-directory: ${{ env.HOST_PROJECT_PATH }}
+        
+      - name: Build APP
+        working-directory: ${{ env.APP_PROJECT_PATH }}
         run: dotnet build --configuration Release --no-restore
-      - name: Publish application win-x86
-        working-directory: ${{ env.HOST_PROJECT_PATH }}
-        run: dotnet publish -r win-x64 --output ./publish/win-x86 --self-contained true -p:PublishTrimmed=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
-      - name: Publish application linux-x64
-        working-directory: ${{ env.HOST_PROJECT_PATH }}
-        run: dotnet publish -r linux-x64 --output ./publish/linux-x64 --self-contained true -p:PublishTrimmed=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
-      - name: Restore updater dependencies
-        working-directory: ${{ env.UPDATER_PROJECT_PATH }}
+        
+      - name: Publish APP win-x86
+        working-directory: ${{ env.APP_PROJECT_PATH }}
+        run: dotnet publish -r win-x64 --output ./publish/win-x86 --self-contained true -p:PublishTrimmed=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=false
+     
+      - name: Upload APP win-x86
+        uses: actions/upload-artifact@v1
+        with:
+          name: trade_hero_release.exe
+          path: ${{ env.APP_WIN_PATH }}
+      
+      - name: Publish APP linux-x64
+        working-directory: ${{ env.APP_PROJECT_PATH }}
+        run: dotnet publish -r linux-x64 --output ./publish/linux-x64 --self-contained true -p:PublishTrimmed=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=false
+     
+      - name: Upload APP linux-x64
+        uses: actions/upload-artifact@v1
+        with:
+          name: trade_hero_release
+          path: ${{ env.LAUNCHER_LINUX_PATH }}
+     
+      - name: Restore LAUNCHER dependencies
+        working-directory: ${{ env.LAUNCHER_PROJECT_PATH }}
         run: dotnet restore
-      - name: Build updater
-        working-directory: ${{ env.UPDATER_PROJECT_PATH }}
+      
+      - name: Build LAUNCHER
+        working-directory: ${{ env.LAUNCHER_PROJECT_PATH }}
         run: dotnet build --configuration Release --no-restore
-      - name: Publish updater win-x86
-        working-directory: ${{ env.UPDATER_PROJECT_PATH }}
-        run: dotnet publish -r win-x64 --output ./publish/win-x86 --self-contained true -p:PublishTrimmed=true -p:PublishSingleFile=true
+      
+      - name: Publish LAUNCHER win-x86
+        working-directory: ${{ env.LAUNCHER_PROJECT_PATH }}
+        run: dotnet publish -r win-x64 --output ./publish/win-x86 --self-contained true -p:PublishTrimmed=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=false
+      
+      - name: Upload LAUNCHER win-x86
+        uses: actions/upload-artifact@v1
+        with:
+          name: launcher_release.exe
+          path: ${{ env.LAUNCHER_WIN_PATH }}
+      
       - name: Publish application linux-x64
-        working-directory: ${{ env.UPDATER_PROJECT_PATH }}
-        run: dotnet publish -r linux-x64 --output ./publish/linux-x64 --self-contained true -p:PublishTrimmed=true -p:PublishSingleFile=true
-      - name: Upload application win-x86
+        working-directory: ${{ env.LAUNCHER_PROJECT_PATH }}
+        run: dotnet publish -r linux-x64 --output ./publish/linux-x64 --self-contained true -p:PublishTrimmed=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=false
+      
+      - name: Upload LAUNCHER linux-x64
         uses: actions/upload-artifact@v1
         with:
-          name: win-application
-          path: ${{ env.PUBLISH_WIN_FILE_PATH }}
-      - name: Upload application linux-x64
-        uses: actions/upload-artifact@v1
-        with:
-          name: linux-application
-          path: ${{ env.PUBLISH_LINUX_FILE_PATH }}
-      - name: Upload updater win-x86
-        uses: actions/upload-artifact@v1
-        with:
-          name: win-updater
-          path: ${{ env.PUBLISH_UPDATER_WIN_PATH }}
-      - name: Upload updater linux-x64
-        uses: actions/upload-artifact@v1
-        with:
-          name: linux-updater
-          path: ${{ env.PUBLISH_UPDATER_LINUX_PATH }}
-      - run: echo "Finish 'build-publish-dotnet'"
+          name: launcher_release
+          path: ${{ env.LAUNCHER_LINUX_PATH }}
+      
+      - run: echo "Finish 'build -> publish -> artifact upload'"
+      
   create-release-and-upload-files:
     name: create-release-and-upload-files
     needs: build-publish-dotnet
     runs-on: ubuntu-latest
     steps:
+    
       - name: Get current date time
         id: current-time
         uses: josStorer/get-current-time@v2
         with:
           format: YYYY.MM.DD HH:mm:ss
           utcOffset: "+02:00"
+          
       - name: Creating release
         id: create-release
         uses: actions/create-release@v1
@@ -105,64 +122,73 @@ jobs:
           body: Release version on ${{ steps.current-time.outputs.formattedTime }}
           draft: false
           prerelease: false
-      - name: Download win application
+          
+      - name: Download APP win-x86
         uses: actions/download-artifact@v1
         with:
-          name: win-application
+          name: trade_hero_release.exe
           path: ./win
-      - name: Download linux application
+          
+      - name: Download APP linux-x64
         uses: actions/download-artifact@v1
         with:
-          name: linux-application
+          name: trade_hero_release
           path: ./linux
-      - name: Download win updater
+          
+      - name: Download LAUNCHER win-x86
         uses: actions/download-artifact@v1
         with:
-          name: win-updater
+          name: launcher_release.exe
           path: ./win
-      - name: Download linux updater
+          
+      - name: Download LAUNCHER linux-x64
         uses: actions/download-artifact@v1
         with:
-          name: linux-updater
+          name: launcher_release
           path: ./linux
-      - name: Upload WIN application Asset
-        id: upload-win-application-release-asset 
+          
+      - name: Upload APP win-x86 as release asset
+        id: upload-app-win-release-asset 
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }} 
-          asset_path: ./win/trade_hero.exe
-          asset_name: trade_hero_win.exe
+          asset_path: ./win/trade_hero_release
+          asset_name: trade_hero_release.exe
           asset_content_type: application/vnd.microsoft.portable-executable
-      - name: Upload LINUX application Asset
-        id: upload-linux-application-release-asset 
+          
+      - name: Upload APP linux-x64 as release asset
+        id: upload-app-linux-release-asset 
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }} 
-          asset_path: ./linux/trade_hero
-          asset_name: trade_hero_linux
+          asset_path: ./linux/trade_hero_release
+          asset_name: trade_hero_release
           asset_content_type: application/octet-stream
-      - name: Upload WIN updater Asset
-        id: upload-win-updater-release-asset 
+          
+      - name: Upload LAUNCHER win-x86 as release asset
+        id: upload-launcher-win-release-asset 
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }} 
-          asset_path: ./win/updater.exe
-          asset_name: updater_win.exe
+          asset_path: ./win/launcher_release.exe
+          asset_name: launcher_release.exe
           asset_content_type: application/vnd.microsoft.portable-executable
-      - name: Upload LINUX updater Asset
-        id: upload-linux-updater-release-asset 
+          
+      - name: Upload LAUNCHER linux-x64 as release asset
+        id: upload-launcher-linux-release-asset 
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }} 
-          asset_path: ./linux/updater
-          asset_name: updater_linux
+          asset_path: ./linux/launcher_release
+          asset_name: launcher_release
           asset_content_type: application/octet-stream
+          
       - run: echo "Finish 'create-release-and-upload-files'" 
