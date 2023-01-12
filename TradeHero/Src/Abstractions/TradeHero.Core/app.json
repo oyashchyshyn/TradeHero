@@ -2,13 +2,13 @@
     "Application": {
         "WindowsNames": {
             "App": "app.exe",
-            "ReleaseApp": "trade_hero_release.exe",
+            "ReleaseApp": "app_release.exe",
             "Launcher": "trade_hero.exe",
             "ReleaseLauncher": "launcher_release.exe"
         },
         "LinuxNames": {
             "App": "app",
-            "ReleaseApp": "trade_hero_release",
+            "ReleaseApp": "app_release",
             "Launcher": "trade_hero",
             "ReleaseLauncher": "launcher_release"
         }

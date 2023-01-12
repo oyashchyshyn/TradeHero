@@ -39,7 +39,6 @@ internal class LauncherHostedService : IHostedService
             _logger.LogInformation("Process id: {ProcessId}", _environmentService.GetCurrentProcessId());
             _logger.LogInformation("Base path: {GetBasePath}", _environmentService.GetBasePath());
             _logger.LogInformation("Environment: {GetEnvironmentType}", _environmentService.GetEnvironmentType());
-            _logger.LogInformation("Args: {GetBasePath}", string.Join(", ", _environmentService.GetEnvironmentArgs()));
 
             if (_environmentService.GetEnvironmentType() == EnvironmentType.Development)
             {
@@ -47,17 +46,15 @@ internal class LauncherHostedService : IHostedService
             }
             
             _githubService.OnDownloadProgress += GithubServiceOnOnDownloadProgress;
-
-            var appSettings = _environmentService.GetAppSettings();
-            var dataDirectoryPath = Path.Combine(_environmentService.GetBasePath(), appSettings.Folder.DataFolderName);
-            var appPath = Path.Combine(dataDirectoryPath, _environmentService.GetRunningApplicationName());
-            var releaseAppPath = Path.Combine(dataDirectoryPath, _environmentService.GetRunningApplicationName());
+            
+            var appPath = Path.Combine(_environmentService.GetBasePath(), _environmentService.GetRunningApplicationName());
+            var releaseAppPath = Path.Combine(_environmentService.GetBasePath(), _environmentService.GetReleaseApplicationName());
         
             while (true)
             {
-                if (!Directory.Exists(dataDirectoryPath))
+                if (!Directory.Exists(_environmentService.GetBasePath()))
                 {
-                    Directory.CreateDirectory(dataDirectoryPath);
+                    Directory.CreateDirectory(_environmentService.GetBasePath());
                 }
 
                 if (!await _startupService.CheckIsFirstRunAsync())
