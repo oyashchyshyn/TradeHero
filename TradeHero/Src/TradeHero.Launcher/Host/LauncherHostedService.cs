@@ -1,10 +1,8 @@
-using System.Diagnostics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Services;
-using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
-using TradeHero.Core.Exceptions;
+using TradeHero.Launcher.Services;
 
 namespace TradeHero.Launcher.Host;
 
@@ -12,140 +10,50 @@ internal class LauncherHostedService : IHostedService
 {
     private readonly ILogger _logger;
     private readonly IEnvironmentService _environmentService;
-    private readonly IGithubService _githubService;
-    private readonly IStartupService _startupService;
 
-    private Process? _runningProcess;
-    private bool _isNeedToUpdatedApp;
+    private readonly AppService _appService;
     
     public LauncherHostedService(
         ILoggerFactory loggerFactory, 
         IEnvironmentService environmentService, 
-        IGithubService githubService,
-        IStartupService startupService
+        AppService appService
         )
     {
         _logger = loggerFactory.CreateLogger("TradeHero.Launcher");
         _environmentService = environmentService;
-        _githubService = githubService;
-        _startupService = startupService;
+        _appService = appService;
     }
     
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        try
-        {
-            _logger.LogInformation("Launcher started. Press Ctrl+C to shut down");
-            _logger.LogInformation("Process id: {ProcessId}", _environmentService.GetCurrentProcessId());
-            _logger.LogInformation("Base path: {GetBasePath}", _environmentService.GetBasePath());
-            _logger.LogInformation("Environment: {GetEnvironmentType}", _environmentService.GetEnvironmentType());
-
-            if (_environmentService.GetEnvironmentType() == EnvironmentType.Development)
-            {
-                _logger.LogInformation("Args: {GetBasePath}", string.Join(", ", _environmentService.GetEnvironmentArgs()));   
-            }
-            
-            _githubService.OnDownloadProgress += GithubServiceOnOnDownloadProgress;
-            
-            var appPath = Path.Combine(_environmentService.GetBasePath(), _environmentService.GetRunningApplicationName());
-            var releaseAppPath = Path.Combine(_environmentService.GetBasePath(), _environmentService.GetReleaseApplicationName());
+        cancellationToken.Register(StopAppAsync);
         
-            while (true)
-            {
-                if (!Directory.Exists(_environmentService.GetBasePath()))
-                {
-                    Directory.CreateDirectory(_environmentService.GetBasePath());
-                }
+        _logger.LogInformation("Launcher started. Press Ctrl+C to shut down");
+        _logger.LogInformation("Process id: {ProcessId}", _environmentService.GetCurrentProcessId());
+        _logger.LogInformation("Base path: {GetBasePath}", _environmentService.GetBasePath());
+        _logger.LogInformation("Environment: {GetEnvironmentType}", _environmentService.GetEnvironmentType());
+        _logger.LogInformation("Runner type: {RunnerType}", _environmentService.GetRunnerType());
 
-                if (!await _startupService.CheckIsFirstRunAsync())
-                {
-                    throw new Exception("There is an error during user creation. Please see logs.");
-                }
-                
-                if (!File.Exists(appPath))
-                {
-                    var latestRelease = await _githubService.GetLatestReleaseAsync();
-                    if (latestRelease.ActionResult != ActionResult.Success)
-                    {
-                        throw new ThException("Cannot get info about application!");
-                    }
-                    
-                    var downloadResult = await _githubService.DownloadReleaseAsync(latestRelease.Data.AppDownloadUri, 
-                        appPath, cancellationToken);
-
-                    if (downloadResult.ActionResult != ActionResult.Success)
-                    {
-                        throw new ThException("Cannot download application!");
-                    }
-                }
-
-                var arguments =
-                    $"{ArgumentKeyConstants.RunApp} {ArgumentKeyConstants.Environment}{_environmentService.GetEnvironmentType()}";
-
-                if (_isNeedToUpdatedApp)
-                {
-                    File.Move(releaseAppPath, appPath, true);
-                    
-                    arguments += $" {ArgumentKeyConstants.Update}";
-                }
-                
-                var processStartInfo = new ProcessStartInfo
-                {
-                    FileName = appPath,
-                    Arguments = arguments,
-                    UseShellExecute = false
-                };
-            
-                _runningProcess = Process.Start(processStartInfo);
-                if (_runningProcess == null)
-                {
-                    throw new ThException("Cannot start application!");
-                }
-            
-                await _runningProcess.WaitForExitAsync(cancellationToken);
-                
-                if (_runningProcess.ExitCode == (int)AppExitCode.Update)
-                {
-                    _isNeedToUpdatedApp = true;
-                    
-                    continue;
-                }
-            
-                break;
-            }
-        }
-        catch (Exception exception)
+        if (_environmentService.GetEnvironmentType() == EnvironmentType.Development)
         {
-            _logger.LogCritical(exception, "In {Method}", nameof(StartAsync));
-            
-            throw;
+            _logger.LogInformation("Args: {GetBasePath}", string.Join(", ", _environmentService.GetEnvironmentArgs()));   
         }
+
+        await _appService.StartAppRunningAsync();
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
-        try
-        {
-            _runningProcess?.Close();
-            _runningProcess?.Dispose();
-            
-            _logger.LogInformation("Launcher stopped");
-        }
-        catch (Exception exception)
-        {
-            _logger.LogCritical(exception, "In {Method}", nameof(StopAsync));
-            
-            throw;
-        }
+        _logger.LogInformation("Launcher stopped");
         
         return Task.CompletedTask;
     }
 
     #region Private methods
 
-    private static void GithubServiceOnOnDownloadProgress(object? sender, decimal e)
+    private async void StopAppAsync()
     {
-        
+        await _appService.StopAppRunningAsync();
     }
 
     #endregion

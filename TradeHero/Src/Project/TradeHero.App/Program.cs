@@ -2,7 +2,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Serilog;
 using TradeHero.App.Host;
 using TradeHero.Contracts.Extensions;
 using TradeHero.Contracts.Services;
@@ -16,7 +15,7 @@ namespace TradeHero.App;
 
 internal static class Program
 {
-    private static async Task<int> Main(string[] args)
+    public static async Task<int> Main(string[] args)
     {
         EnvironmentHelper.SetCulture();
 
@@ -49,13 +48,13 @@ internal static class Program
                     serviceCollection.AddTradingLogic();
                     serviceCollection.AddHost();
                     
-                    serviceCollection.AddHostedService<AppHostedService>();
                     serviceCollection.AddSingleton<IHostLifetime, AppHostLifeTime>();
+                    serviceCollection.AddHostedService<AppHostedService>();
                 })
                 .ConfigureLogging(loggingBuilder =>
                 {
                     loggingBuilder.ClearProviders();
-                    loggingBuilder.AddSerilog();
+                    loggingBuilder.AddThSerilog();
                 })
                 .Build();
 

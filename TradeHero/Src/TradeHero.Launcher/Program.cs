@@ -8,6 +8,7 @@ using TradeHero.Core.Enums;
 using TradeHero.Core.Helpers;
 using TradeHero.Dependencies;
 using TradeHero.Launcher.Host;
+using TradeHero.Launcher.Services;
 using HostApp = Microsoft.Extensions.Hosting.Host;
 
 namespace TradeHero.Launcher;
@@ -48,7 +49,9 @@ internal static class Program
                 {
                     serviceCollection.AddServices();
                     serviceCollection.AddDatabase();
-                    
+
+                    serviceCollection.AddSingleton<AppService>()
+                        ;                    
                     serviceCollection.AddSingleton<IHostLifetime, LauncherHostedLifeTime>();
                     serviceCollection.AddHostedService<LauncherHostedService>();
                 })

@@ -17,6 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Abstractions\TradeHero.Contracts\TradeHero.Contracts.csproj" />
       <ProjectReference Include="..\Abstractions\TradeHero.Core\TradeHero.Core.csproj" />
       <ProjectReference Include="..\Abstractions\TradeHero.Dependencies\TradeHero.Dependencies.csproj" />
     </ItemGroup>
