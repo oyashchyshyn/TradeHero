@@ -54,7 +54,7 @@ jobs:
       - name: Upload APP win-x86
         uses: actions/upload-artifact@v1
         with:
-          name: trade_hero_release.exe
+          name: app_win
           path: ${{ env.APP_WIN_PATH }}
       
       - name: Publish APP linux-x64
@@ -64,7 +64,7 @@ jobs:
       - name: Upload APP linux-x64
         uses: actions/upload-artifact@v1
         with:
-          name: trade_hero_release
+          name: app_linux
           path: ${{ env.APP_LINUX_PATH }}
      
       - name: Restore LAUNCHER dependencies
@@ -82,7 +82,7 @@ jobs:
       - name: Upload LAUNCHER win-x86
         uses: actions/upload-artifact@v1
         with:
-          name: launcher_release.exe
+          name: launcher_win
           path: ${{ env.LAUNCHER_WIN_PATH }}
       
       - name: Publish application linux-x64
@@ -92,7 +92,7 @@ jobs:
       - name: Upload LAUNCHER linux-x64
         uses: actions/upload-artifact@v1
         with:
-          name: launcher_release
+          name: launcher_linux
           path: ${{ env.LAUNCHER_LINUX_PATH }}
       
       - run: echo "Finish 'build -> publish -> artifact upload'"
@@ -126,25 +126,25 @@ jobs:
       - name: Download APP win-x86
         uses: actions/download-artifact@v1
         with:
-          name: trade_hero_release.exe
+          name: app_win
           path: ./win
           
       - name: Download APP linux-x64
         uses: actions/download-artifact@v1
         with:
-          name: trade_hero_release
+          name: app_linux
           path: ./linux
           
       - name: Download LAUNCHER win-x86
         uses: actions/download-artifact@v1
         with:
-          name: launcher_release.exe
+          name: launcher_win
           path: ./win
           
       - name: Download LAUNCHER linux-x64
         uses: actions/download-artifact@v1
         with:
-          name: launcher_release
+          name: launcher_linux
           path: ./linux
           
       - name: Upload APP win-x86 as release asset
@@ -154,7 +154,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }} 
-          asset_path: ./win/trade_hero_release.exe
+          asset_path: ./win/app.exe
           asset_name: trade_hero_release.exe
           asset_content_type: application/vnd.microsoft.portable-executable
           
@@ -165,7 +165,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }} 
-          asset_path: ./linux/trade_hero_release
+          asset_path: ./linux/app
           asset_name: trade_hero_release
           asset_content_type: application/octet-stream
           
@@ -176,7 +176,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }} 
-          asset_path: ./win/launcher_release.exe
+          asset_path: ./win/trade_hero.exe
           asset_name: launcher_release.exe
           asset_content_type: application/vnd.microsoft.portable-executable
           
@@ -187,7 +187,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }} 
-          asset_path: ./linux/launcher_release
+          asset_path: ./linux/trade_hero
           asset_name: launcher_release
           asset_content_type: application/octet-stream
           
