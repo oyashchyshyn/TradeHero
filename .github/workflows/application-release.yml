@@ -155,7 +155,7 @@ jobs:
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }} 
           asset_path: ./win/app.exe
-          asset_name: trade_hero_release.exe
+          asset_name: app_release.exe
           asset_content_type: application/vnd.microsoft.portable-executable
           
       - name: Upload APP linux-x64 as release asset
@@ -166,7 +166,7 @@ jobs:
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }} 
           asset_path: ./linux/app
-          asset_name: trade_hero_release
+          asset_name: app_release
           asset_content_type: application/octet-stream
           
       - name: Upload LAUNCHER win-x86 as release asset
