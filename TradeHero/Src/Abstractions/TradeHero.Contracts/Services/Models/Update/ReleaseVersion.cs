@@ -6,6 +6,6 @@ public class ReleaseVersion
     public Version Version { get; init; } = new();
     public string AppName { get; init; } = string.Empty;
     public string AppDownloadUri { get; init; } = string.Empty;
-    public string UpdaterName { get; init; } = string.Empty;
-    public string UpdaterDownloadUri { get; init; } = string.Empty;
+    public string LauncherName { get; init; } = string.Empty;
+    public string LauncherDownloadUri { get; init; } = string.Empty;
 }

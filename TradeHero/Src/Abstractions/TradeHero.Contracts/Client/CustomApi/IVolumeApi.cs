@@ -1,6 +1,6 @@
-using TradeHero.Contracts.Base.Enums;
 using TradeHero.Contracts.Client.Models;
 using TradeHero.Contracts.Client.Models.Response;
+using TradeHero.Core.Enums;
 
 namespace TradeHero.Contracts.Client.CustomApi;
 

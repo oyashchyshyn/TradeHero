@@ -1,8 +1,8 @@
 using System.Dynamic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using TradeHero.Contracts.Base.Enums;
-using TradeHero.Contracts.Base.Models;
+using TradeHero.Core.Enums;
+using TradeHero.Core.Models;
 
 namespace TradeHero.Contracts.Services;
 

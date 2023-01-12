@@ -1,5 +1,5 @@
-﻿using TradeHero.Contracts.Base.Enums;
-using TradeHero.Contracts.Services.Models.Environment;
+﻿using TradeHero.Core.Enums;
+using TradeHero.Core.Settings.AppSettings;
 
 namespace TradeHero.Contracts.Services;
 
@@ -7,14 +7,13 @@ public interface IEnvironmentService
 {
     Dictionary<string, string> CustomArgs { get; }
     string[] GetEnvironmentArgs();
-    EnvironmentSettings GetEnvironmentSettings();
+    AppSettings GetAppSettings();
     Version GetCurrentApplicationVersion();
     string GetBasePath();
-    string GetDataFolderPath();
-    string GetLogsFolderPath();
-    string GetDatabaseFolderPath();
-    string GetUpdateFolderPath();
+    int GetCurrentProcessId();
     EnvironmentType GetEnvironmentType();
+    RunnerType GetRunnerType();
     OperationSystem GetCurrentOperationSystem();
-    string GetCurrentApplicationName();
+    string GetRunningApplicationName();
+    string GetReleaseApplicationName();
 }

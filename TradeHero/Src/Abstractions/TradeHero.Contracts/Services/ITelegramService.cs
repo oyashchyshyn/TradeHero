@@ -1,8 +1,8 @@
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
-using TradeHero.Contracts.Base.Enums;
-using TradeHero.Contracts.Base.Models;
 using TradeHero.Contracts.Services.Models.Telegram;
+using TradeHero.Core.Enums;
+using TradeHero.Core.Models;
 
 namespace TradeHero.Contracts.Services;
 
