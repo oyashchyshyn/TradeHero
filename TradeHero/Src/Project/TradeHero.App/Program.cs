@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using TradeHero.App.Host;
+using TradeHero.Contracts.Extensions;
 using TradeHero.Contracts.Services;
 using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
@@ -35,6 +36,7 @@ internal static class Program
             var host = HostApp.CreateDefaultBuilder(args)
                 .UseEnvironment(environmentType.ToString())
                 .UseContentRoot(AppDomain.CurrentDomain.BaseDirectory)
+                .UseRunningType(RunnerType.App.ToString())
                 .ConfigureAppConfiguration((_, config) =>
                 {
                     config.AddConfiguration(configuration);

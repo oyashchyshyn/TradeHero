@@ -2,6 +2,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Menu;
 using TradeHero.Contracts.Services;
+using TradeHero.Core.Enums;
 
 namespace TradeHero.App.Host;
 
@@ -42,7 +43,12 @@ internal class AppHostedService : IHostedService
             _logger.LogInformation("Process id: {ProcessId}", _environmentService.GetCurrentProcessId());
             _logger.LogInformation("Application environment: {GetEnvironmentType}", _environmentService.GetEnvironmentType());
             _logger.LogInformation("Base path: {GetBasePath}", _environmentService.GetBasePath());
-            _logger.LogInformation("Args: {GetBasePath}", string.Join(", ", _environmentService.GetEnvironmentArgs()));
+            _logger.LogInformation("Runner type: {RunnerType}", _environmentService.GetRunnerType());
+            
+            if (_environmentService.GetEnvironmentType() == EnvironmentType.Development)
+            {
+                _logger.LogInformation("Args: {GetBasePath}", string.Join(", ", _environmentService.GetEnvironmentArgs()));   
+            }
 
             await _internetConnectionService.StartInternetConnectionCheckAsync();
 

@@ -36,11 +36,18 @@ internal class LauncherHostedService : IHostedService
         try
         {
             _logger.LogInformation("Launcher started. Press Ctrl+C to shut down");
+            _logger.LogInformation("Process id: {ProcessId}", _environmentService.GetCurrentProcessId());
+            _logger.LogInformation("Base path: {GetBasePath}", _environmentService.GetBasePath());
+            _logger.LogInformation("Environment: {GetEnvironmentType}", _environmentService.GetEnvironmentType());
+            _logger.LogInformation("Args: {GetBasePath}", string.Join(", ", _environmentService.GetEnvironmentArgs()));
+
+            if (_environmentService.GetEnvironmentType() == EnvironmentType.Development)
+            {
+                _logger.LogInformation("Args: {GetBasePath}", string.Join(", ", _environmentService.GetEnvironmentArgs()));   
+            }
             
             _githubService.OnDownloadProgress += GithubServiceOnOnDownloadProgress;
 
-            var t = _environmentService.GetRunnerType();
-            
             var appSettings = _environmentService.GetAppSettings();
             var dataDirectoryPath = Path.Combine(_environmentService.GetBasePath(), appSettings.Folder.DataFolderName);
             var appPath = Path.Combine(dataDirectoryPath, _environmentService.GetRunningApplicationName());
