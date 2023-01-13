@@ -68,11 +68,11 @@ internal class AppHostLifeTime : IHostLifetime, IDisposable
         }
     }
     
-    private async void OnProcessExit(object? sender, EventArgs e)
+    private void OnProcessExit(object? sender, EventArgs e)
     {
         _logger.LogInformation("Exit button is pressed. In {Method}", nameof(OnProcessExit));
         
-        await _applicationService.StopApplicationAsync();
+        _applicationService.StopApplication();
 
         _shutdownBlock.WaitOne();
         

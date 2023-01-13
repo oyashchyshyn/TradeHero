@@ -70,11 +70,11 @@ internal class LauncherHostedLifeTime : IHostLifetime, IDisposable
         }
     }
     
-    private async void OnProcessExit(object? sender, EventArgs e)
+    private void OnProcessExit(object? sender, EventArgs e)
     {
         _logger.LogInformation("Exit button is pressed. In {Method}", nameof(OnCancelKeyPress));
         
-        await _applicationService.StopApplicationAsync();
+        _applicationService.StopApplication();
 
         _shutdownBlock.WaitOne();
         
@@ -87,7 +87,7 @@ internal class LauncherHostedLifeTime : IHostLifetime, IDisposable
         
         e.Cancel = true;
 
-        await _applicationService.StopApplicationAsync();
+        _applicationService.StopApplication();
     }
 
     #endregion

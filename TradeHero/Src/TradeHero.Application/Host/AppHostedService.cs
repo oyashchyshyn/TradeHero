@@ -51,7 +51,7 @@ internal class AppHostedService : IHostedService
             _logger.LogInformation("Base path: {GetBasePath}", _environmentService.GetBasePath());
             _logger.LogInformation("Runner type: {RunnerType}", _environmentService.GetRunnerType());
             
-            _applicationService.SetActionsBeforeStopApplication(StopServicesAsync);
+            _applicationService.SetActionsBeforeStopApplication(StopServices);
             
             if (_environmentService.GetEnvironmentType() == EnvironmentType.Development)
             {
@@ -92,13 +92,13 @@ internal class AppHostedService : IHostedService
 
     #region Private methods
 
-    private async Task StopServicesAsync()
+    private void StopServices()
     {
         try
         {
             foreach (var menu in _menuFactory.GetMenus())
             {
-                await menu.FinishAsync(_cancellationTokenSource.Token);
+                menu.FinishAsync(_cancellationTokenSource.Token).GetAwaiter().GetResult();
             }
         
             _jobService.FinishAllJobs();
@@ -112,7 +112,7 @@ internal class AppHostedService : IHostedService
         }
         catch (Exception exception)
         {
-            _logger.LogCritical(exception, "In {Method}", nameof(StopServicesAsync));
+            _logger.LogCritical(exception, "In {Method}", nameof(StopServices));
             
             throw;
         }

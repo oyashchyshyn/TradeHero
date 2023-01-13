@@ -2,6 +2,6 @@ namespace TradeHero.Contracts.Services;
 
 public interface IApplicationService
 {
-    void SetActionsBeforeStopApplication(Func<Task> actionBeforeStopApplication);
-    Task StopApplicationAsync();
+    void SetActionsBeforeStopApplication(Action actionsBeforeStopApplication);
+    void StopApplication();
 }

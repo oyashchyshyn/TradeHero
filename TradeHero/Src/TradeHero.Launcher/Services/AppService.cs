@@ -141,7 +141,7 @@ internal class AppService
         });
     }
 
-    public async Task StopAppRunningAsync()
+    public void StopAppRunning()
     {
         _isLauncherStopped = true;
         
@@ -151,7 +151,7 @@ internal class AppService
         }
         
         _runningProcess.CloseMainWindow();
-        await _runningProcess.WaitForExitAsync();
+        _runningProcess.WaitForExit();
         
         _runningProcess.Dispose();
         _runningProcess = null;

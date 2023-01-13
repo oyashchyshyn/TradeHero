@@ -35,7 +35,7 @@ internal class LauncherHostedService : IHostedService
         _logger.LogInformation("Environment: {GetEnvironmentType}", _environmentService.GetEnvironmentType());
         _logger.LogInformation("Runner type: {RunnerType}", _environmentService.GetRunnerType());
 
-        _applicationService.SetActionsBeforeStopApplication(StopAppAsync);
+        _applicationService.SetActionsBeforeStopApplication(StopApp);
         
         if (_environmentService.GetEnvironmentType() == EnvironmentType.Development)
         {
@@ -56,9 +56,9 @@ internal class LauncherHostedService : IHostedService
 
     #region Private methods
 
-    private async Task StopAppAsync()
+    private void StopApp()
     {
-        await _appService.StopAppRunningAsync();
+        _appService.StopAppRunning();
     }
 
     #endregion
