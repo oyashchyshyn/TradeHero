@@ -24,22 +24,24 @@ internal class LauncherHostedService : IHostedService
         _appService = appService;
     }
     
-    public async Task StartAsync(CancellationToken cancellationToken)
+    public Task StartAsync(CancellationToken cancellationToken)
     {
-        cancellationToken.Register(StopAppAsync);
-        
         _logger.LogInformation("Launcher started. Press Ctrl+C to shut down");
         _logger.LogInformation("Process id: {ProcessId}", _environmentService.GetCurrentProcessId());
         _logger.LogInformation("Base path: {GetBasePath}", _environmentService.GetBasePath());
         _logger.LogInformation("Environment: {GetEnvironmentType}", _environmentService.GetEnvironmentType());
         _logger.LogInformation("Runner type: {RunnerType}", _environmentService.GetRunnerType());
 
+        _environmentService.SetActionsBeforeStopApplication(StopAppAsync);
+        
         if (_environmentService.GetEnvironmentType() == EnvironmentType.Development)
         {
             _logger.LogInformation("Args: {GetBasePath}", string.Join(", ", _environmentService.GetEnvironmentArgs()));   
         }
 
-        await _appService.StartAppRunningAsync();
+        _appService.StartAppRunning();
+        
+        return Task.CompletedTask;
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
@@ -51,7 +53,7 @@ internal class LauncherHostedService : IHostedService
 
     #region Private methods
 
-    private async void StopAppAsync()
+    private async Task StopAppAsync()
     {
         await _appService.StopAppRunningAsync();
     }

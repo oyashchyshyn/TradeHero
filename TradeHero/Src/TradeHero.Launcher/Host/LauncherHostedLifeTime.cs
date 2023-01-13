@@ -1,6 +1,7 @@
 using System.Reflection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using TradeHero.Contracts.Services;
 using TradeHero.Core.Enums;
 
 namespace TradeHero.Launcher.Host;
@@ -8,16 +9,16 @@ namespace TradeHero.Launcher.Host;
 internal class LauncherHostedLifeTime : IHostLifetime, IDisposable
 {
     private readonly ILogger<LauncherHostedLifeTime> _logger;
-    private readonly IHostApplicationLifetime _hostApplicationLifetime;
+    private readonly IEnvironmentService _environmentService;
 
     private readonly ManualResetEvent _shutdownBlock = new(false);
     
     public LauncherHostedLifeTime(
         ILogger<LauncherHostedLifeTime> logger,
-        IHostApplicationLifetime hostApplicationLifetime
+        IEnvironmentService environmentService
         )
     {
-        _hostApplicationLifetime = hostApplicationLifetime;
+        _environmentService = environmentService;
         _logger = logger;
     }
 
@@ -69,24 +70,24 @@ internal class LauncherHostedLifeTime : IHostLifetime, IDisposable
         }
     }
     
-    private void OnProcessExit(object? sender, EventArgs e)
+    private async void OnProcessExit(object? sender, EventArgs e)
     {
         _logger.LogInformation("Exit button is pressed. In {Method}", nameof(OnCancelKeyPress));
         
-        _hostApplicationLifetime.StopApplication();
+        await _environmentService.StopApplicationAsync();
 
         _shutdownBlock.WaitOne();
         
         Environment.ExitCode = (int)AppExitCode.Success;
     }
 
-    private void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
+    private async void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
     {
         _logger.LogInformation("Ctrl + C is pressed. In {Method}", nameof(OnCancelKeyPress));
         
         e.Cancel = true;
 
-        _hostApplicationLifetime.StopApplication();
+        await _environmentService.StopApplicationAsync();
     }
 
     #endregion

@@ -11,14 +11,19 @@ namespace TradeHero.Services.Services;
 
 internal class EnvironmentService : IEnvironmentService
 {
+    private readonly IHostApplicationLifetime _hostApplicationLifetime;
     private readonly IHostEnvironment _hostingEnvironment;
     private readonly IConfiguration _configuration;
 
+    private Func<Task>? _actionsBeforeStopApplication;
+    
     public EnvironmentService(
+        IHostApplicationLifetime hostApplicationLifetime,
         IHostEnvironment hostingEnvironment, 
         IConfiguration configuration
         )
     {
+        _hostApplicationLifetime = hostApplicationLifetime;
         _hostingEnvironment = hostingEnvironment;
         _configuration = configuration;
     }
@@ -106,5 +111,20 @@ internal class EnvironmentService : IEnvironmentService
         };
 
         return applicationName;
+    }
+
+    public void SetActionsBeforeStopApplication(Func<Task> actionBeforeStopApplication)
+    {
+        _actionsBeforeStopApplication = actionBeforeStopApplication;
+    }
+    
+    public async Task StopApplicationAsync()
+    {
+        if (_actionsBeforeStopApplication != null)
+        {
+            await _actionsBeforeStopApplication();
+        }
+
+        _hostApplicationLifetime.StopApplication();
     }
 }

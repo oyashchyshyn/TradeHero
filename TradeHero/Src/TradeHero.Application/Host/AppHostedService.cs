@@ -48,6 +48,8 @@ internal class AppHostedService : IHostedService
             _logger.LogInformation("Base path: {GetBasePath}", _environmentService.GetBasePath());
             _logger.LogInformation("Runner type: {RunnerType}", _environmentService.GetRunnerType());
             
+            _environmentService.SetActionsBeforeStopApplication(StopServicesAsync);
+            
             if (_environmentService.GetEnvironmentType() == EnvironmentType.Development)
             {
                 _logger.LogInformation("Args: {GetBasePath}", string.Join(", ", _environmentService.GetEnvironmentArgs()));   
@@ -78,7 +80,16 @@ internal class AppHostedService : IHostedService
         }
     }
 
-    public async Task StopAsync(CancellationToken cancellationToken)
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("App stopped");
+        
+        return Task.CompletedTask;
+    }
+
+    #region Private methods
+
+    private async Task StopServicesAsync()
     {
         try
         {
@@ -98,14 +109,12 @@ internal class AppHostedService : IHostedService
         }
         catch (Exception exception)
         {
-            _logger.LogCritical(exception, "In {Method}", nameof(StopAsync));
+            _logger.LogCritical(exception, "In {Method}", nameof(StopServicesAsync));
             
             throw;
         }
     }
-
-    #region Private methods
-
+    
     private void RegisterBackgroundJobs()
     {
         var appSettings = _environmentService.GetAppSettings();
