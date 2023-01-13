@@ -14,7 +14,7 @@
     <ItemGroup>
       <ProjectReference Include="..\..\Project\TradeHero.Client\TradeHero.Client.csproj" />
       <ProjectReference Include="..\..\Project\TradeHero.Database\TradeHero.Database.csproj" />
-      <ProjectReference Include="..\..\Project\TradeHero.Menu\TradeHero.Menu.csproj" />
+      <ProjectReference Include="..\..\Project\TradeHero.Main\TradeHero.Main.csproj" />
       <ProjectReference Include="..\..\Project\TradeHero.Services\TradeHero.Services.csproj" />
       <ProjectReference Include="..\..\Project\TradeHero.Trading\TradeHero.Trading.csproj" />
     </ItemGroup>
