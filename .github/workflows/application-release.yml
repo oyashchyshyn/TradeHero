@@ -6,9 +6,9 @@ on:
 
 env:
   APP_PROJECT_PATH: TradeHero/Src/TradeHero.Application/
-  APP_WIN_PATH: TradeHero/Src/Project/TradeHero.Application/publish/win-x86/app.exe
-  APP_LINUX_PATH: TradeHero/Src/Project/TradeHero.Application/publish/linux-x64/app
-  APP_OSX_PATH: TradeHero/Src/Project/TradeHero.Application/publish/osx-x64/app
+  APP_WIN_PATH: TradeHero/Src/TradeHero.Application/publish/win-x86/app.exe
+  APP_LINUX_PATH: TradeHero/Src/TradeHero.Application/publish/linux-x64/app
+  APP_OSX_PATH: TradeHero/Src/TradeHero.Application/publish/osx-x64/app
   
   LAUNCHER_PROJECT_PATH: TradeHero/Src/TradeHero.Launcher/
   LAUNCHER_WIN_PATH: TradeHero/Src/TradeHero.Launcher/publish/win-x86/trade_hero.exe
