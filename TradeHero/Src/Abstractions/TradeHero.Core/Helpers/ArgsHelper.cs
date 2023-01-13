@@ -19,8 +19,11 @@ public static class ArgsHelper
         return (EnvironmentType)Enum.Parse(typeof(EnvironmentType), argValue);
     }
     
-    public static bool IsRunAppKeyExist(IEnumerable<string> args, string runAppKey)
+    public static void IsRunAppKeyExist(IEnumerable<string> args, string runAppKey)
     {
-        return args.Any(x => x == runAppKey);
+        if (args.All(x => x != runAppKey))
+        {
+            throw new Exception("Run app key does not exist");   
+        }
     }
 }

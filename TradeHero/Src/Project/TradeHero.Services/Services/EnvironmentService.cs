@@ -14,8 +14,6 @@ internal class EnvironmentService : IEnvironmentService
     private readonly IHostEnvironment _hostingEnvironment;
     private readonly IConfiguration _configuration;
 
-    public Dictionary<string, string> CustomArgs { get; } = new();
-
     public EnvironmentService(
         IHostEnvironment hostingEnvironment, 
         IConfiguration configuration

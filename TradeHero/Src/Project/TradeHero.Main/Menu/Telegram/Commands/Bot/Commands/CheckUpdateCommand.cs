@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types.ReplyMarkups;
 using TradeHero.Contracts.Menu.Commands;
 using TradeHero.Contracts.Services;
-using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
 using TradeHero.Main.Menu.Telegram.Store;
 
@@ -193,8 +192,7 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
                     cancellationToken: cancellationToken
                 );
 
-                _environmentService.CustomArgs.Clear();
-                _environmentService.CustomArgs.Add(ArgumentKeyConstants.Update, string.Empty);
+                _storeService.Application.Update.IsNeedToUpdateApplication = true;
 
                 _hostApplicationLifetime.StopApplication();
                 

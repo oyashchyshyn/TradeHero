@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Services;
 using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
-using TradeHero.Core.Exceptions;
 
 namespace TradeHero.Launcher.Services;
 
@@ -48,14 +47,14 @@ internal class AppService
                 var latestRelease = await _githubService.GetLatestReleaseAsync();
                 if (latestRelease.ActionResult != ActionResult.Success)
                 {
-                    throw new ThException("Cannot get info about application from server!");
+                    throw new Exception("Cannot get info about application from server!");
                 }
             
                 var downloadResult = await _githubService.DownloadReleaseAsync(latestRelease.Data.AppDownloadUri, appPath);
 
                 if (downloadResult.ActionResult != ActionResult.Success)
                 {
-                    throw new ThException("Cannot download application from server!");
+                    throw new Exception("Cannot download application from server!");
                 }
             }
 

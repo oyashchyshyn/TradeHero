@@ -4,6 +4,6 @@ namespace TradeHero.Contracts.Services;
 
 public interface IStoreService
 {
-    BotInstance Bot { get; }
-    InformationInstance Information { get; }
+    ApplicationInfo Application { get; }
+    BotInfo Bot { get; }
 }

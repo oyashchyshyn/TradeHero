@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using TradeHero.Application.Host;
 using TradeHero.Contracts.Extensions;
 using TradeHero.Contracts.Services;
-using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Helpers;
 using TradeHero.Dependencies;
@@ -25,10 +24,7 @@ internal static class Program
 
         try
         {
-            if (ArgsHelper.IsRunAppKeyExist(args, environmentSettings.Application.RunAppKey))
-            {
-                throw new Exception("Run app key does not exist");
-            }
+            ArgsHelper.IsRunAppKeyExist(args, environmentSettings.Application.RunAppKey);
             
             var host = HostApp.CreateDefaultBuilder(args)
                 .UseEnvironment(environmentType.ToString())
@@ -58,9 +54,9 @@ internal static class Program
 
             await host.RunAsync();
 
-            var environmentServices = host.Services.GetRequiredService<IEnvironmentService>();
+            var store = host.Services.GetRequiredService<IStoreService>();
             
-            if (environmentServices.CustomArgs.ContainsKey(ArgumentKeyConstants.Update))
+            if (store.Application.Update.IsNeedToUpdateApplication)
             {
                 return (int)AppExitCode.Update;
             }
