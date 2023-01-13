@@ -20,13 +20,13 @@ internal class StoreEventSink : ILogEventSink
         switch (logEvent.Level)
         {
             case LogEventLevel.Warning:
-                _storeService.Information.WarningCount += 1;
+                _storeService.Application.Errors.WarningCount += 1;
                 break;
             case LogEventLevel.Error:
-                _storeService.Information.ErrorCount += 1;
+                _storeService.Application.Errors.ErrorCount += 1;
                 break;
             case LogEventLevel.Fatal:
-                _storeService.Information.CriticalCount += 1;
+                _storeService.Application.Errors.CriticalCount += 1;
                 break;
         }
     }

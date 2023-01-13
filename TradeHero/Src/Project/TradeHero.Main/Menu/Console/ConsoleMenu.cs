@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Menu;
+using TradeHero.Contracts.Services;
 using TradeHero.Core.Enums;
 
 namespace TradeHero.Main.Menu.Console;
@@ -7,18 +8,23 @@ namespace TradeHero.Main.Menu.Console;
 internal class ConsoleMenu : IMenuService
 {
     private readonly ILogger<ConsoleMenu> _logger;
+    private readonly ITerminalService _terminalService;
 
     public ConsoleMenu(
-        ILogger<ConsoleMenu> logger
+        ILogger<ConsoleMenu> logger, 
+        ITerminalService terminalService
         )
     {
         _logger = logger;
+        _terminalService = terminalService;
     }
 
     public Task<ActionResult> InitAsync(CancellationToken cancellationToken = default)
     {
         try
         {
+            _terminalService.WriteLine("Bot started! Please check telegram.");
+            
             return Task.FromResult(ActionResult.Success);
         }
         catch (Exception exception)
@@ -33,6 +39,8 @@ internal class ConsoleMenu : IMenuService
     {
         try
         {
+            _terminalService.WriteLine("Bot finished!");
+            
             return Task.FromResult(ActionResult.Success);
         }
         catch (Exception exception)
@@ -47,6 +55,8 @@ internal class ConsoleMenu : IMenuService
     {
         try
         {
+            _terminalService.WriteLine("Internet disconnected.");
+            
             return Task.FromResult(ActionResult.Success);
         }
         catch (Exception exception)
@@ -61,6 +71,8 @@ internal class ConsoleMenu : IMenuService
     {
         try
         {
+            _terminalService.WriteLine("Internet reconnected.");
+            
             return Task.FromResult(ActionResult.Success);
         }
         catch (Exception exception)

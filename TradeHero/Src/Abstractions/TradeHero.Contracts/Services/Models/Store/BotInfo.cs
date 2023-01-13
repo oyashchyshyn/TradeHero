@@ -3,7 +3,7 @@ using TradeHero.Core.Enums;
 
 namespace TradeHero.Contracts.Services.Models.Store;
 
-public class BotInstance
+public class BotInfo
 {
     public TradeLogicStatus TradeLogicStatus { get; private set; } = TradeLogicStatus.Idle;
     public ITradeLogic? TradeLogic { get; private set; }

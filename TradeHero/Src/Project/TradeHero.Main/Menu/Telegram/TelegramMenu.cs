@@ -21,6 +21,7 @@ internal class TelegramMenu : IMenuService
     private readonly IStrategyRepository _strategyRepository;
     private readonly IConnectionRepository _connectionRepository;
     private readonly IJsonService _jsonService;
+    private readonly IEnvironmentService _environmentService;
 
     private readonly TelegramMenuStore _telegramMenuStore;
     
@@ -36,6 +37,7 @@ internal class TelegramMenu : IMenuService
         IStrategyRepository strategyRepository,
         IConnectionRepository connectionRepository,
         IJsonService jsonService,
+        IEnvironmentService environmentService,
         TelegramMenuStore telegramMenuStore
         )
     {
@@ -47,6 +49,7 @@ internal class TelegramMenu : IMenuService
         _strategyRepository = strategyRepository;
         _connectionRepository = connectionRepository;
         _jsonService = jsonService;
+        _environmentService = environmentService;
         _telegramMenuStore = telegramMenuStore;
 
         _commands.AddRange(serviceProvider.GetServices<ITelegramMenuCommand>());
@@ -57,14 +60,29 @@ internal class TelegramMenu : IMenuService
         try
         {
             var result = await InitTelegramMenuAsync(cancellationToken);
-            if (result == ActionResult.Success)
+            if (result != ActionResult.Success)
             {
-                await _telegramService.SendTextMessageToUserAsync(
-                    "Bot is launched!", 
-                    _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.MainMenu),
-                    cancellationToken: cancellationToken
-                );   
+                return result;
             }
+
+            string message;
+            
+            if (_storeService.Application.Update.IsApplicationAfterUpdate)
+            {
+                message = $"Application updated to version: {_environmentService.GetCurrentApplicationVersion().ToString(3)}";
+                
+                _storeService.Application.Update.IsApplicationAfterUpdate = false;
+            }
+            else
+            {
+                message = "Bot is launched!";
+            }
+
+            await _telegramService.SendTextMessageToUserAsync(
+                message, 
+                _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.MainMenu),
+                cancellationToken: cancellationToken
+            );
 
             return result;
         }
@@ -100,13 +118,16 @@ internal class TelegramMenu : IMenuService
             {
                 return ActionResult.Success;
             }
-            
-            await _telegramService.SendTextMessageToUserAsync(
-                "Bot is finished!", 
-                _telegramMenuStore.GetRemoveKeyboard(),
-                cancellationToken: cancellationToken
-            );
-                
+
+            if (!_storeService.Application.Update.IsNeedToUpdateApplication )
+            {
+                await _telegramService.SendTextMessageToUserAsync(
+                    "Bot is finished!", 
+                    _telegramMenuStore.GetRemoveKeyboard(),
+                    cancellationToken: cancellationToken
+                );   
+            }
+
             await _telegramService.CloseConnectionAsync();
 
             return ActionResult.Success;

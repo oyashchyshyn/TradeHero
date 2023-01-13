@@ -34,11 +34,11 @@ internal class CheckCodeStatusCommand : ITelegramMenuCommand
             _telegramMenuStore.LastCommandId = Id; 
         
             var message = string.Format("Critical: {0}{1}Errors {2}{3}Warnings: {4}{5}",
-                _storeService.Information.CriticalCount,
+                _storeService.Application.Errors.CriticalCount,
                 Environment.NewLine,
-                _storeService.Information.ErrorCount,
+                _storeService.Application.Errors.ErrorCount,
                 Environment.NewLine,
-                _storeService.Information.WarningCount,
+                _storeService.Application.Errors.WarningCount,
                 Environment.NewLine
             );
 

@@ -3,8 +3,6 @@ using Telegram.Bot;
 using TradeHero.Contracts.Repositories;
 using TradeHero.Contracts.Repositories.Models;
 using TradeHero.Contracts.Services;
-using TradeHero.Core.Enums;
-using TradeHero.Core.Exceptions;
 
 namespace TradeHero.Services.Services;
 

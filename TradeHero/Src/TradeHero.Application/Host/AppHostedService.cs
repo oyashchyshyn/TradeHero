@@ -2,6 +2,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Menu;
 using TradeHero.Contracts.Services;
+using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
 
 namespace TradeHero.Application.Host;
@@ -13,6 +14,7 @@ internal class AppHostedService : IHostedService
     private readonly IInternetConnectionService _internetConnectionService;
     private readonly IFileService _fileService;
     private readonly IEnvironmentService _environmentService;
+    private readonly IStoreService _storeService;
     private readonly IMenuFactory _menuFactory;
 
     private CancellationTokenSource _cancellationTokenSource = new();
@@ -23,6 +25,7 @@ internal class AppHostedService : IHostedService
         IInternetConnectionService internetConnectionService,
         IFileService fileService,
         IEnvironmentService environmentService,
+        IStoreService storeService,
         IMenuFactory menuFactory
         )
     {
@@ -31,7 +34,7 @@ internal class AppHostedService : IHostedService
         _internetConnectionService = internetConnectionService;
         _fileService = fileService;
         _environmentService = environmentService;
-
+        _storeService = storeService;
         _menuFactory = menuFactory;
     }
     
@@ -57,6 +60,11 @@ internal class AppHostedService : IHostedService
 
             RegisterBackgroundJobs();
 
+            if (_environmentService.GetEnvironmentArgs().Contains(ArgumentKeyConstants.Update))
+            {
+                _storeService.Application.Update.IsApplicationAfterUpdate = true;
+            }
+            
             foreach (var menu in _menuFactory.GetMenus())
             {
                 await menu.InitAsync(_cancellationTokenSource.Token);   

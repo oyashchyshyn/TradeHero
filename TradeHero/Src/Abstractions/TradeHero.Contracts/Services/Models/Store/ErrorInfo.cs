@@ -1,6 +1,6 @@
-﻿namespace TradeHero.Contracts.Services.Models.Store;
+namespace TradeHero.Contracts.Services.Models.Store;
 
-public class InformationInstance
+public class ErrorInfo
 {
     public int ErrorCount { get; set; }
     public int WarningCount { get; set; }

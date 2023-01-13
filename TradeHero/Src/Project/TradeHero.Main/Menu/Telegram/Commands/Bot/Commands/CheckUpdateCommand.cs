@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types.ReplyMarkups;
 using TradeHero.Contracts.Menu.Commands;
 using TradeHero.Contracts.Services;
-using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
 using TradeHero.Main.Menu.Telegram.Store;
 
@@ -175,12 +174,15 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
                 var downloadedAppPath = Path.Combine(_environmentService.GetBasePath(),
                     _telegramMenuStore.CheckUpdateData.ReleaseVersion.AppName);
                 
+                _logger.LogInformation("Download app path: {DownloadAppPath}. In {Method}", 
+                    downloadedAppPath, nameof(HandleCallbackDataAsync));
+                
                 var downloadResult = await _githubService.DownloadReleaseAsync(
                     _telegramMenuStore.CheckUpdateData.ReleaseVersion.AppDownloadUri, 
                     downloadedAppPath,
                     cancellationToken
                 );
-
+                
                 if (downloadResult.ActionResult != ActionResult.Success)
                 {
                     await SendMessageWithClearDataAsync("There was an error during update, please, check logs.", cancellationToken);
@@ -188,13 +190,14 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
                     return;
                 }
                 
+                _logger.LogInformation("App downloaded. In {Method}", nameof(HandleCallbackDataAsync));
+                
                 await _telegramService.SendTextMessageToUserAsync(
                     "Update downloaded. Prepare for installing.",
                     cancellationToken: cancellationToken
                 );
 
-                _environmentService.CustomArgs.Clear();
-                _environmentService.CustomArgs.Add(ArgumentKeyConstants.Update, string.Empty);
+                _storeService.Application.Update.IsNeedToUpdateApplication = true;
 
                 _hostApplicationLifetime.StopApplication();
                 

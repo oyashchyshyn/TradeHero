@@ -1,5 +1,7 @@
+using System.Reflection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using TradeHero.Core.Enums;
 
 namespace TradeHero.Launcher.Host;
 
@@ -21,6 +23,7 @@ internal class LauncherHostedLifeTime : IHostLifetime, IDisposable
 
     public Task WaitForStartAsync(CancellationToken cancellationToken)
     {
+        AppDomain.CurrentDomain.UnhandledException += UnhandledException;
         AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
         Console.CancelKeyPress += OnCancelKeyPress;
 
@@ -36,6 +39,7 @@ internal class LauncherHostedLifeTime : IHostLifetime, IDisposable
     {
         _shutdownBlock.Set();
 
+        AppDomain.CurrentDomain.UnhandledException -= UnhandledException;
         AppDomain.CurrentDomain.ProcessExit -= OnProcessExit;
         Console.CancelKeyPress -= OnCancelKeyPress;
         
@@ -44,6 +48,27 @@ internal class LauncherHostedLifeTime : IHostLifetime, IDisposable
 
     #region Private methods
 
+    private void UnhandledException(object sender, UnhandledExceptionEventArgs e)
+    {
+        try
+        {
+            var assemblyName = Assembly.GetExecutingAssembly().GetName();
+
+            _logger.LogError("Error in {Method}. Message: {Message}", nameof(UnhandledException), 
+                $"Unhandled exception in {assemblyName.Name} v{assemblyName.Version}");
+        }
+        catch (Exception currentException)
+        {
+            _logger.LogError(currentException, "Error in {Method}", nameof(UnhandledException));
+        }
+        finally
+        {
+            _logger.LogError((Exception)e.ExceptionObject, 
+                "Error in {Method}. Message: Unhandled exception (AppDomain.CurrentDomain.UnhandledException)", 
+                nameof(UnhandledException));
+        }
+    }
+    
     private void OnProcessExit(object? sender, EventArgs e)
     {
         _logger.LogInformation("Exit button is pressed. In {Method}", nameof(OnCancelKeyPress));
@@ -52,7 +77,7 @@ internal class LauncherHostedLifeTime : IHostLifetime, IDisposable
 
         _shutdownBlock.WaitOne();
         
-        Environment.ExitCode = 0;
+        Environment.ExitCode = (int)AppExitCode.Success;
     }
 
     private void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
