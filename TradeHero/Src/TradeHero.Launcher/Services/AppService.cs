@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Services;
 using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
+using TradeHero.Core.Helpers;
 
 namespace TradeHero.Launcher.Services;
 
@@ -15,6 +16,8 @@ internal class AppService
     
     private Process? _runningProcess;
     private bool _isNeedToUpdatedApp;
+    private bool _isNeedToFinishProcess;
+    private bool _isProcessFinishedWithError;
     
     public AppService(
         ILogger<AppService> logger, 
@@ -56,6 +59,11 @@ internal class AppService
                 {
                     throw new Exception("Cannot download application from server!");
                 }
+
+                if (_environmentService.GetCurrentOperationSystem() == OperationSystem.Linux)
+                {
+                    EnvironmentHelper.SetFullPermissionsToFileLinux(appPath);
+                }
             }
 
             var arguments = $"{ArgumentKeyConstants.Environment}{_environmentService.GetEnvironmentType()} " +
@@ -65,6 +73,11 @@ internal class AppService
             {
                 File.Move(releaseAppPath, appPath, true);
             
+                if (_environmentService.GetCurrentOperationSystem() == OperationSystem.Linux)
+                {
+                    EnvironmentHelper.SetFullPermissionsToFileLinux(appPath);
+                }
+                
                 arguments += $" {ArgumentKeyConstants.Update}";
 
                 _isNeedToUpdatedApp = false;
@@ -76,18 +89,39 @@ internal class AppService
                 Arguments = arguments,
                 UseShellExecute = false
             };
-        
-            _runningProcess = Process.Start(processStartInfo);
-            
-            while (_runningProcess is { HasExited: false })
+
+            var _ = Task.Run(() =>
+            {
+                _runningProcess = Process.Start(processStartInfo);
+                
+                if (_runningProcess != null)
+                {
+                    _runningProcess.EnableRaisingEvents = true;   
+                    _runningProcess.Exited += RunningProcessOnExited;
+                    
+                    _logger.LogInformation("App process started! In {Method}", nameof(StartAppRunningAsync));
+                }
+                else
+                {
+                    _isProcessFinishedWithError = true;
+                    _isNeedToFinishProcess = true;
+
+                    _logger.LogInformation("App process did not started! In {Method}", nameof(StartAppRunningAsync));
+                }
+            });
+
+            while (!_isNeedToFinishProcess)
             {
                 await Task.Delay(100);
             }
 
-            if (_runningProcess is { ExitCode: (int)AppExitCode.Update })
+            if (_isProcessFinishedWithError)
             {
-                _isNeedToUpdatedApp = true;
+                throw new Exception("Cannot run bot!");
+            }
             
+            if (_isNeedToUpdatedApp)
+            {
                 continue;
             }
 
@@ -95,6 +129,28 @@ internal class AppService
             
             break;
         }
+    }
+
+    private void RunningProcessOnExited(object? sender, EventArgs e)
+    {
+        if (sender is not Process process)
+        {
+            return;
+        }
+
+        _logger.LogInformation("App process exited! Exit code: {ExitCode}. In {Method}", 
+            process.ExitCode, nameof(StartAppRunningAsync));
+        
+        if (process.ExitCode == (int)AppExitCode.Update)
+        {
+            _isNeedToUpdatedApp = true;
+            _logger.LogInformation("App is going to be updated. In {Method}", nameof(StartAppRunningAsync));
+        }
+        
+        _isNeedToFinishProcess = true;
+        
+        _runningProcess?.Dispose();
+        _runningProcess = null;
     }
 
     public Task StopAppRunningAsync()

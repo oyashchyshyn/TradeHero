@@ -15,7 +15,7 @@ namespace TradeHero.Launcher;
 
 internal static class Program
 {
-    private static async Task<int> Main(string[] args)
+    private static async Task Main(string[] args)
     {
         var configuration = ConfigurationHelper.GenerateConfiguration(args);
         var environmentSettings = ConfigurationHelper.ConvertConfigurationToAppSettings(configuration);
@@ -64,7 +64,7 @@ internal static class Program
 
             await host.RunAsync();
 
-            return (int)AppExitCode.Success;
+            Environment.ExitCode = (int)AppExitCode.Success;
         }
         catch (Exception exception)
         {
@@ -73,7 +73,7 @@ internal static class Program
             
             await MessageHelper.WriteMessageAsync(exception.Message);
             
-            return (int)AppExitCode.Failure;
+            Environment.ExitCode = (int)AppExitCode.Failure;
         }
     }
 }

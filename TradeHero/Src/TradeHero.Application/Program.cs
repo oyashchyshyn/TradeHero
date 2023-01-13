@@ -14,7 +14,7 @@ namespace TradeHero.Application;
 
 internal static class Program
 {
-    public static async Task<int> Main(string[] args)
+    public static async Task Main(string[] args)
     {
         EnvironmentHelper.SetCulture();
         
@@ -52,25 +52,26 @@ internal static class Program
                 })
                 .Build();
 
+            var store = host.Services.GetRequiredService<IStoreService>();
+
             await host.RunAsync();
 
-            var store = host.Services.GetRequiredService<IStoreService>();
-            
             if (store.Application.Update.IsNeedToUpdateApplication)
             {
-                return (int)AppExitCode.Update;
+                Environment.ExitCode = (int)AppExitCode.Update;
             }
-            
-            return (int)AppExitCode.Success;
+            else
+            {
+                Environment.ExitCode = (int)AppExitCode.Success;
+            }
         }
         catch (Exception exception)
         {
-            var logsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, 
-                environmentSettings.Folder.DataFolderName, environmentSettings.Folder.LogsFolderName);
+            var logsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, environmentSettings.Folder.LogsFolderName);
 
             await LoggerHelper.WriteLogToFileAsync(exception, logsPath, "app_fatal.txt");
-            
-            return (int)AppExitCode.Failure;
+
+            Environment.ExitCode = (int)AppExitCode.Failure;
         }
     }
 }

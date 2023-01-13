@@ -67,7 +67,7 @@ internal class TelegramMenu : IMenuService
 
             string message;
             
-            if (_storeService.Application.Update.IsApplicationAfterUpdate )
+            if (_storeService.Application.Update.IsApplicationAfterUpdate)
             {
                 message = $"Application updated to version: {_environmentService.GetCurrentApplicationVersion().ToString(3)}";
                 
