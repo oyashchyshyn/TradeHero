@@ -9,15 +9,15 @@
         },
         "LinuxNames": {
             "App": "app",
-            "ReleaseApp": "app_release",
+            "ReleaseApp": "app_release_linux",
             "Launcher": "trade_hero",
-            "ReleaseLauncher": "launcher_release"
+            "ReleaseLauncher": "launcher_release_linux"
         },
         "OsxNames": {
             "App": "app",
-            "ReleaseApp": "app_release",
+            "ReleaseApp": "app_release_osx",
             "Launcher": "trade_hero",
-            "ReleaseLauncher": "launcher_release"
+            "ReleaseLauncher": "launcher_release_osx"
         }
     },
     "Client": {
