@@ -22,6 +22,7 @@ public static class ServicesDiContainer
         serviceCollection.AddSingleton<ITerminalService, TerminalService>();
         serviceCollection.AddSingleton<IStartupService, StartupService>();
         serviceCollection.AddSingleton<IStoreService, StoreService>();
+        serviceCollection.AddSingleton<IApplicationService, ApplicationService>();
         
         serviceCollection.AddHttpClient("TelegramBotClient")
             .AddTypedClient<ITelegramBotClient>((httpClient, serviceProvider) =>

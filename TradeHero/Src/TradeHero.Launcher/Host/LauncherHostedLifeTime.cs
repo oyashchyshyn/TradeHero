@@ -9,17 +9,17 @@ namespace TradeHero.Launcher.Host;
 internal class LauncherHostedLifeTime : IHostLifetime, IDisposable
 {
     private readonly ILogger<LauncherHostedLifeTime> _logger;
-    private readonly IEnvironmentService _environmentService;
+    private readonly IApplicationService _applicationService;
 
     private readonly ManualResetEvent _shutdownBlock = new(false);
     
     public LauncherHostedLifeTime(
         ILogger<LauncherHostedLifeTime> logger,
-        IEnvironmentService environmentService
+        IApplicationService applicationService
         )
     {
-        _environmentService = environmentService;
         _logger = logger;
+        _applicationService = applicationService;
     }
 
     public Task WaitForStartAsync(CancellationToken cancellationToken)
@@ -74,7 +74,7 @@ internal class LauncherHostedLifeTime : IHostLifetime, IDisposable
     {
         _logger.LogInformation("Exit button is pressed. In {Method}", nameof(OnCancelKeyPress));
         
-        await _environmentService.StopApplicationAsync();
+        await _applicationService.StopApplicationAsync();
 
         _shutdownBlock.WaitOne();
         
@@ -87,7 +87,7 @@ internal class LauncherHostedLifeTime : IHostLifetime, IDisposable
         
         e.Cancel = true;
 
-        await _environmentService.StopApplicationAsync();
+        await _applicationService.StopApplicationAsync();
     }
 
     #endregion

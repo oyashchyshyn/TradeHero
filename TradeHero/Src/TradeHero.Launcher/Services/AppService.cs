@@ -43,7 +43,10 @@ internal class AppService
             {
                 if (!await _startupService.ManageDatabaseDataAsync())
                 {
-                    throw new Exception("There is an error during user creation. Please see logs.");
+                    _logger.LogError("There is an error during user creation. Please see logs. In {Method}", 
+                        nameof(StartAppRunning));
+                    
+                    return;
                 }
             
                 if (!File.Exists(appPath))
@@ -51,19 +54,20 @@ internal class AppService
                     var latestRelease = await _githubService.GetLatestReleaseAsync();
                     if (latestRelease.ActionResult != ActionResult.Success)
                     {
-                        throw new Exception("Cannot get info about application from server!");
+                        _logger.LogError("Cannot get info about application from server! In {Method}", 
+                            nameof(StartAppRunning));
+                    
+                        return;
                     }
                 
                     var downloadResult = await _githubService.DownloadReleaseAsync(latestRelease.Data.AppDownloadUri, appPath);
 
                     if (downloadResult.ActionResult != ActionResult.Success)
                     {
-                        throw new Exception("Cannot download application from server!");
-                    }
-
-                    if (_environmentService.GetCurrentOperationSystem() == OperationSystem.Linux)
-                    {
-                        EnvironmentHelper.SetFullPermissionsToFileLinux(appPath);
+                        _logger.LogError("There is an error during user creation. Please see logs. In {Method}", 
+                            nameof(StartAppRunning));
+                        
+                        return;
                     }
                 }
 
@@ -73,17 +77,17 @@ internal class AppService
                 if (_isNeedToUpdatedApp)
                 {
                     File.Move(releaseAppPath, appPath, true);
-                
-                    if (_environmentService.GetCurrentOperationSystem() == OperationSystem.Linux)
-                    {
-                        EnvironmentHelper.SetFullPermissionsToFileLinux(appPath);
-                    }
-                    
+
                     arguments += $" {ArgumentKeyConstants.Update}";
 
                     _isNeedToUpdatedApp = false;
                 }
             
+                if (_environmentService.GetCurrentOperationSystem() == OperationSystem.Linux)
+                {
+                    EnvironmentHelper.SetFullPermissionsToFileLinux(appPath);
+                }
+                
                 var processStartInfo = new ProcessStartInfo
                 {
                     FileName = appPath,
@@ -96,7 +100,11 @@ internal class AppService
                 {
                     _logger.LogWarning("App process did not started! In {Method}", nameof(StartAppRunning));
                     
-                    throw new Exception("Cannot run bot!");
+                    
+                    _logger.LogError("App process did not started! In {Method}", 
+                        nameof(StartAppRunning));
+                        
+                    return;
                 }
                 
                 _logger.LogInformation("App process started! In {Method}", nameof(StartAppRunning));
@@ -116,13 +124,18 @@ internal class AppService
                 if (_runningProcess.ExitCode == (int)AppExitCode.Update)
                 {
                     _isNeedToUpdatedApp = true;
+                    
                     _runningProcess.Dispose();
+                    _runningProcess = null;
                     
                     _logger.LogInformation("App is going to be updated. In {Method}", nameof(StartAppRunning));
                     
                     continue;
                 }
 
+                _runningProcess.Dispose();
+                _runningProcess = null;
+                
                 break;
             }
         });
