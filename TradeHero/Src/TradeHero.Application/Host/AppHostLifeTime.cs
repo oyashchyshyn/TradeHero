@@ -9,17 +9,17 @@ namespace TradeHero.Application.Host;
 internal class AppHostLifeTime : IHostLifetime, IDisposable
 {
     private readonly ILogger<AppHostLifeTime> _logger;
-    private readonly IEnvironmentService _environmentService;
+    private readonly IApplicationService _applicationService;
 
     private readonly ManualResetEvent _shutdownBlock = new(false);
     
     public AppHostLifeTime(
         ILogger<AppHostLifeTime> logger,
-        IEnvironmentService environmentService
+        IApplicationService applicationService
         )
     {
-        _environmentService = environmentService;
         _logger = logger;
+        _applicationService = applicationService;
     }
 
     public Task WaitForStartAsync(CancellationToken cancellationToken)
@@ -72,7 +72,7 @@ internal class AppHostLifeTime : IHostLifetime, IDisposable
     {
         _logger.LogInformation("Exit button is pressed. In {Method}", nameof(OnProcessExit));
         
-        await _environmentService.StopApplicationAsync();
+        await _applicationService.StopApplicationAsync();
 
         _shutdownBlock.WaitOne();
         

@@ -15,6 +15,4 @@ public interface IEnvironmentService
     OperationSystem GetCurrentOperationSystem();
     string GetRunningApplicationName();
     string GetReleaseApplicationName();
-    void SetActionsBeforeStopApplication(Func<Task> actionBeforeStopApplication);
-    Task StopApplicationAsync();
 }

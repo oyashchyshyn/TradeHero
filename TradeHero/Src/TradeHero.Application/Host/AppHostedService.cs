@@ -10,6 +10,7 @@ namespace TradeHero.Application.Host;
 internal class AppHostedService : IHostedService
 {
     private readonly ILogger _logger;
+    private readonly IApplicationService _applicationService;
     private readonly IJobService _jobService;
     private readonly IInternetConnectionService _internetConnectionService;
     private readonly IFileService _fileService;
@@ -26,7 +27,8 @@ internal class AppHostedService : IHostedService
         IFileService fileService,
         IEnvironmentService environmentService,
         IStoreService storeService,
-        IMenuFactory menuFactory
+        IMenuFactory menuFactory, 
+        IApplicationService applicationService
         )
     {
         _logger = loggerFactory.CreateLogger("TradeHero.Application");
@@ -36,6 +38,7 @@ internal class AppHostedService : IHostedService
         _environmentService = environmentService;
         _storeService = storeService;
         _menuFactory = menuFactory;
+        _applicationService = applicationService;
     }
     
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -48,7 +51,7 @@ internal class AppHostedService : IHostedService
             _logger.LogInformation("Base path: {GetBasePath}", _environmentService.GetBasePath());
             _logger.LogInformation("Runner type: {RunnerType}", _environmentService.GetRunnerType());
             
-            _environmentService.SetActionsBeforeStopApplication(StopServicesAsync);
+            _applicationService.SetActionsBeforeStopApplication(StopServicesAsync);
             
             if (_environmentService.GetEnvironmentType() == EnvironmentType.Development)
             {

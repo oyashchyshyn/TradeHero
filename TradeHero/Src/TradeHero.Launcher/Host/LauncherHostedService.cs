@@ -9,18 +9,21 @@ namespace TradeHero.Launcher.Host;
 internal class LauncherHostedService : IHostedService
 {
     private readonly ILogger _logger;
+    private readonly IApplicationService _applicationService;
     private readonly IEnvironmentService _environmentService;
 
     private readonly AppService _appService;
     
     public LauncherHostedService(
         ILoggerFactory loggerFactory, 
+        IApplicationService applicationService,
         IEnvironmentService environmentService, 
         AppService appService
         )
     {
         _logger = loggerFactory.CreateLogger("TradeHero.Launcher");
         _environmentService = environmentService;
+        _applicationService = applicationService;
         _appService = appService;
     }
     
@@ -32,7 +35,7 @@ internal class LauncherHostedService : IHostedService
         _logger.LogInformation("Environment: {GetEnvironmentType}", _environmentService.GetEnvironmentType());
         _logger.LogInformation("Runner type: {RunnerType}", _environmentService.GetRunnerType());
 
-        _environmentService.SetActionsBeforeStopApplication(StopAppAsync);
+        _applicationService.SetActionsBeforeStopApplication(StopAppAsync);
         
         if (_environmentService.GetEnvironmentType() == EnvironmentType.Development)
         {

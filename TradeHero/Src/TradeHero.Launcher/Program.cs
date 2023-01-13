@@ -47,13 +47,13 @@ internal static class Program
                 })
                 .ConfigureServices((_, serviceCollection) =>
                 {
+                    serviceCollection.AddSingleton<IHostLifetime, LauncherHostedLifeTime>();
+                    serviceCollection.AddHostedService<LauncherHostedService>();
+                    
                     serviceCollection.AddServices();
                     serviceCollection.AddDatabase();
 
                     serviceCollection.AddSingleton<AppService>();
-                    
-                    serviceCollection.AddSingleton<IHostLifetime, LauncherHostedLifeTime>();
-                    serviceCollection.AddHostedService<LauncherHostedService>();
                 })
                 .ConfigureLogging(loggingBuilder =>
                 {

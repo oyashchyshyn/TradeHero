@@ -11,6 +11,7 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
 {
     private readonly ILogger<CheckUpdateCommand> _logger;
     private readonly ITelegramService _telegramService;
+    private readonly IApplicationService _applicationService;
     private readonly IGithubService _githubService;
     private readonly IStoreService _storeService;
     private readonly IEnvironmentService _environmentService;
@@ -19,6 +20,7 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
     public CheckUpdateCommand(
         ILogger<CheckUpdateCommand> logger,
         ITelegramService telegramService,
+        IApplicationService applicationService,
         IGithubService githubService,
         IStoreService storeService,
         IEnvironmentService environmentService,
@@ -27,6 +29,7 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
     {
         _logger = logger;
         _telegramService = telegramService;
+        _applicationService = applicationService;
         _githubService = githubService;
         _storeService = storeService;
         _environmentService = environmentService;
@@ -195,7 +198,7 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
 
                 _storeService.Application.Update.IsNeedToUpdateApplication = true;
 
-                await _environmentService.StopApplicationAsync();
+                await _applicationService.StopApplicationAsync();
                 
                 return;
             }
