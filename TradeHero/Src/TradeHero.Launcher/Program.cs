@@ -50,8 +50,8 @@ internal static class Program
                     serviceCollection.AddServices();
                     serviceCollection.AddDatabase();
 
-                    serviceCollection.AddSingleton<AppService>()
-                        ;                    
+                    serviceCollection.AddSingleton<AppService>();
+                    
                     serviceCollection.AddSingleton<IHostLifetime, LauncherHostedLifeTime>();
                     serviceCollection.AddHostedService<LauncherHostedService>();
                 })
@@ -68,8 +68,10 @@ internal static class Program
         }
         catch (Exception exception)
         {
-            await MessageHelper.WriteErrorAsync(exception, 
-                Path.Combine(baseDirectory, environmentSettings.Folder.LogsFolderName));
+            var logsPath = Path.Combine(baseDirectory, environmentSettings.Folder.LogsFolderName);
+            await LoggerHelper.WriteLogToFileAsync(exception, logsPath, "launcher_fatal.txt");
+            
+            await MessageHelper.WriteMessageAsync(exception.Message);
             
             return (int)AppExitCode.Failure;
         }

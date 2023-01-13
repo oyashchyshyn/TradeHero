@@ -1,5 +1,6 @@
 {
     "Application": {
+        "RunAppKey": "--run-app-92cdbe1d",
         "WindowsNames": {
             "App": "app.exe",
             "ReleaseApp": "app_release.exe",
@@ -7,6 +8,12 @@
             "ReleaseLauncher": "launcher_release.exe"
         },
         "LinuxNames": {
+            "App": "app",
+            "ReleaseApp": "app_release",
+            "Launcher": "trade_hero",
+            "ReleaseLauncher": "launcher_release"
+        },
+        "OsxNames": {
             "App": "app",
             "ReleaseApp": "app_release",
             "Launcher": "trade_hero",

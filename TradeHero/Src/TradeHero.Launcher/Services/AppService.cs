@@ -34,6 +34,7 @@ internal class AppService
     {
         var appPath = Path.Combine(_environmentService.GetBasePath(), _environmentService.GetRunningApplicationName());
         var releaseAppPath = Path.Combine(_environmentService.GetBasePath(), _environmentService.GetReleaseApplicationName());
+        var appSettings = _environmentService.GetAppSettings();
 
         while (true)
         {
@@ -47,18 +48,19 @@ internal class AppService
                 var latestRelease = await _githubService.GetLatestReleaseAsync();
                 if (latestRelease.ActionResult != ActionResult.Success)
                 {
-                    throw new ThException("Cannot get info about application!");
+                    throw new ThException("Cannot get info about application from server!");
                 }
             
                 var downloadResult = await _githubService.DownloadReleaseAsync(latestRelease.Data.AppDownloadUri, appPath);
 
                 if (downloadResult.ActionResult != ActionResult.Success)
                 {
-                    throw new ThException("Cannot download application!");
+                    throw new ThException("Cannot download application from server!");
                 }
             }
 
-            var arguments = $"{ArgumentKeyConstants.Environment}{_environmentService.GetEnvironmentType()} {ArgumentKeyConstants.RunApp}";
+            var arguments = $"{ArgumentKeyConstants.Environment}{_environmentService.GetEnvironmentType()} " +
+                            $"{appSettings.Application.RunAppKey}";
 
             if (_isNeedToUpdatedApp)
             {
@@ -77,8 +79,7 @@ internal class AppService
             };
         
             _runningProcess = Process.Start(processStartInfo);
-
-
+            
             while (_runningProcess is { HasExited: false })
             {
                 await Task.Delay(100);

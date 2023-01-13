@@ -18,13 +18,6 @@ internal static class Program
     public static async Task<int> Main(string[] args)
     {
         EnvironmentHelper.SetCulture();
-
-        if (!args.Contains(ArgumentKeyConstants.RunApp))
-        {
-            MessageHelper.WriteError("Cannot start app!");
-                
-            return (int)AppExitCode.Failure;
-        }
         
         var configuration = ConfigurationHelper.GenerateConfiguration(args);
         var environmentSettings = ConfigurationHelper.ConvertConfigurationToAppSettings(configuration);
@@ -32,6 +25,11 @@ internal static class Program
 
         try
         {
+            if (ArgsHelper.IsRunAppKeyExist(args, environmentSettings.Application.RunAppKey))
+            {
+                throw new Exception("Run app key does not exist");
+            }
+            
             var host = HostApp.CreateDefaultBuilder(args)
                 .UseEnvironment(environmentType.ToString())
                 .UseContentRoot(AppDomain.CurrentDomain.BaseDirectory)
@@ -73,8 +71,8 @@ internal static class Program
         {
             var logsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, 
                 environmentSettings.Folder.DataFolderName, environmentSettings.Folder.LogsFolderName);
-            
-            await MessageHelper.WriteErrorAsync(exception, logsPath);
+
+            await LoggerHelper.WriteLogToFileAsync(exception, logsPath, "app_fatal.txt");
             
             return (int)AppExitCode.Failure;
         }
