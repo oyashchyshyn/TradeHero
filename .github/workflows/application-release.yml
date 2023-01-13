@@ -5,13 +5,15 @@ on:
     branches: [ main ]
 
 env:
-  APP_PROJECT_PATH: TradeHero/Src/Project/TradeHero.App/
-  APP_WIN_PATH: TradeHero/Src/Project/TradeHero.App/publish/win-x86/app.exe
-  APP_LINUX_PATH: TradeHero/Src/Project/TradeHero.App/publish/linux-x64/app
+  APP_PROJECT_PATH: TradeHero/Src/TradeHero.Application/
+  APP_WIN_PATH: TradeHero/Src/Project/TradeHero.Application/publish/win-x86/app.exe
+  APP_LINUX_PATH: TradeHero/Src/Project/TradeHero.Application/publish/linux-x64/app
+  APP_OSX_PATH: TradeHero/Src/Project/TradeHero.Application/publish/osx-x64/app
   
   LAUNCHER_PROJECT_PATH: TradeHero/Src/TradeHero.Launcher/
   LAUNCHER_WIN_PATH: TradeHero/Src/TradeHero.Launcher/publish/win-x86/trade_hero.exe
   LAUNCHER_LINUX_PATH: TradeHero/Src/TradeHero.Launcher/publish/linux-x64/trade_hero
+  LAUNCHER_OSX_PATH: TradeHero/Src/TradeHero.Launcher/publish/osx-x64/trade_hero
 
 jobs:
 
@@ -66,6 +68,16 @@ jobs:
         with:
           name: app_linux
           path: ${{ env.APP_LINUX_PATH }}
+          
+      - name: Publish APP osx-x64
+        working-directory: ${{ env.APP_PROJECT_PATH }}
+        run: dotnet publish -r osx-x64 --output ./publish/osx-x64 --self-contained true -p:PublishTrimmed=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=false
+     
+      - name: Upload APP osx-x64
+        uses: actions/upload-artifact@v1
+        with:
+          name: app_osx
+          path: ${{ env.APP_OSX_PATH }}
      
       - name: Restore LAUNCHER dependencies
         working-directory: ${{ env.LAUNCHER_PROJECT_PATH }}
@@ -94,6 +106,16 @@ jobs:
         with:
           name: launcher_linux
           path: ${{ env.LAUNCHER_LINUX_PATH }}
+          
+      - name: Publish application osx-x64
+        working-directory: ${{ env.LAUNCHER_PROJECT_PATH }}
+        run: dotnet publish -r osx-x64 --output ./publish/osx-x64 --self-contained true -p:PublishTrimmed=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=false
+      
+      - name: Upload LAUNCHER osx-x64
+        uses: actions/upload-artifact@v1
+        with:
+          name: launcher_osx
+          path: ${{ env.LAUNCHER_OSX_PATH }}
       
       - run: echo "Finish 'build -> publish -> artifact upload'"
       
@@ -135,6 +157,12 @@ jobs:
           name: app_linux
           path: ./linux
           
+      - name: Download APP osx-x64
+        uses: actions/download-artifact@v1
+        with:
+          name: app_osx
+          path: ./osx
+          
       - name: Download LAUNCHER win-x86
         uses: actions/download-artifact@v1
         with:
@@ -146,6 +174,12 @@ jobs:
         with:
           name: launcher_linux
           path: ./linux
+          
+      - name: Download LAUNCHER osx-x64
+        uses: actions/download-artifact@v1
+        with:
+          name: launcher_osx
+          path: ./osx
           
       - name: Upload APP win-x86 as release asset
         id: upload-app-win-release-asset 
@@ -166,7 +200,18 @@ jobs:
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }} 
           asset_path: ./linux/app
-          asset_name: app_release
+          asset_name: app_release_linux
+          asset_content_type: application/octet-stream
+          
+      - name: Upload APP osx-x64 as release asset
+        id: upload-app-osx-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }} 
+          asset_path: ./osx/app
+          asset_name: app_release_osx
           asset_content_type: application/octet-stream
           
       - name: Upload LAUNCHER win-x86 as release asset
@@ -188,7 +233,18 @@ jobs:
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }} 
           asset_path: ./linux/trade_hero
-          asset_name: launcher_release
+          asset_name: launcher_release_linux
+          asset_content_type: application/octet-stream
+          
+      - name: Upload LAUNCHER osx-x64 as release asset
+        id: upload-launcher-osx-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }} 
+          asset_path: ./osx/trade_hero
+          asset_name: launcher_release_osx
           asset_content_type: application/octet-stream
           
       - run: echo "Finish 'create-release-and-upload-files'" 
