@@ -123,7 +123,7 @@ internal class GithubService : IGithubService
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/octet-stream"));
             request.Headers.UserAgent.Add(new ProductInfoHeaderValue("TradeHero-app", productVersion));
 
-            await using var file = new FileStream(
+            var file = new FileStream(
                 filePath, 
                 FileMode.Create, FileAccess.Write, FileShare.None
             );
@@ -132,11 +132,13 @@ internal class GithubService : IGithubService
             // The passed progress-instance will receive the download status updates.
             await client.DownloadAsync(request, file, progressIndicator, cancellationToken);
 
+            await file.DisposeAsync();
+            
             var downloadResponse = new DownloadResponse
             {
                 FilePath = filePath
             };
-            
+
             return new GenericBaseResult<DownloadResponse>(downloadResponse);
         }
         catch (Exception exception)

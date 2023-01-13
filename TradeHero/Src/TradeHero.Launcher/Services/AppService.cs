@@ -147,10 +147,10 @@ internal class AppService
             _logger.LogInformation("App is going to be updated. In {Method}", nameof(StartAppRunningAsync));
         }
         
-        _isNeedToFinishProcess = true;
-        
         _runningProcess?.Dispose();
         _runningProcess = null;
+        
+        _isNeedToFinishProcess = true;
     }
 
     public Task StopAppRunningAsync()
