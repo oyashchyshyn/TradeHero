@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types.ReplyMarkups;
 using TradeHero.Contracts.Menu.Commands;
@@ -15,7 +14,6 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
     private readonly IGithubService _githubService;
     private readonly IStoreService _storeService;
     private readonly IEnvironmentService _environmentService;
-    private readonly IHostApplicationLifetime _hostApplicationLifetime;
     private readonly TelegramMenuStore _telegramMenuStore;
 
     public CheckUpdateCommand(
@@ -24,7 +22,6 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
         IGithubService githubService,
         IStoreService storeService,
         IEnvironmentService environmentService,
-        IHostApplicationLifetime hostApplicationLifetime,
         TelegramMenuStore telegramMenuStore
         )
     {
@@ -33,7 +30,6 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
         _githubService = githubService;
         _storeService = storeService;
         _environmentService = environmentService;
-        _hostApplicationLifetime = hostApplicationLifetime;
         _telegramMenuStore = telegramMenuStore;
     }
 
@@ -199,7 +195,7 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
 
                 _storeService.Application.Update.IsNeedToUpdateApplication = true;
 
-                _hostApplicationLifetime.StopApplication();
+                await _environmentService.StopApplicationAsync();
                 
                 return;
             }

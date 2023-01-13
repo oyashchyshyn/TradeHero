@@ -16,9 +16,8 @@ internal class AppService
     
     private Process? _runningProcess;
     private bool _isNeedToUpdatedApp;
-    private bool _isNeedToFinishProcess;
-    private bool _isProcessFinishedWithError;
-    
+    private bool _isLauncherStopped;
+
     public AppService(
         ILogger<AppService> logger, 
         IEnvironmentService environmentService, 
@@ -32,140 +31,116 @@ internal class AppService
         _startupService = startupService;
     }
 
-    public async Task StartAppRunningAsync()
+    public void StartAppRunning()
     {
-        var appPath = Path.Combine(_environmentService.GetBasePath(), _environmentService.GetRunningApplicationName());
-        var releaseAppPath = Path.Combine(_environmentService.GetBasePath(), _environmentService.GetReleaseApplicationName());
-        var appSettings = _environmentService.GetAppSettings();
-
-        while (true)
+        Task.Run(async () =>
         {
-            if (!await _startupService.ManageDatabaseDataAsync())
+            var appPath = Path.Combine(_environmentService.GetBasePath(), _environmentService.GetRunningApplicationName());
+            var releaseAppPath = Path.Combine(_environmentService.GetBasePath(), _environmentService.GetReleaseApplicationName());
+            var appSettings = _environmentService.GetAppSettings();
+
+            while (true)
             {
-                throw new Exception("There is an error during user creation. Please see logs.");
-            }
-        
-            if (!File.Exists(appPath))
-            {
-                var latestRelease = await _githubService.GetLatestReleaseAsync();
-                if (latestRelease.ActionResult != ActionResult.Success)
+                if (!await _startupService.ManageDatabaseDataAsync())
                 {
-                    throw new Exception("Cannot get info about application from server!");
+                    throw new Exception("There is an error during user creation. Please see logs.");
                 }
             
-                var downloadResult = await _githubService.DownloadReleaseAsync(latestRelease.Data.AppDownloadUri, appPath);
-
-                if (downloadResult.ActionResult != ActionResult.Success)
+                if (!File.Exists(appPath))
                 {
-                    throw new Exception("Cannot download application from server!");
-                }
-
-                if (_environmentService.GetCurrentOperationSystem() == OperationSystem.Linux)
-                {
-                    EnvironmentHelper.SetFullPermissionsToFileLinux(appPath);
-                }
-            }
-
-            var arguments = $"{ArgumentKeyConstants.Environment}{_environmentService.GetEnvironmentType()} " +
-                            $"{appSettings.Application.RunAppKey}";
-
-            if (_isNeedToUpdatedApp)
-            {
-                File.Move(releaseAppPath, appPath, true);
-            
-                if (_environmentService.GetCurrentOperationSystem() == OperationSystem.Linux)
-                {
-                    EnvironmentHelper.SetFullPermissionsToFileLinux(appPath);
-                }
+                    var latestRelease = await _githubService.GetLatestReleaseAsync();
+                    if (latestRelease.ActionResult != ActionResult.Success)
+                    {
+                        throw new Exception("Cannot get info about application from server!");
+                    }
                 
-                arguments += $" {ArgumentKeyConstants.Update}";
+                    var downloadResult = await _githubService.DownloadReleaseAsync(latestRelease.Data.AppDownloadUri, appPath);
 
-                _isNeedToUpdatedApp = false;
-            }
-        
-            var processStartInfo = new ProcessStartInfo
-            {
-                FileName = appPath,
-                Arguments = arguments,
-                UseShellExecute = false
-            };
+                    if (downloadResult.ActionResult != ActionResult.Success)
+                    {
+                        throw new Exception("Cannot download application from server!");
+                    }
 
-            var _ = Task.Run(() =>
-            {
-                _runningProcess = Process.Start(processStartInfo);
-                
-                if (_runningProcess != null)
+                    if (_environmentService.GetCurrentOperationSystem() == OperationSystem.Linux)
+                    {
+                        EnvironmentHelper.SetFullPermissionsToFileLinux(appPath);
+                    }
+                }
+
+                var arguments = $"{ArgumentKeyConstants.Environment}{_environmentService.GetEnvironmentType()} " +
+                        $"{appSettings.Application.RunAppKey}";
+
+                if (_isNeedToUpdatedApp)
                 {
-                    _runningProcess.EnableRaisingEvents = true;   
-                    _runningProcess.Exited += RunningProcessOnExited;
+                    File.Move(releaseAppPath, appPath, true);
+                
+                    if (_environmentService.GetCurrentOperationSystem() == OperationSystem.Linux)
+                    {
+                        EnvironmentHelper.SetFullPermissionsToFileLinux(appPath);
+                    }
                     
-                    _logger.LogInformation("App process started! In {Method}", nameof(StartAppRunningAsync));
+                    arguments += $" {ArgumentKeyConstants.Update}";
+
+                    _isNeedToUpdatedApp = false;
                 }
-                else
+            
+                var processStartInfo = new ProcessStartInfo
                 {
-                    _isProcessFinishedWithError = true;
-                    _isNeedToFinishProcess = true;
+                    FileName = appPath,
+                    Arguments = arguments,
+                    UseShellExecute = false
+                };
 
-                    _logger.LogInformation("App process did not started! In {Method}", nameof(StartAppRunningAsync));
+                _runningProcess = Process.Start(processStartInfo);
+                if (_runningProcess == null)
+                {
+                    _logger.LogWarning("App process did not started! In {Method}", nameof(StartAppRunning));
+                    
+                    throw new Exception("Cannot run bot!");
                 }
-            });
+                
+                _logger.LogInformation("App process started! In {Method}", nameof(StartAppRunning));
 
-            while (!_isNeedToFinishProcess)
-            {
-                await Task.Delay(100);
-            }
+                while (!_runningProcess.HasExited)
+                {
+                    await Task.Delay(100);
+                }
 
-            if (_isProcessFinishedWithError)
-            {
-                throw new Exception("Cannot run bot!");
-            }
-            
-            if (_isNeedToUpdatedApp)
-            {
-                continue;
-            }
+                if (_isLauncherStopped)
+                {
+                    break;
+                }
+                
+                _logger.LogInformation("App stopped! In {Method}", nameof(StartAppRunning));
+                
+                if (_runningProcess.ExitCode == (int)AppExitCode.Update)
+                {
+                    _isNeedToUpdatedApp = true;
+                    _runningProcess.Dispose();
+                    
+                    _logger.LogInformation("App is going to be updated. In {Method}", nameof(StartAppRunning));
+                    
+                    continue;
+                }
 
-            _logger.LogInformation("App finished! In {Method}", nameof(StartAppRunningAsync));
-            
-            break;
-        }
+                break;
+            }
+        });
     }
 
-    private void RunningProcessOnExited(object? sender, EventArgs e)
+    public async Task StopAppRunningAsync()
     {
-        if (sender is not Process process)
+        _isLauncherStopped = true;
+        
+        if (_runningProcess == null)
         {
             return;
         }
-
-        _logger.LogInformation("App process exited! Exit code: {ExitCode}. In {Method}", 
-            process.ExitCode, nameof(StartAppRunningAsync));
         
-        if (process.ExitCode == (int)AppExitCode.Update)
-        {
-            _isNeedToUpdatedApp = true;
-            _logger.LogInformation("App is going to be updated. In {Method}", nameof(StartAppRunningAsync));
-        }
+        _runningProcess.CloseMainWindow();
+        await _runningProcess.WaitForExitAsync();
         
-        _isNeedToFinishProcess = true;
-        
-        _runningProcess?.Dispose();
-        _runningProcess = null;
-    }
-
-    public Task StopAppRunningAsync()
-    {
-        if (_runningProcess == null)
-        {
-            return Task.CompletedTask;
-        }
-        
-        _runningProcess.Close();
         _runningProcess.Dispose();
         _runningProcess = null;
-        
-        _logger.LogInformation("App stopped! In {Method}", nameof(StopAppRunningAsync));
-        
-        return Task.CompletedTask;
     }
 }

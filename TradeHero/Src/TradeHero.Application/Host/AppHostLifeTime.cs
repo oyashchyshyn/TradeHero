@@ -1,6 +1,7 @@
 using System.Reflection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using TradeHero.Contracts.Services;
 using TradeHero.Core.Enums;
 
 namespace TradeHero.Application.Host;
@@ -8,16 +9,16 @@ namespace TradeHero.Application.Host;
 internal class AppHostLifeTime : IHostLifetime, IDisposable
 {
     private readonly ILogger<AppHostLifeTime> _logger;
-    private readonly IHostApplicationLifetime _hostApplicationLifetime;
+    private readonly IEnvironmentService _environmentService;
 
     private readonly ManualResetEvent _shutdownBlock = new(false);
     
     public AppHostLifeTime(
         ILogger<AppHostLifeTime> logger,
-        IHostApplicationLifetime hostApplicationLifetime
+        IEnvironmentService environmentService
         )
     {
-        _hostApplicationLifetime = hostApplicationLifetime;
+        _environmentService = environmentService;
         _logger = logger;
     }
 
@@ -67,11 +68,11 @@ internal class AppHostLifeTime : IHostLifetime, IDisposable
         }
     }
     
-    private void OnProcessExit(object? sender, EventArgs e)
+    private async void OnProcessExit(object? sender, EventArgs e)
     {
         _logger.LogInformation("Exit button is pressed. In {Method}", nameof(OnProcessExit));
         
-        _hostApplicationLifetime.StopApplication();
+        await _environmentService.StopApplicationAsync();
 
         _shutdownBlock.WaitOne();
         
