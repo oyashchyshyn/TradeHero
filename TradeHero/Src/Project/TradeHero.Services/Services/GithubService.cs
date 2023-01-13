@@ -63,6 +63,10 @@ internal class GithubService : IGithubService
                     updaterAsset = latestReleases.Assets.Single(x => x.Name == environmentSettings.Application.LinuxNames.ReleaseLauncher);
                     appAsset = latestReleases.Assets.Single(x => x.Name == environmentSettings.Application.LinuxNames.ReleaseApp);
                     break;
+                case OperationSystem.Osx:
+                    updaterAsset = latestReleases.Assets.Single(x => x.Name == environmentSettings.Application.OsxNames.ReleaseLauncher);
+                    appAsset = latestReleases.Assets.Single(x => x.Name == environmentSettings.Application.OsxNames.ReleaseApp);
+                    break;
                 case OperationSystem.None:
                 default:
                     _logger.LogError("Cannot get correct operation system. Current operation system is: {OperationSystem}. In {Method}", 

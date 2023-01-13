@@ -1,16 +1,23 @@
 {
     "Application": {
+        "RunAppKey": "--run-app-92cdbe1d",
         "WindowsNames": {
             "App": "app.exe",
-            "ReleaseApp": "trade_hero_release.exe",
+            "ReleaseApp": "app_release.exe",
             "Launcher": "trade_hero.exe",
             "ReleaseLauncher": "launcher_release.exe"
         },
         "LinuxNames": {
             "App": "app",
-            "ReleaseApp": "trade_hero_release",
+            "ReleaseApp": "app_release_linux",
             "Launcher": "trade_hero",
-            "ReleaseLauncher": "launcher_release"
+            "ReleaseLauncher": "launcher_release_linux"
+        },
+        "OsxNames": {
+            "App": "app",
+            "ReleaseApp": "app_release_osx",
+            "Launcher": "trade_hero",
+            "ReleaseLauncher": "launcher_release_osx"
         }
     },
     "Client": {
@@ -26,8 +33,8 @@
         "LogLevel": "Information",
         "RestClientLogLevel": "Warning",
         "SocketClientLogLevel": "Warning",
-        "AppFileName": "app_logs.txt",
-        "LauncherFileName": "launcher_logs.txt",
+        "AppFileName": "app_logs_.txt",
+        "LauncherFileName": "launcher_logs_.txt",
         "LogTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext}: {Message}{NewLine}{Exception}"
     },
     "Github": {

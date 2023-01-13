@@ -24,9 +24,15 @@ public static class LoggerExtensions
 
             if (appSettings.Logger.LogLevel != LogLevel.None)
             {
+                var fileName = environmentService.GetRunnerType() switch
+                {
+                    RunnerType.Launcher => appSettings.Logger.LauncherFileName,
+                    RunnerType.App => appSettings.Logger.AppFileName,
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+
                 var loggerFilePath = Path.Combine(environmentService.GetBasePath(),
-                    appSettings.Folder.LogsFolderName,
-                    appSettings.Logger.AppFileName);
+                    appSettings.Folder.LogsFolderName, fileName);
                 
                 loggerConfiguration = new LoggerConfiguration()
                     .MinimumLevel.Is((LogEventLevel)appSettings.Logger.LogLevel)

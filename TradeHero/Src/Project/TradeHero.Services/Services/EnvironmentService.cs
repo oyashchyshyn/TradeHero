@@ -67,6 +67,12 @@ internal class EnvironmentService : IEnvironmentService
         {
             return OperationSystem.Linux;
         }
+        
+        var isOsx = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+        if (isOsx)
+        {
+            return OperationSystem.Osx;
+        }
 
         var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         return isWindows ? OperationSystem.Windows : OperationSystem.None;
@@ -80,6 +86,7 @@ internal class EnvironmentService : IEnvironmentService
         {
             OperationSystem.Windows => environmentSettings.Application.WindowsNames.App,
             OperationSystem.Linux => environmentSettings.Application.LinuxNames.App,
+            OperationSystem.Osx => environmentSettings.Application.OsxNames.App,
             OperationSystem.None => string.Empty,
             _ => string.Empty
         };
@@ -95,6 +102,7 @@ internal class EnvironmentService : IEnvironmentService
         {
             OperationSystem.Windows => environmentSettings.Application.WindowsNames.ReleaseApp,
             OperationSystem.Linux => environmentSettings.Application.LinuxNames.ReleaseApp,
+            OperationSystem.Osx => environmentSettings.Application.OsxNames.App,
             OperationSystem.None => string.Empty,
             _ => string.Empty
         };
