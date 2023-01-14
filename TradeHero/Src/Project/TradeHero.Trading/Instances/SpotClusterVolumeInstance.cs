@@ -169,10 +169,10 @@ internal class SpotClusterVolumeInstance : IInstance
 
                     switch (symbolMarketInfo.KlinePositionSignal)
                     {
-                        case PositionSide.Short:
+                        case PositionSide.Short when instanceResult.Side is PositionSide.Both or PositionSide.Short:
                             instanceResult.ShortSignals.Add(symbolMarketInfo);
                             break;
-                        case PositionSide.Long:
+                        case PositionSide.Long when instanceResult.Side is PositionSide.Both or PositionSide.Long:
                             instanceResult.LongSignals.Add(symbolMarketInfo);
                             break;
                     }
