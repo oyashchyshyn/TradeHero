@@ -5,7 +5,7 @@ namespace TradeHero.Contracts.Sockets;
 public interface ISocketClient
 {
     event EventHandler<SocketMessageArgs> OnReceiveMessageFromServer;
-    void Connect();
-    void Close();
+    Task ConnectAsync();
     Task SendMessageAsync(string message);
+    void Close();
 }

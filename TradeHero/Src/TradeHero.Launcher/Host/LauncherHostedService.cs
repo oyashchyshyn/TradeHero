@@ -9,7 +9,7 @@ namespace TradeHero.Launcher.Host;
 
 internal class LauncherHostedService : IHostedService
 {
-    private readonly ILogger _logger;
+    private readonly ILogger<LauncherHostedService> _logger;
     private readonly IApplicationService _applicationService;
     private readonly IEnvironmentService _environmentService;
     private readonly IServerSocket _serverSocket;
@@ -17,14 +17,14 @@ internal class LauncherHostedService : IHostedService
     private readonly AppService _appService;
     
     public LauncherHostedService(
-        ILoggerFactory loggerFactory, 
+        ILogger<LauncherHostedService> logger, 
         IApplicationService applicationService,
         IEnvironmentService environmentService, 
         IServerSocket serverSocket, 
         AppService appService
         )
     {
-        _logger = loggerFactory.CreateLogger("TradeHero.Launcher");
+        _logger = logger;
         _environmentService = environmentService;
         _applicationService = applicationService;
         _serverSocket = serverSocket;
