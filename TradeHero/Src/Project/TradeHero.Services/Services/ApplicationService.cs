@@ -1,31 +1,37 @@
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Services;
 
 namespace TradeHero.Services.Services;
 
 internal class ApplicationService : IApplicationService
 {
+    private readonly ILogger<ApplicationService> _logger;
     private readonly IHostApplicationLifetime _hostApplicationLifetime;
 
-    private Func<Task>? _actionsBeforeStopApplication;
+    private Action? _actionsBeforeStopApplication;
     
     public ApplicationService(
+        ILogger<ApplicationService> logger,
         IHostApplicationLifetime hostApplicationLifetime
         )
     {
+        _logger = logger;
         _hostApplicationLifetime = hostApplicationLifetime;
     }
     
-    public void SetActionsBeforeStopApplication(Func<Task> actionBeforeStopApplication)
+    public void SetActionsBeforeStopApplication(Action actionsBeforeStopApplication)
     {
-        _actionsBeforeStopApplication = actionBeforeStopApplication;
+        _actionsBeforeStopApplication = actionsBeforeStopApplication;
     }
     
-    public async Task StopApplicationAsync()
+    public void StopApplication()
     {
         if (_actionsBeforeStopApplication != null)
         {
-            await _actionsBeforeStopApplication();
+            _actionsBeforeStopApplication.Invoke();
+            
+            _logger.LogInformation("Clear resources. In {Method}", nameof(StopApplication));
         }
 
         _hostApplicationLifetime.StopApplication();

@@ -26,10 +26,11 @@ internal class AppHostLifeTime : IHostLifetime, IDisposable
     {
         AppDomain.CurrentDomain.UnhandledException += UnhandledException;
         AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+        Console.CancelKeyPress += OnCancelKeyPress;
 
         return Task.CompletedTask;
     }
-
+    
     public Task StopAsync(CancellationToken cancellationToken)
     {
         return Task.CompletedTask;
@@ -41,6 +42,7 @@ internal class AppHostLifeTime : IHostLifetime, IDisposable
 
         AppDomain.CurrentDomain.UnhandledException -= UnhandledException;
         AppDomain.CurrentDomain.ProcessExit -= OnProcessExit;
+        Console.CancelKeyPress -= OnCancelKeyPress;
 
         _logger.LogInformation("Finish disposing. In {Method}", nameof(Dispose));
     }
@@ -68,15 +70,24 @@ internal class AppHostLifeTime : IHostLifetime, IDisposable
         }
     }
     
-    private async void OnProcessExit(object? sender, EventArgs e)
+    private void OnProcessExit(object? sender, EventArgs e)
     {
         _logger.LogInformation("Exit button is pressed. In {Method}", nameof(OnProcessExit));
         
-        await _applicationService.StopApplicationAsync();
+        _applicationService.StopApplication();
 
         _shutdownBlock.WaitOne();
         
         Environment.ExitCode = (int)AppExitCode.Success;
+    }
+    
+    private void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
+    {
+        _logger.LogInformation("Ctrl + C is pressed. In {Method}", nameof(OnCancelKeyPress));
+        
+        e.Cancel = true;
+        
+        _applicationService.StopApplication();
     }
 
     #endregion

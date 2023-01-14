@@ -197,8 +197,8 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
                 );
 
                 _storeService.Application.Update.IsNeedToUpdateApplication = true;
-
-                await _applicationService.StopApplicationAsync();
+                
+                _applicationService.StopApplication();
                 
                 return;
             }

@@ -25,7 +25,7 @@ internal static class Program
         try
         {
             ArgsHelper.IsRunAppKeyExist(args, environmentSettings.Application.RunAppKey);
-            
+
             var host = HostApp.CreateDefaultBuilder(args)
                 .UseEnvironment(environmentType.ToString())
                 .UseContentRoot(AppDomain.CurrentDomain.BaseDirectory)
@@ -39,7 +39,7 @@ internal static class Program
                     serviceCollection.AddServices();
                     serviceCollection.AddClient();
                     serviceCollection.AddDatabase();
-                    serviceCollection.AddTradingLogic();
+                    serviceCollection.AddTrading();
                     serviceCollection.AddHost();
                     
                     serviceCollection.AddSingleton<IHostLifetime, AppHostLifeTime>();

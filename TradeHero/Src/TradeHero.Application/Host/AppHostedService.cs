@@ -9,7 +9,7 @@ namespace TradeHero.Application.Host;
 
 internal class AppHostedService : IHostedService
 {
-    private readonly ILogger _logger;
+    private readonly ILogger<AppHostedService> _logger;
     private readonly IApplicationService _applicationService;
     private readonly IJobService _jobService;
     private readonly IInternetConnectionService _internetConnectionService;
@@ -21,24 +21,24 @@ internal class AppHostedService : IHostedService
     private CancellationTokenSource _cancellationTokenSource = new();
     
     public AppHostedService(
-        ILoggerFactory loggerFactory,
+        ILogger<AppHostedService> logger,
+        IApplicationService applicationService,
         IJobService jobService,
         IInternetConnectionService internetConnectionService,
         IFileService fileService,
         IEnvironmentService environmentService,
         IStoreService storeService,
-        IMenuFactory menuFactory, 
-        IApplicationService applicationService
+        IMenuFactory menuFactory
         )
     {
-        _logger = loggerFactory.CreateLogger("TradeHero.Application");
+        _logger = logger;
+        _applicationService = applicationService;
         _jobService = jobService;
         _internetConnectionService = internetConnectionService;
         _fileService = fileService;
         _environmentService = environmentService;
         _storeService = storeService;
         _menuFactory = menuFactory;
-        _applicationService = applicationService;
     }
     
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -51,7 +51,7 @@ internal class AppHostedService : IHostedService
             _logger.LogInformation("Base path: {GetBasePath}", _environmentService.GetBasePath());
             _logger.LogInformation("Runner type: {RunnerType}", _environmentService.GetRunnerType());
             
-            _applicationService.SetActionsBeforeStopApplication(StopServicesAsync);
+            _applicationService.SetActionsBeforeStopApplication(StopServices);
             
             if (_environmentService.GetEnvironmentType() == EnvironmentType.Development)
             {
@@ -92,13 +92,13 @@ internal class AppHostedService : IHostedService
 
     #region Private methods
 
-    private async Task StopServicesAsync()
+    private void StopServices()
     {
         try
         {
             foreach (var menu in _menuFactory.GetMenus())
             {
-                await menu.FinishAsync(_cancellationTokenSource.Token);
+                menu.FinishAsync(_cancellationTokenSource.Token).GetAwaiter().GetResult();
             }
         
             _jobService.FinishAllJobs();
@@ -107,12 +107,12 @@ internal class AppHostedService : IHostedService
             _internetConnectionService.OnInternetDisconnected -= InternetConnectionServiceOnOnInternetDisconnected;
         
             _internetConnectionService.StopInternetConnectionChecking();
-        
+
             _logger.LogInformation("App stopped");
         }
         catch (Exception exception)
         {
-            _logger.LogCritical(exception, "In {Method}", nameof(StopServicesAsync));
+            _logger.LogCritical(exception, "In {Method}", nameof(StopServices));
             
             throw;
         }

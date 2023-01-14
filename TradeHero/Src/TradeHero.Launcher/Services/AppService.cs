@@ -13,7 +13,8 @@ internal class AppService
     private readonly IEnvironmentService _environmentService;
     private readonly IGithubService _githubService;
     private readonly IStartupService _startupService;
-    
+    private readonly IApplicationService _applicationService;
+
     private Process? _runningProcess;
     private bool _isNeedToUpdatedApp;
     private bool _isLauncherStopped;
@@ -22,13 +23,15 @@ internal class AppService
         ILogger<AppService> logger, 
         IEnvironmentService environmentService, 
         IGithubService githubService, 
-        IStartupService startupService
+        IStartupService startupService, 
+        IApplicationService applicationService
         )
     {
         _logger = logger;
         _environmentService = environmentService;
         _githubService = githubService;
         _startupService = startupService;
+        _applicationService = applicationService;
     }
 
     public void StartAppRunning()
@@ -109,23 +112,16 @@ internal class AppService
                 
                 _logger.LogInformation("App process started! In {Method}", nameof(StartAppRunning));
 
-                while (!_runningProcess.HasExited)
-                {
-                    await Task.Delay(100);
-                }
+                await _runningProcess.WaitForExitAsync();
 
-                if (_isLauncherStopped)
-                {
-                    break;
-                }
-                
-                _logger.LogInformation("App stopped! In {Method}", nameof(StartAppRunning));
+                _logger.LogInformation("App stopped. Exit code: {ExitCode}. In {Method}", 
+                    _runningProcess.ExitCode, nameof(StartAppRunning));
                 
                 if (_runningProcess.ExitCode == (int)AppExitCode.Update)
                 {
                     _isNeedToUpdatedApp = true;
                     
-                    _runningProcess.Dispose();
+                    _runningProcess?.Dispose();
                     _runningProcess = null;
                     
                     _logger.LogInformation("App is going to be updated. In {Method}", nameof(StartAppRunning));
@@ -133,27 +129,23 @@ internal class AppService
                     continue;
                 }
 
-                _runningProcess.Dispose();
+                _runningProcess?.Dispose();
                 _runningProcess = null;
+                
+                if (_isLauncherStopped)
+                {
+                    break;
+                }
+
+                _applicationService.StopApplication();
                 
                 break;
             }
         });
     }
 
-    public async Task StopAppRunningAsync()
+    public void StopAppRunning()
     {
         _isLauncherStopped = true;
-        
-        if (_runningProcess == null)
-        {
-            return;
-        }
-        
-        _runningProcess.CloseMainWindow();
-        await _runningProcess.WaitForExitAsync();
-        
-        _runningProcess.Dispose();
-        _runningProcess = null;
     }
 }

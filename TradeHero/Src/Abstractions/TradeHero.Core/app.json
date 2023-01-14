@@ -2,22 +2,25 @@
     "Application": {
         "RunAppKey": "--run-app-92cdbe1d",
         "WindowsNames": {
-            "App": "app.exe",
+            "App": "t_app.exe",
             "ReleaseApp": "app_release.exe",
             "Launcher": "trade_hero.exe",
             "ReleaseLauncher": "launcher_release.exe"
         },
         "LinuxNames": {
-            "App": "app",
+            "App": "t_app",
             "ReleaseApp": "app_release_linux",
             "Launcher": "trade_hero",
             "ReleaseLauncher": "launcher_release_linux"
         },
         "OsxNames": {
-            "App": "app",
+            "App": "t_app",
             "ReleaseApp": "app_release_osx",
             "Launcher": "trade_hero",
             "ReleaseLauncher": "launcher_release_osx"
+        },
+        "Sockets": {
+            "Port": 8888
         }
     },
     "Client": {
@@ -33,9 +36,14 @@
         "LogLevel": "Information",
         "RestClientLogLevel": "Warning",
         "SocketClientLogLevel": "Warning",
-        "AppFileName": "app_logs_.txt",
-        "LauncherFileName": "launcher_logs_.txt",
-        "LogTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext}: {Message}{NewLine}{Exception}"
+        "AppInstance": {
+            "FileName": "app_logs_.txt",
+            "LogTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] APP: {SourceContext}: {Message}{NewLine}{Exception}"
+        },
+        "LauncherInstance": {
+            "FileName": "launcher_logs_.txt",
+            "LogTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] LAUNCHER: {SourceContext}: {Message}{NewLine}{Exception}"
+        }
     },
     "Github": {
         "Owner": "oyashchyshyn",

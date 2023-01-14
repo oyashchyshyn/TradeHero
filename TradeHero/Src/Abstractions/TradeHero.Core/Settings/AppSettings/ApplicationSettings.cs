@@ -6,4 +6,5 @@ public class ApplicationSettings
     public NameSettings WindowsNames { get; set; } = new();
     public NameSettings LinuxNames { get; set; } = new();
     public NameSettings OsxNames { get; set; } = new();
+    public SocketsSettings Sockets { get; set; } = new();
 }
