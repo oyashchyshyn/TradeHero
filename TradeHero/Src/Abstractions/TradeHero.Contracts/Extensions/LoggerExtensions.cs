@@ -24,33 +24,33 @@ public static class LoggerExtensions
 
             if (appSettings.Logger.LogLevel != LogLevel.None)
             {
-                var fileName = environmentService.GetRunnerType() switch
+                var logInstance = environmentService.GetRunnerType() switch
                 {
-                    RunnerType.Launcher => appSettings.Logger.LauncherFileName,
-                    RunnerType.App => appSettings.Logger.AppFileName,
+                    RunnerType.Launcher => appSettings.Logger.LauncherInstance,
+                    RunnerType.App => appSettings.Logger.AppInstance,
                     _ => throw new ArgumentOutOfRangeException()
                 };
 
                 var loggerFilePath = Path.Combine(environmentService.GetBasePath(),
-                    appSettings.Folder.LogsFolderName, fileName);
+                    appSettings.Folder.LogsFolderName, logInstance.FileName);
                 
                 loggerConfiguration = new LoggerConfiguration()
                     .MinimumLevel.Is((LogEventLevel)appSettings.Logger.LogLevel)
-                    .MinimumLevel.Override("System.Net.Http.HttpClient", LogEventLevel.Warning) 
+                    .MinimumLevel.Override("System.Net.Http.HttpClient", LogEventLevel.Warning)
                     .Enrich.FromLogContext()
                     .WriteTo.Sink(new StoreEventSink(store))
                     .WriteTo.File
                     (
                         loggerFilePath,
                         rollingInterval: RollingInterval.Day,
-                        outputTemplate: appSettings.Logger.LogTemplate,
+                        outputTemplate: logInstance.LogTemplate,
                         rollOnFileSizeLimit: true,
                         fileSizeLimitBytes: 209715200 // Limit file size 200mb.
                     );
 
                 if (environmentService.GetEnvironmentType() == EnvironmentType.Development)
                 {
-                    loggerConfiguration.WriteTo.Console(outputTemplate: appSettings.Logger.LogTemplate, 
+                    loggerConfiguration.WriteTo.Console(outputTemplate: logInstance.LogTemplate, 
                         theme: AnsiConsoleTheme.Code);
                 }
             }

@@ -36,9 +36,14 @@
         "LogLevel": "Information",
         "RestClientLogLevel": "Warning",
         "SocketClientLogLevel": "Warning",
-        "AppFileName": "app_logs_.txt",
-        "LauncherFileName": "launcher_logs_.txt",
-        "LogTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext}: {Message}{NewLine}{Exception}"
+        "AppInstance": {
+            "FileName": "app_logs_.txt",
+            "LogTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] APP: {SourceContext}: {Message}{NewLine}{Exception}"
+        },
+        "LauncherInstance": {
+            "FileName": "launcher_logs_.txt",
+            "LogTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] LAUNCHER: {SourceContext}: {Message}{NewLine}{Exception}"
+        }
     },
     "Github": {
         "Owner": "oyashchyshyn",
