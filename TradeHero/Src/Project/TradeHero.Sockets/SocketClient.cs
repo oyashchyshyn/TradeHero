@@ -111,7 +111,7 @@ internal class SocketClient : ISocketClient
                 while (!stream.CanWrite) { }
             }
 
-            _logger.LogWarning("Can write to server. Preparing for sending. In {Method}", nameof(SendMessage));
+            _logger.LogInformation("Can write to server. Preparing for sending. In {Method}", nameof(SendMessage));
             
             var serverMessageAsByteArray = Encoding.ASCII.GetBytes(message);
             stream.Write(serverMessageAsByteArray, 0, serverMessageAsByteArray.Length);
