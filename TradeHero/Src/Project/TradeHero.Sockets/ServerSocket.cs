@@ -15,7 +15,6 @@ internal class ServerSocket : IServerSocket
     private TcpListener? _tcpListener;
     private TcpClient? _connectedClient;
     private StreamReader? _streamReader;
-    private StreamWriter? _streamWriter;
 
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     
@@ -48,43 +47,6 @@ internal class ServerSocket : IServerSocket
         });
     }
 
-    public async Task SendMessageAsync(string message)
-    {
-        try
-        {
-            if (_streamWriter == null)
-            {
-                _logger.LogError("{PropertyName} is null. In {Method}",
-                    nameof(_streamWriter), nameof(SendMessageAsync));
-                            
-                return;
-            }
-
-            await _streamWriter.WriteLineAsync(message);
-            await _streamWriter.FlushAsync();
-
-            _logger.LogInformation("Message was sent to client. In {Method}", nameof(SendMessageAsync));
-        }
-        catch (SocketException socketException)
-        {
-            if (socketException.SocketErrorCode == SocketError.Interrupted)
-            {
-                _logger.LogInformation("Socket stopped. In {Method}", 
-                    nameof(SendMessageAsync));
-                    
-                return;
-            }
-                
-            _logger.LogCritical(socketException, "In {Method}", 
-                nameof(SendMessageAsync));
-        }
-        catch (Exception exception)
-        {
-            _logger.LogCritical(exception, "In {Method}", 
-                nameof(SendMessageAsync));
-        }
-    }
-
     public void DisconnectClient()
     {
         if (_connectedClient == null)
@@ -96,8 +58,7 @@ internal class ServerSocket : IServerSocket
         _connectedClient.Dispose();
 
         _streamReader?.Close();
-        _streamWriter?.Close();
-        
+
         _logger.LogInformation("Disconnect client. In {Method}", 
             nameof(DisconnectClient));
     }
@@ -126,10 +87,8 @@ internal class ServerSocket : IServerSocket
                 if (_connectedClient == null)
                 {
                     _connectedClient = await _tcpListener.AcceptTcpClientAsync();
-                    var stream = _connectedClient.GetStream();
-                    _streamReader = new StreamReader(stream);
-                    _streamWriter = new StreamWriter(stream);
-                    
+                    _streamReader = new StreamReader(_connectedClient.GetStream());
+
                     _logger.LogInformation("Client connected to server. In {Method}",
                         nameof(StartListen));
                 }
