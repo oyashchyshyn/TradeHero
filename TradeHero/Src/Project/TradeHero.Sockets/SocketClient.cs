@@ -47,6 +47,8 @@ internal class SocketClient : ISocketClient
                 _streamReader = new StreamReader(_tcpClient.GetStream());
                 _streamWriter = new StreamWriter(_tcpClient.GetStream());
 
+                await SendMessageAsync("Ping");
+                
                 while (!_cancellationTokenSource.Token.IsCancellationRequested)
                 {
                     try
