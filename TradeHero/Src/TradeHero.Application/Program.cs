@@ -39,7 +39,8 @@ internal static class Program
                     serviceCollection.AddServices();
                     serviceCollection.AddClient();
                     serviceCollection.AddDatabase();
-                    serviceCollection.AddTradingLogic();
+                    serviceCollection.AddTrading();
+                    serviceCollection.AddSockets();
                     serviceCollection.AddHost();
                     
                     serviceCollection.AddSingleton<IHostLifetime, AppHostLifeTime>();

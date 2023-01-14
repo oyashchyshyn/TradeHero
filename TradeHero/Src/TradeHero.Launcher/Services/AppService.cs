@@ -13,6 +13,7 @@ internal class AppService
     private readonly IEnvironmentService _environmentService;
     private readonly IGithubService _githubService;
     private readonly IStartupService _startupService;
+    private readonly IApplicationService _applicationService;
     
     private Process? _runningProcess;
     private bool _isNeedToUpdatedApp;
@@ -22,13 +23,15 @@ internal class AppService
         ILogger<AppService> logger, 
         IEnvironmentService environmentService, 
         IGithubService githubService, 
-        IStartupService startupService
+        IStartupService startupService, 
+        IApplicationService applicationService
         )
     {
         _logger = logger;
         _environmentService = environmentService;
         _githubService = githubService;
         _startupService = startupService;
+        _applicationService = applicationService;
     }
 
     public void StartAppRunning()
@@ -109,10 +112,7 @@ internal class AppService
                 
                 _logger.LogInformation("App process started! In {Method}", nameof(StartAppRunning));
 
-                while (!_runningProcess.HasExited)
-                {
-                    await Task.Delay(100);
-                }
+                await _runningProcess.WaitForExitAsync();
 
                 if (_isLauncherStopped)
                 {
@@ -133,8 +133,7 @@ internal class AppService
                     continue;
                 }
 
-                _runningProcess.Dispose();
-                _runningProcess = null;
+                _applicationService.StopApplication();
                 
                 break;
             }
@@ -149,11 +148,12 @@ internal class AppService
         {
             return;
         }
-        
-        _runningProcess.CloseMainWindow();
+
         _runningProcess.WaitForExit();
-        
+
         _runningProcess.Dispose();
         _runningProcess = null;
+        
+        _logger.LogInformation("Process closed and disposed. In {Method}", nameof(StartAppRunning));
     }
 }

@@ -119,7 +119,7 @@ internal class TelegramMenu : IMenuService
                 return ActionResult.Success;
             }
 
-            if (!_storeService.Application.Update.IsNeedToUpdateApplication )
+            if (!_storeService.Application.Update.IsNeedToUpdateApplication)
             {
                 await _telegramService.SendTextMessageToUserAsync(
                     "Bot is finished!", 

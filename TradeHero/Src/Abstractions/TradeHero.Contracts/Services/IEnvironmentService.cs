@@ -1,4 +1,5 @@
-﻿using TradeHero.Core.Enums;
+﻿using System.Net;
+using TradeHero.Core.Enums;
 using TradeHero.Core.Settings.AppSettings;
 
 namespace TradeHero.Contracts.Services;
@@ -15,4 +16,5 @@ public interface IEnvironmentService
     OperationSystem GetCurrentOperationSystem();
     string GetRunningApplicationName();
     string GetReleaseApplicationName();
+    IPAddress GetLocalIpAddress();
 }

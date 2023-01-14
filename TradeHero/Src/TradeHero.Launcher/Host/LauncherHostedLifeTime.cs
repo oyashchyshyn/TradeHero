@@ -81,7 +81,7 @@ internal class LauncherHostedLifeTime : IHostLifetime, IDisposable
         Environment.ExitCode = (int)AppExitCode.Success;
     }
 
-    private async void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
+    private void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
     {
         _logger.LogInformation("Ctrl + C is pressed. In {Method}", nameof(OnCancelKeyPress));
         

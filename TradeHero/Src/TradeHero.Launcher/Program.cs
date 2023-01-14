@@ -52,6 +52,7 @@ internal static class Program
                     
                     serviceCollection.AddServices();
                     serviceCollection.AddDatabase();
+                    serviceCollection.AddSockets();
 
                     serviceCollection.AddSingleton<AppService>();
                 })

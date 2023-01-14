@@ -7,7 +7,7 @@
         <Nullable>enable</Nullable>
         <NeutralLanguage>en-001</NeutralLanguage>
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-        <AssemblyName>app</AssemblyName>
+        <AssemblyName>t_app</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>
