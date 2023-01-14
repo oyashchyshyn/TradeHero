@@ -297,8 +297,11 @@ internal class UpdateStrategyCommand : ITelegramMenuCommand
                 return;
             }
 
-            ((BaseStrategyDto)objectWithData.Data).Id = strategy.Id;
-            
+            if (_telegramMenuStore.StrategyData.StrategyObjectToUpdate == StrategyObject.TradeLogic)
+            {
+                ((BaseStrategyDto)objectWithData.Data).Id = strategy.Id;   
+            }
+
             var validationResult = await _dtoValidator.GetValidationResultAsync(type, objectWithData.Data, 
                 validationRuleSet);
             if (validationResult == null)
@@ -317,7 +320,7 @@ internal class UpdateStrategyCommand : ITelegramMenuCommand
                     _jsonService.SerializeObject(validationResult.Errors).Data, nameof(HandleIncomeDataAsync));
                 
                 await _telegramService.SendTextMessageToUserAsync(
-                    _dtoValidator.GenerateValidationErrorMessage(validationResult.Errors, type.GetPropertyNameAndJsonPropertyName()),
+                    _dtoValidator.GenerateValidationErrorMessage(validationResult.Errors),
                     _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.GoBackKeyboard),
                     cancellationToken: cancellationToken
                 );
