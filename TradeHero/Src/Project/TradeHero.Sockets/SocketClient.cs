@@ -116,7 +116,8 @@ internal class SocketClient : ISocketClient
             var serverMessageAsByteArray = Encoding.ASCII.GetBytes(message);
             stream.Write(serverMessageAsByteArray, 0, serverMessageAsByteArray.Length);
 
-            _logger.LogInformation("Message was sent to client. In {Method}", nameof(SendMessage));
+            _logger.LogInformation("Message was sent to server. Message: {Message}. In {Method}", 
+                message, nameof(SendMessage));
         }
         catch (SocketException socketException)
         {

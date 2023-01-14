@@ -50,25 +50,27 @@ internal class ServerSocket : IServerSocket
 
                 while (!_cancellationTokenSource.Token.IsCancellationRequested)
                 {
-                    using (_connectedClient = await _tcpListener.AcceptTcpClientAsync())
+                    var newConnectedClient = await _tcpListener.AcceptTcpClientAsync();
+                    
+                    _connectedClient?.Dispose();
+                    _connectedClient = newConnectedClient;
+                        
+                    _logger.LogInformation("Client connected to server. In {Method}",
+                        nameof(StartListen));
+
+                    await using (var stream = _connectedClient.GetStream())
                     {
-                        _logger.LogInformation("Client connected to server. In {Method}",
-                            nameof(StartListen));
-
-                        await using (var stream = _connectedClient.GetStream())
+                        int length;
+                        while ((length = stream.Read(bytes, 0, bytes.Length)) != 0)
                         {
-                            int length;
-                            while ((length = stream.Read(bytes, 0, bytes.Length)) != 0)
-                            {
-                                var incomingData = new byte[length];
-                                Array.Copy(bytes, 0, incomingData, 0, length);
-                                var clientMessage = Encoding.ASCII.GetString(incomingData);
+                            var incomingData = new byte[length];
+                            Array.Copy(bytes, 0, incomingData, 0, length);
+                            var clientMessage = Encoding.ASCII.GetString(incomingData);
 
-                                _logger.LogInformation("Received message from client. Message: {Message} In {Method}",
-                                    clientMessage, nameof(StartListen));
+                            _logger.LogInformation("Received message from client. Message: {Message} In {Method}",
+                                clientMessage, nameof(StartListen));
 
-                                OnReceiveMessageFromClient?.Invoke(this, new SocketMessageArgs(clientMessage));
-                            }
+                            OnReceiveMessageFromClient?.Invoke(this, new SocketMessageArgs(clientMessage));
                         }
                     }
                 }
@@ -156,9 +158,10 @@ internal class ServerSocket : IServerSocket
         {
             return;
         }
-
+        
         _connectedClient.Close();
-
+        _connectedClient.Dispose();
+        
         _logger.LogInformation("Disconnect client. In {Method}", 
             nameof(DisconnectClient));
     }
