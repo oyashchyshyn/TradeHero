@@ -57,14 +57,6 @@ internal class SocketClient : ISocketClient
     {
         try
         {
-            if (_tcpClient == null)
-            {
-                _logger.LogError("Cannot send message to server because client is not connected to server. In {Method}",
-                    nameof(SendMessageAsync));
-
-                return;
-            }
-
             if (_streamWriter == null)
             {
                 _logger.LogError("{PropertyName} is null. In {Method}",

@@ -52,14 +52,6 @@ internal class ServerSocket : IServerSocket
     {
         try
         {
-            if (_connectedClient == null)
-            {
-                _logger.LogError("Cannot send message to client because client is not connected. In {Method}",
-                    nameof(SendMessageAsync));
-
-                return;
-            }
-
             if (_streamWriter == null)
             {
                 _logger.LogError("{PropertyName} is null. In {Method}",
