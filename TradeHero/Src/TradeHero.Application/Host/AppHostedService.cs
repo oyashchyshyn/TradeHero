@@ -112,6 +112,7 @@ internal class AppHostedService : IHostedService
             _internetConnectionService.OnInternetDisconnected -= InternetConnectionServiceOnOnInternetDisconnected;
         
             _internetConnectionService.StopInternetConnectionChecking();
+            _socketClient.Close();
         
             _logger.LogInformation("App stopped");
         }
