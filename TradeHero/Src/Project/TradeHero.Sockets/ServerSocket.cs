@@ -159,7 +159,7 @@ internal class ServerSocket : IServerSocket
 
         _connectedClient.Close();
 
-        _logger.LogInformation("Client connection closed. In {Method}", 
+        _logger.LogInformation("Disconnect client. In {Method}", 
             nameof(DisconnectClient));
     }
     

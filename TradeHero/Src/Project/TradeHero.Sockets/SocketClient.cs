@@ -33,15 +33,18 @@ internal class SocketClient : ISocketClient
         {
             try
             {
-                var appSettings = _environmentService.GetAppSettings();
-        
                 _tcpClient = new TcpClient();
         
                 await _tcpClient.ConnectAsync(
                     _environmentService.GetLocalIpAddress(), 
-                    appSettings.Application.Sockets.Port
+                    _environmentService.GetAppSettings().Application.Sockets.Port
                 );
 
+                _logger.LogInformation("Client connected to server. In {Method}",
+                    nameof(Connect));
+                
+                SendMessage("Ping");
+                
                 var bytes = new byte[1024];             
                 while (!_cancellationTokenSource.Token.IsCancellationRequested)
                 {
@@ -81,6 +84,9 @@ internal class SocketClient : ISocketClient
             finally
             {
                 _tcpClient?.Close();
+                
+                _logger.LogInformation("Client connection closed. In {Method}", 
+                    nameof(Connect));
             }
         });
     }
