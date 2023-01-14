@@ -50,29 +50,28 @@ internal class ServerSocket : IServerSocket
 
                 while (!_cancellationTokenSource.Token.IsCancellationRequested)
                 {
-                    var newConnectedClient = await _tcpListener.AcceptTcpClientAsync();
-                    
-                    _connectedClient?.Dispose();
-                    _connectedClient = newConnectedClient;
-                        
-                    _logger.LogInformation("Client connected to server. In {Method}",
-                        nameof(StartListen));
-
-                    await using (var stream = _connectedClient.GetStream())
+                    if (_connectedClient == null)
                     {
-                        int length;
-                        while ((length = stream.Read(bytes, 0, bytes.Length)) != 0)
-                        {
-                            var incomingData = new byte[length];
-                            Array.Copy(bytes, 0, incomingData, 0, length);
-                            var clientMessage = Encoding.ASCII.GetString(incomingData);
-
-                            _logger.LogInformation("Received message from client. Message: {Message} In {Method}",
-                                clientMessage, nameof(StartListen));
-
-                            OnReceiveMessageFromClient?.Invoke(this, new SocketMessageArgs(clientMessage));
-                        }
+                        _connectedClient = await _tcpListener.AcceptTcpClientAsync();   
+                        
+                        _logger.LogInformation("Client connected to server. In {Method}",
+                            nameof(StartListen));
                     }
+
+                    await using var stream = _connectedClient.GetStream();
+                    int length;
+                    
+                    while ((length = stream.Read(bytes, 0, bytes.Length)) != 0)
+                    {
+                        var incomingData = new byte[length];
+                        Array.Copy(bytes, 0, incomingData, 0, length);
+                        var clientMessage = Encoding.ASCII.GetString(incomingData);
+
+                        _logger.LogInformation("Received message from client. Message: {Message} In {Method}",
+                            clientMessage, nameof(StartListen));
+
+                        OnReceiveMessageFromClient?.Invoke(this, new SocketMessageArgs(clientMessage));
+                    }   
                 }
             }
             catch (SocketException socketException)
@@ -125,7 +124,7 @@ internal class ServerSocket : IServerSocket
                 while (!stream.CanWrite) { }
             }
 
-            _logger.LogWarning("Can write to client. Preparing for sending. In {Method}", nameof(SendMessage));
+            _logger.LogInformation("Can write to client. Preparing for sending. In {Method}", nameof(SendMessage));
             
             var serverMessageAsByteArray = Encoding.ASCII.GetBytes(message);
             stream.Write(serverMessageAsByteArray, 0, serverMessageAsByteArray.Length);
