@@ -2,6 +2,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Menu;
 using TradeHero.Contracts.Services;
+using TradeHero.Contracts.Sockets;
 using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
 
@@ -16,29 +17,32 @@ internal class AppHostedService : IHostedService
     private readonly IFileService _fileService;
     private readonly IEnvironmentService _environmentService;
     private readonly IStoreService _storeService;
+    private readonly ISocketClient _socketClient;
     private readonly IMenuFactory _menuFactory;
 
     private CancellationTokenSource _cancellationTokenSource = new();
     
     public AppHostedService(
         ILoggerFactory loggerFactory,
+        IApplicationService applicationService,
         IJobService jobService,
         IInternetConnectionService internetConnectionService,
         IFileService fileService,
         IEnvironmentService environmentService,
         IStoreService storeService,
-        IMenuFactory menuFactory, 
-        IApplicationService applicationService
+        ISocketClient socketClient,
+        IMenuFactory menuFactory
         )
     {
         _logger = loggerFactory.CreateLogger("TradeHero.Application");
+        _applicationService = applicationService;
         _jobService = jobService;
         _internetConnectionService = internetConnectionService;
         _fileService = fileService;
         _environmentService = environmentService;
         _storeService = storeService;
+        _socketClient = socketClient;
         _menuFactory = menuFactory;
-        _applicationService = applicationService;
     }
     
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -51,6 +55,7 @@ internal class AppHostedService : IHostedService
             _logger.LogInformation("Base path: {GetBasePath}", _environmentService.GetBasePath());
             _logger.LogInformation("Runner type: {RunnerType}", _environmentService.GetRunnerType());
             
+            _socketClient.Connect();
             _applicationService.SetActionsBeforeStopApplication(StopServices);
             
             if (_environmentService.GetEnvironmentType() == EnvironmentType.Development)

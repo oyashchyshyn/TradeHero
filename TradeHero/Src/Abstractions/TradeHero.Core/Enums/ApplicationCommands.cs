@@ -1,7 +1,7 @@
 ﻿namespace TradeHero.Core.Enums;
 
-public enum ListenerCommand
+public enum ApplicationCommands
 {
-    Close,
+    Stop,
     Update
 }

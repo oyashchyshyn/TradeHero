@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Services;
+using TradeHero.Contracts.Sockets;
+using TradeHero.Contracts.Sockets.Args;
 using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Helpers;
@@ -14,6 +16,7 @@ internal class AppService
     private readonly IGithubService _githubService;
     private readonly IStartupService _startupService;
     private readonly IApplicationService _applicationService;
+    private readonly IServerSocket _serverSocket;
     
     private Process? _runningProcess;
     private bool _isNeedToUpdatedApp;
@@ -24,7 +27,8 @@ internal class AppService
         IEnvironmentService environmentService, 
         IGithubService githubService, 
         IStartupService startupService, 
-        IApplicationService applicationService
+        IApplicationService applicationService, 
+        IServerSocket serverSocket
         )
     {
         _logger = logger;
@@ -32,12 +36,15 @@ internal class AppService
         _githubService = githubService;
         _startupService = startupService;
         _applicationService = applicationService;
+        _serverSocket = serverSocket;
     }
 
     public void StartAppRunning()
     {
         Task.Run(async () =>
         {
+            _serverSocket.OnReceiveMessageFromClient += ServerSocketOnOnReceiveMessageFromClient;
+            
             var appPath = Path.Combine(_environmentService.GetBasePath(), _environmentService.GetRunningApplicationName());
             var releaseAppPath = Path.Combine(_environmentService.GetBasePath(), _environmentService.GetReleaseApplicationName());
             var appSettings = _environmentService.GetAppSettings();
@@ -114,20 +121,18 @@ internal class AppService
 
                 await _runningProcess.WaitForExitAsync();
 
+                _runningProcess?.Dispose();
+                _runningProcess = null;
+                
+                _logger.LogInformation("App stopped and disposed. In {Method}", nameof(StartAppRunning));
+                
                 if (_isLauncherStopped)
                 {
                     break;
                 }
-                
-                _logger.LogInformation("App stopped! In {Method}", nameof(StartAppRunning));
-                
-                if (_runningProcess.ExitCode == (int)AppExitCode.Update)
+
+                if (_isNeedToUpdatedApp)
                 {
-                    _isNeedToUpdatedApp = true;
-                    
-                    _runningProcess.Dispose();
-                    _runningProcess = null;
-                    
                     _logger.LogInformation("App is going to be updated. In {Method}", nameof(StartAppRunning));
                     
                     continue;
@@ -149,11 +154,25 @@ internal class AppService
             return;
         }
 
-        _runningProcess.WaitForExit();
-
-        _runningProcess.Dispose();
-        _runningProcess = null;
+        _serverSocket.SendMessage(ApplicationCommands.Stop.ToString());
         
-        _logger.LogInformation("Process closed and disposed. In {Method}", nameof(StartAppRunning));
+        _runningProcess.WaitForExit();
     }
+
+    #region Private methods
+
+    private void ServerSocketOnOnReceiveMessageFromClient(object? sender, SocketMessageArgs socketArgs)
+    {
+        if (!Enum.TryParse(socketArgs.Message, out ApplicationCommands currentCommand))
+        {
+            return;
+        }
+        
+        if (currentCommand == ApplicationCommands.Update)
+        {
+            _isNeedToUpdatedApp = true;
+        }
+    }
+
+    #endregion
 }

@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Services;
+using TradeHero.Contracts.Sockets;
 using TradeHero.Core.Enums;
 using TradeHero.Launcher.Services;
 
@@ -11,6 +12,7 @@ internal class LauncherHostedService : IHostedService
     private readonly ILogger _logger;
     private readonly IApplicationService _applicationService;
     private readonly IEnvironmentService _environmentService;
+    private readonly IServerSocket _serverSocket;
 
     private readonly AppService _appService;
     
@@ -18,12 +20,15 @@ internal class LauncherHostedService : IHostedService
         ILoggerFactory loggerFactory, 
         IApplicationService applicationService,
         IEnvironmentService environmentService, 
+        IServerSocket serverSocket, 
         AppService appService
         )
     {
         _logger = loggerFactory.CreateLogger("TradeHero.Launcher");
         _environmentService = environmentService;
         _applicationService = applicationService;
+        _serverSocket = serverSocket;
+        
         _appService = appService;
     }
     
@@ -34,8 +39,9 @@ internal class LauncherHostedService : IHostedService
         _logger.LogInformation("Base path: {GetBasePath}", _environmentService.GetBasePath());
         _logger.LogInformation("Environment: {GetEnvironmentType}", _environmentService.GetEnvironmentType());
         _logger.LogInformation("Runner type: {RunnerType}", _environmentService.GetRunnerType());
-
-        _applicationService.SetActionsBeforeStopApplication(StopApp);
+        
+        _serverSocket.StartListen();
+        _applicationService.SetActionsBeforeStopApplication(StopLauncherActions);
         
         if (_environmentService.GetEnvironmentType() == EnvironmentType.Development)
         {
@@ -56,9 +62,10 @@ internal class LauncherHostedService : IHostedService
 
     #region Private methods
 
-    private void StopApp()
+    private void StopLauncherActions()
     {
         _appService.StopAppRunning();
+        _serverSocket.Close();
     }
 
     #endregion
