@@ -200,7 +200,7 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
                     cancellationToken: cancellationToken
                 );
 
-                await _socketClient.SendMessageAsync(ApplicationCommands.Update.ToString());
+                _storeService.Application.Update.IsNeedToUpdateApplication = true;
                 
                 _applicationService.StopApplication();
                 

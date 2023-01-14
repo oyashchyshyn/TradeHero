@@ -121,23 +121,25 @@ internal class AppService
 
                 await _runningProcess.WaitForExitAsync();
 
-                _runningProcess?.Dispose();
-                _runningProcess = null;
+                _logger.LogInformation("App stopped. Exit code: {ExitCode}. In {Method}", 
+                    _runningProcess.ExitCode, nameof(StartAppRunning));
                 
-                _logger.LogInformation("App stopped and disposed. In {Method}", nameof(StartAppRunning));
-                
-                if (_isLauncherStopped)
+                if (_runningProcess.ExitCode == (int)AppExitCode.Update)
                 {
-                    break;
-                }
-
-                if (_isNeedToUpdatedApp)
-                {
-                    _serverSocket.DisconnectClient();
+                    _runningProcess?.Dispose();
+                    _runningProcess = null;
                     
                     _logger.LogInformation("App is going to be updated. In {Method}", nameof(StartAppRunning));
                     
                     continue;
+                }
+
+                _runningProcess?.Dispose();
+                _runningProcess = null;
+                
+                if (_isLauncherStopped)
+                {
+                    break;
                 }
 
                 _applicationService.StopApplication();
