@@ -30,6 +30,7 @@ internal class AppHostLifeTime : IHostLifetime, IDisposable
     {
         AppDomain.CurrentDomain.UnhandledException += UnhandledException;
         AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+        Console.CancelKeyPress += OnCancelKeyPress;
         _socketClient.OnReceiveMessageFromServer += SocketClientOnOnReceiveMessageFromServer;
 
         return Task.CompletedTask;
@@ -46,6 +47,7 @@ internal class AppHostLifeTime : IHostLifetime, IDisposable
 
         AppDomain.CurrentDomain.UnhandledException -= UnhandledException;
         AppDomain.CurrentDomain.ProcessExit -= OnProcessExit;
+        Console.CancelKeyPress -= OnCancelKeyPress;
         _socketClient.OnReceiveMessageFromServer -= SocketClientOnOnReceiveMessageFromServer;
 
         _logger.LogInformation("Finish disposing. In {Method}", nameof(Dispose));
@@ -83,6 +85,13 @@ internal class AppHostLifeTime : IHostLifetime, IDisposable
         _shutdownBlock.WaitOne();
         
         Environment.ExitCode = (int)AppExitCode.Success;
+    }
+    
+    private void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
+    {
+        _logger.LogInformation("Ctrl + C is pressed. In {Method}", nameof(OnCancelKeyPress));
+        
+        e.Cancel = true;
     }
     
     private void SocketClientOnOnReceiveMessageFromServer(object? sender, SocketMessageArgs socketArgs)
