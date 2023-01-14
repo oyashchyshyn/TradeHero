@@ -230,26 +230,17 @@ internal class SpotClusterVolumeOptionsDtoValidation : AbstractValidator<SpotClu
                 spotClusterVolumeOptionsDto.TelegramChannelId.Value,
                 cancellationToken: cancellationToken
             );
-        
-            if (result.ActionResult != ActionResult.Success)
+
+            if (result.ActionResult == ActionResult.Success)
             {
-                propertyContext.AddFailure(new ValidationFailure(
-                    _propertyNames[nameof(SpotClusterVolumeOptionsDto.TelegramChannelName)], 
-                    "Cannot change name because bot does not have access to channel."));
-
-                return false;
-            }
-
-            if (result.Data.Permissions is not { CanChangeInfo: { } } || !result.Data.Permissions.CanChangeInfo.Value)
-            {
-                propertyContext.AddFailure(new ValidationFailure(
-                    _propertyNames[nameof(SpotClusterVolumeOptionsDto.TelegramChannelName)], 
-                    "Bot does not have permissions to change channel name. Please add permissions to bot."));
-
-                return false;
+                return true;
             }
             
-            return true;
+            propertyContext.AddFailure(new ValidationFailure(
+                _propertyNames[nameof(SpotClusterVolumeOptionsDto.TelegramChannelName)], 
+                "Cannot change name because bot does not have access to channel."));
+
+            return false;
         }
         catch (Exception exception)
         {
@@ -286,26 +277,17 @@ internal class SpotClusterVolumeOptionsDtoValidation : AbstractValidator<SpotClu
                 spotClusterVolumeOptionsDto.TelegramChannelId.Value,
                 cancellationToken: cancellationToken
             );
-        
-            if (result.ActionResult != ActionResult.Success)
+
+            if (result.ActionResult == ActionResult.Success)
             {
-                propertyContext.AddFailure(new ValidationFailure(
-                    _propertyNames[nameof(SpotClusterVolumeOptionsDto.TelegramIsNeedToSendMessages)], 
-                    "Bot cannot send messaged because bot does not have access to channel."));
-
-                return false;
-            }
-
-            if (result.Data.Permissions is not { CanSendMessages: { } } || !result.Data.Permissions.CanSendMessages.Value)
-            {
-                propertyContext.AddFailure(new ValidationFailure(
-                    _propertyNames[nameof(SpotClusterVolumeOptionsDto.TelegramIsNeedToSendMessages)], 
-                    "Bot does not have permissions to send messages. Please add permissions to bot."));
-
-                return false;
+                return true;
             }
             
-            return true;
+            propertyContext.AddFailure(new ValidationFailure(
+                _propertyNames[nameof(SpotClusterVolumeOptionsDto.TelegramIsNeedToSendMessages)], 
+                "Bot cannot send messaged because bot does not have access to channel."));
+
+            return false;
         }
         catch (Exception exception)
         {
