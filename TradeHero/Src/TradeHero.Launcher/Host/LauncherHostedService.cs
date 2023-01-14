@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Services;
-using TradeHero.Contracts.Sockets;
 using TradeHero.Core.Enums;
 using TradeHero.Launcher.Services;
 
@@ -12,23 +11,20 @@ internal class LauncherHostedService : IHostedService
     private readonly ILogger<LauncherHostedService> _logger;
     private readonly IApplicationService _applicationService;
     private readonly IEnvironmentService _environmentService;
-    private readonly IServerSocket _serverSocket;
 
     private readonly AppService _appService;
     
     public LauncherHostedService(
         ILogger<LauncherHostedService> logger, 
         IApplicationService applicationService,
-        IEnvironmentService environmentService, 
-        IServerSocket serverSocket, 
+        IEnvironmentService environmentService,
         AppService appService
         )
     {
         _logger = logger;
         _environmentService = environmentService;
         _applicationService = applicationService;
-        _serverSocket = serverSocket;
-        
+
         _appService = appService;
     }
     
@@ -40,7 +36,6 @@ internal class LauncherHostedService : IHostedService
         _logger.LogInformation("Environment: {GetEnvironmentType}", _environmentService.GetEnvironmentType());
         _logger.LogInformation("Runner type: {RunnerType}", _environmentService.GetRunnerType());
         
-        _serverSocket.StartListen();
         _applicationService.SetActionsBeforeStopApplication(StopLauncherActions);
         
         if (_environmentService.GetEnvironmentType() == EnvironmentType.Development)
@@ -65,7 +60,6 @@ internal class LauncherHostedService : IHostedService
     private void StopLauncherActions()
     {
         _appService.StopAppRunning();
-        _serverSocket.Close();
     }
 
     #endregion

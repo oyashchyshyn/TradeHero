@@ -2,7 +2,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Menu;
 using TradeHero.Contracts.Services;
-using TradeHero.Contracts.Sockets;
 using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
 
@@ -17,7 +16,6 @@ internal class AppHostedService : IHostedService
     private readonly IFileService _fileService;
     private readonly IEnvironmentService _environmentService;
     private readonly IStoreService _storeService;
-    private readonly ISocketClient _socketClient;
     private readonly IMenuFactory _menuFactory;
 
     private CancellationTokenSource _cancellationTokenSource = new();
@@ -30,7 +28,6 @@ internal class AppHostedService : IHostedService
         IFileService fileService,
         IEnvironmentService environmentService,
         IStoreService storeService,
-        ISocketClient socketClient,
         IMenuFactory menuFactory
         )
     {
@@ -41,7 +38,6 @@ internal class AppHostedService : IHostedService
         _fileService = fileService;
         _environmentService = environmentService;
         _storeService = storeService;
-        _socketClient = socketClient;
         _menuFactory = menuFactory;
     }
     
@@ -55,7 +51,6 @@ internal class AppHostedService : IHostedService
             _logger.LogInformation("Base path: {GetBasePath}", _environmentService.GetBasePath());
             _logger.LogInformation("Runner type: {RunnerType}", _environmentService.GetRunnerType());
             
-            await _socketClient.ConnectAsync();
             _applicationService.SetActionsBeforeStopApplication(StopServices);
             
             if (_environmentService.GetEnvironmentType() == EnvironmentType.Development)
@@ -112,8 +107,7 @@ internal class AppHostedService : IHostedService
             _internetConnectionService.OnInternetDisconnected -= InternetConnectionServiceOnOnInternetDisconnected;
         
             _internetConnectionService.StopInternetConnectionChecking();
-            _socketClient.Close();
-        
+
             _logger.LogInformation("App stopped");
         }
         catch (Exception exception)

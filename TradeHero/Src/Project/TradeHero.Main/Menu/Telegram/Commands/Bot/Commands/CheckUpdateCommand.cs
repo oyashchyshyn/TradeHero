@@ -2,7 +2,6 @@ using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types.ReplyMarkups;
 using TradeHero.Contracts.Menu.Commands;
 using TradeHero.Contracts.Services;
-using TradeHero.Contracts.Sockets;
 using TradeHero.Core.Enums;
 using TradeHero.Main.Menu.Telegram.Store;
 
@@ -16,7 +15,6 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
     private readonly IGithubService _githubService;
     private readonly IStoreService _storeService;
     private readonly IEnvironmentService _environmentService;
-    private readonly ISocketClient _socketClient;
     private readonly TelegramMenuStore _telegramMenuStore;
 
     public CheckUpdateCommand(
@@ -26,7 +24,6 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
         IGithubService githubService,
         IStoreService storeService,
         IEnvironmentService environmentService,
-        ISocketClient socketClient,
         TelegramMenuStore telegramMenuStore
         )
     {
@@ -36,7 +33,6 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
         _githubService = githubService;
         _storeService = storeService;
         _environmentService = environmentService;
-        _socketClient = socketClient;
         _telegramMenuStore = telegramMenuStore;
     }
 

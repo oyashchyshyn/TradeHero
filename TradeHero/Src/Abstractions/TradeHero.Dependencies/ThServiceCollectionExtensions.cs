@@ -3,7 +3,6 @@ using TradeHero.Client;
 using TradeHero.Database;
 using TradeHero.Main;
 using TradeHero.Services;
-using TradeHero.Sockets;
 using TradeHero.Trading;
 
 namespace TradeHero.Dependencies;
@@ -33,10 +32,5 @@ public static class ThServiceCollectionExtensions
     public static void AddTrading(this IServiceCollection serviceCollection)
     {
         TradingDiContainer.Register(serviceCollection);
-    }
-    
-    public static void AddSockets(this IServiceCollection serviceCollection)
-    {
-        SocketsDiContainer.Register(serviceCollection);
     }
 }
