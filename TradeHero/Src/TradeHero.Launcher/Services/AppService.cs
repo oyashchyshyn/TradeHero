@@ -147,18 +147,9 @@ internal class AppService
         });
     }
 
-    public async Task StopAppRunningAsync()
+    public void StopAppRunning()
     {
         _isLauncherStopped = true;
-        
-        if (_runningProcess == null)
-        {
-            return;
-        }
-
-        await _serverSocket.SendMessageAsync(ApplicationCommands.Stop.ToString());
-        
-        await _runningProcess.WaitForExitAsync();
     }
 
     #region Private methods

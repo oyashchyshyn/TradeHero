@@ -2,8 +2,6 @@ using System.Reflection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Services;
-using TradeHero.Contracts.Sockets;
-using TradeHero.Contracts.Sockets.Args;
 using TradeHero.Core.Enums;
 
 namespace TradeHero.Application.Host;
@@ -12,18 +10,16 @@ internal class AppHostLifeTime : IHostLifetime, IDisposable
 {
     private readonly ILogger<AppHostLifeTime> _logger;
     private readonly IApplicationService _applicationService;
-    private readonly ISocketClient _socketClient;
 
     private readonly ManualResetEvent _shutdownBlock = new(false);
     
     public AppHostLifeTime(
         ILogger<AppHostLifeTime> logger,
-        IApplicationService applicationService, 
-        ISocketClient socketClient)
+        IApplicationService applicationService
+        )
     {
         _logger = logger;
         _applicationService = applicationService;
-        _socketClient = socketClient;
     }
 
     public Task WaitForStartAsync(CancellationToken cancellationToken)
@@ -31,7 +27,6 @@ internal class AppHostLifeTime : IHostLifetime, IDisposable
         AppDomain.CurrentDomain.UnhandledException += UnhandledException;
         AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
         Console.CancelKeyPress += OnCancelKeyPress;
-        _socketClient.OnReceiveMessageFromServer += SocketClientOnOnReceiveMessageFromServer;
 
         return Task.CompletedTask;
     }
@@ -48,7 +43,6 @@ internal class AppHostLifeTime : IHostLifetime, IDisposable
         AppDomain.CurrentDomain.UnhandledException -= UnhandledException;
         AppDomain.CurrentDomain.ProcessExit -= OnProcessExit;
         Console.CancelKeyPress -= OnCancelKeyPress;
-        _socketClient.OnReceiveMessageFromServer -= SocketClientOnOnReceiveMessageFromServer;
 
         _logger.LogInformation("Finish disposing. In {Method}", nameof(Dispose));
     }
@@ -92,19 +86,8 @@ internal class AppHostLifeTime : IHostLifetime, IDisposable
         _logger.LogInformation("Ctrl + C is pressed. In {Method}", nameof(OnCancelKeyPress));
         
         e.Cancel = true;
-    }
-    
-    private void SocketClientOnOnReceiveMessageFromServer(object? sender, SocketMessageArgs socketArgs)
-    {
-        if (!Enum.TryParse(socketArgs.Message, out ApplicationCommands currentCommand))
-        {
-            return;
-        }
         
-        if (currentCommand == ApplicationCommands.Stop)
-        {
-            _applicationService.StopApplication();
-        }
+        _applicationService.StopApplication();
     }
 
     #endregion
