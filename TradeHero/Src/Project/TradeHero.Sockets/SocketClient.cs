@@ -11,7 +11,6 @@ internal class SocketClient : ISocketClient
     private readonly IEnvironmentService _environmentService;
 
     private TcpClient? _tcpClient;
-    private StreamWriter? _streamWriter;
 
     private readonly CancellationTokenSource _cancellationTokenSource = new();
 
@@ -32,12 +31,10 @@ internal class SocketClient : ISocketClient
             "127.0.0.1", 
             _environmentService.GetAppSettings().Application.Sockets.Port
         );
-
+        
         _logger.LogInformation("Client connected to server. In {Method}",
             nameof(ConnectAsync));
-
-        _streamWriter = new StreamWriter(_tcpClient.GetStream());
-
+        
         await SendMessageAsync("Ping");
     }
 
@@ -45,16 +42,19 @@ internal class SocketClient : ISocketClient
     {
         try
         {
-            if (_streamWriter == null)
+            if (_tcpClient == null)
             {
-                _logger.LogError("{PropertyName} is null. In {Method}",
-                    nameof(_streamWriter), nameof(SendMessageAsync));
+                _logger.LogError("Cannot send message because client is null. In {Method}",
+                    nameof(SendMessageAsync));
                             
                 return;
             }
 
-            await _streamWriter.WriteLineAsync(message);
-            await _streamWriter.FlushAsync();
+            await using (var streamWriter = new StreamWriter(_tcpClient.GetStream()))
+            {
+                await streamWriter.WriteLineAsync(message);
+                await streamWriter.FlushAsync();
+            }
 
             _logger.LogInformation("Message was sent to server. In {Method}", nameof(SendMessageAsync));
         }
