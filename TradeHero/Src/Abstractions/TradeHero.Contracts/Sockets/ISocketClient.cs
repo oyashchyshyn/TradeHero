@@ -7,5 +7,5 @@ public interface ISocketClient
     event EventHandler<SocketMessageArgs> OnReceiveMessageFromServer;
     void Connect();
     void Close();
-    void SendMessage(string message);
+    Task SendMessageAsync(string message);
 }

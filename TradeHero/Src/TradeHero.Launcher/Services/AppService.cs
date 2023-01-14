@@ -133,6 +133,8 @@ internal class AppService
 
                 if (_isNeedToUpdatedApp)
                 {
+                    _serverSocket.DisconnectClient();
+                    
                     _logger.LogInformation("App is going to be updated. In {Method}", nameof(StartAppRunning));
                     
                     continue;
@@ -145,7 +147,7 @@ internal class AppService
         });
     }
 
-    public void StopAppRunning()
+    public async Task StopAppRunningAsync()
     {
         _isLauncherStopped = true;
         
@@ -154,9 +156,9 @@ internal class AppService
             return;
         }
 
-        _serverSocket.SendMessage(ApplicationCommands.Stop.ToString());
+        await _serverSocket.SendMessageAsync(ApplicationCommands.Stop.ToString());
         
-        _runningProcess.WaitForExit();
+        await _runningProcess.WaitForExitAsync();
     }
 
     #region Private methods

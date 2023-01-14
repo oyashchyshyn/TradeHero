@@ -64,7 +64,7 @@ internal class LauncherHostedService : IHostedService
 
     private void StopLauncherActions()
     {
-        _appService.StopAppRunning();
+        _appService.StopAppRunningAsync().GetAwaiter().GetResult();
         _serverSocket.Close();
     }
 

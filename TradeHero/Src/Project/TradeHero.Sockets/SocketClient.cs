@@ -1,5 +1,4 @@
 ﻿using System.Net.Sockets;
-using System.Text;
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.Sockets;
@@ -13,6 +12,8 @@ internal class SocketClient : ISocketClient
     private readonly IEnvironmentService _environmentService;
 
     private TcpClient? _tcpClient;
+    private StreamReader? _streamReader;
+    private StreamWriter? _streamWriter;
 
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     
@@ -43,23 +44,35 @@ internal class SocketClient : ISocketClient
                 _logger.LogInformation("Client connected to server. In {Method}",
                     nameof(Connect));
                 
-                SendMessage("Ping");
-                
-                var bytes = new byte[1024];             
+                _streamReader = new StreamReader(_tcpClient.GetStream());
+                _streamWriter = new StreamWriter(_tcpClient.GetStream());
+
                 while (!_cancellationTokenSource.Token.IsCancellationRequested)
                 {
-                    await using var stream = _tcpClient.GetStream();
-                    int length;
-                    while ((length = stream.Read(bytes, 0, bytes.Length)) != 0) 
-                    { 						
-                        var incomingData = new byte[length]; 						
-                        Array.Copy(bytes, 0, incomingData, 0, length);
-                        var serverMessage = Encoding.ASCII.GetString(incomingData);
+                    try
+                    {
+                        if (_streamReader == null)
+                        {
+                            _logger.LogError("{PropertyName} is null. In {Method}",
+                                nameof(_streamReader), nameof(Connect));
                             
+                            break;
+                        }
+
+                        var serverMessage = await _streamReader.ReadLineAsync();
+                        if (string.IsNullOrWhiteSpace(serverMessage))
+                        {
+                            continue;
+                        }
+                    
                         _logger.LogInformation("Received message from server. Message: {Message} In {Method}",
                             serverMessage, nameof(Connect));
 
                         OnReceiveMessageFromServer?.Invoke(this, new SocketMessageArgs(serverMessage));
+                    }
+                    catch
+                    {
+                        break;
                     }
                 }
             }
@@ -91,51 +104,48 @@ internal class SocketClient : ISocketClient
         });
     }
 
-    public void SendMessage(string message)
+    public async Task SendMessageAsync(string message)
     {
         try
         {
             if (_tcpClient == null)
             {
-                _logger.LogError("Cannot send message to client because client is not connected to server. In {Method}",
-                    nameof(SendMessage));
+                _logger.LogError("Cannot send message to server because client is not connected to server. In {Method}",
+                    nameof(SendMessageAsync));
 
                 return;
             }
 
-            var stream = _tcpClient.GetStream();
-            if (!stream.CanWrite)
+            if (_streamWriter == null)
             {
-                _logger.LogWarning("Cannot write to server. Waiting for sending. In {Method}", nameof(SendMessage));
-
-                while (!stream.CanWrite) { }
+                _logger.LogError("{PropertyName} is null. In {Method}",
+                    nameof(_streamWriter), nameof(SendMessageAsync));
+                            
+                return;
             }
 
-            _logger.LogInformation("Can write to server. Preparing for sending. In {Method}", nameof(SendMessage));
-            
-            var serverMessageAsByteArray = Encoding.ASCII.GetBytes(message);
-            stream.Write(serverMessageAsByteArray, 0, serverMessageAsByteArray.Length);
+            await _streamWriter.WriteLineAsync(message);
+            await _streamWriter.FlushAsync();
 
-            _logger.LogInformation("Message was sent to server. Message: {Message}. In {Method}", 
-                message, nameof(SendMessage));
+            _logger.LogInformation("Message was sent to server. In {Method}", nameof(SendMessageAsync));
         }
         catch (SocketException socketException)
         {
             if (socketException.SocketErrorCode == SocketError.Interrupted)
             {
                 _logger.LogInformation("Socket stopped. In {Method}", 
-                    nameof(SendMessage));
+                    nameof(SendMessageAsync));
                     
                 return;
             }
                 
             _logger.LogCritical(socketException, "In {Method}", 
-                nameof(SendMessage));
+                nameof(SendMessageAsync));
         }
         catch (Exception exception)
         {
             _logger.LogCritical(exception, "In {Method}", 
-                nameof(SendMessage));
+                nameof(SendMessageAsync));
         }
     }
     

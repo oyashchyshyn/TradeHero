@@ -14,6 +14,8 @@ internal class ServerSocket : IServerSocket
     
     private TcpListener? _tcpListener;
     private TcpClient? _connectedClient;
+    private StreamReader? _streamReader;
+    private StreamWriter? _streamWriter;
 
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     
@@ -46,32 +48,44 @@ internal class ServerSocket : IServerSocket
                 _logger.LogInformation("Listener started server connection. In {Method}",
                     nameof(StartListen));
 
-                var bytes = new byte[1024];
-
                 while (!_cancellationTokenSource.Token.IsCancellationRequested)
                 {
                     if (_connectedClient == null)
                     {
-                        _connectedClient = await _tcpListener.AcceptTcpClientAsync();   
+                        _connectedClient = await _tcpListener.AcceptTcpClientAsync();
+                        var stream = _connectedClient.GetStream();
+                        _streamReader = new StreamReader(stream);
+                        _streamWriter = new StreamWriter(stream);
                         
                         _logger.LogInformation("Client connected to server. In {Method}",
                             nameof(StartListen));
                     }
 
-                    await using var stream = _connectedClient.GetStream();
-                    int length;
-                    
-                    while ((length = stream.Read(bytes, 0, bytes.Length)) != 0)
+                    try
                     {
-                        var incomingData = new byte[length];
-                        Array.Copy(bytes, 0, incomingData, 0, length);
-                        var clientMessage = Encoding.ASCII.GetString(incomingData);
+                        if (_streamReader == null)
+                        {
+                            _logger.LogError("{PropertyName} is null. In {Method}",
+                                nameof(_streamReader), nameof(StartListen));
+                            
+                            break;
+                        }
 
+                        var clientMessage = await _streamReader.ReadLineAsync();
+                        if (clientMessage == null)
+                        {
+                            continue;
+                        }
+                    
                         _logger.LogInformation("Received message from client. Message: {Message} In {Method}",
                             clientMessage, nameof(StartListen));
 
                         OnReceiveMessageFromClient?.Invoke(this, new SocketMessageArgs(clientMessage));
-                    }   
+                    }
+                    catch
+                    {
+                        break;
+                    }
                 }
             }
             catch (SocketException socketException)
@@ -104,50 +118,48 @@ internal class ServerSocket : IServerSocket
         });
     }
 
-    public void SendMessage(string message)
+    public async Task SendMessageAsync(string message)
     {
         try
         {
             if (_connectedClient == null)
             {
                 _logger.LogError("Cannot send message to client because client is not connected. In {Method}",
-                    nameof(SendMessage));
+                    nameof(SendMessageAsync));
 
                 return;
             }
 
-            var stream = _connectedClient.GetStream();
-            if (!stream.CanWrite)
+            if (_streamWriter == null)
             {
-                _logger.LogWarning("Cannot write to client. Waiting for sending. In {Method}", nameof(SendMessage));
-
-                while (!stream.CanWrite) { }
+                _logger.LogError("{PropertyName} is null. In {Method}",
+                    nameof(_streamWriter), nameof(SendMessageAsync));
+                            
+                return;
             }
 
-            _logger.LogInformation("Can write to client. Preparing for sending. In {Method}", nameof(SendMessage));
-            
-            var serverMessageAsByteArray = Encoding.ASCII.GetBytes(message);
-            stream.Write(serverMessageAsByteArray, 0, serverMessageAsByteArray.Length);
+            await _streamWriter.WriteLineAsync(message);
+            await _streamWriter.FlushAsync();
 
-            _logger.LogInformation("Message was sent to client. In {Method}", nameof(SendMessage));
+            _logger.LogInformation("Message was sent to client. In {Method}", nameof(SendMessageAsync));
         }
         catch (SocketException socketException)
         {
             if (socketException.SocketErrorCode == SocketError.Interrupted)
             {
                 _logger.LogInformation("Socket stopped. In {Method}", 
-                    nameof(SendMessage));
+                    nameof(SendMessageAsync));
                     
                 return;
             }
                 
             _logger.LogCritical(socketException, "In {Method}", 
-                nameof(SendMessage));
+                nameof(SendMessageAsync));
         }
         catch (Exception exception)
         {
             _logger.LogCritical(exception, "In {Method}", 
-                nameof(SendMessage));
+                nameof(SendMessageAsync));
         }
     }
 
@@ -160,6 +172,9 @@ internal class ServerSocket : IServerSocket
         
         _connectedClient.Close();
         _connectedClient.Dispose();
+
+        _streamReader?.Close();
+        _streamWriter?.Close();
         
         _logger.LogInformation("Disconnect client. In {Method}", 
             nameof(DisconnectClient));

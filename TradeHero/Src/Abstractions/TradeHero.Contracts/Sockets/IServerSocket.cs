@@ -8,5 +8,5 @@ public interface IServerSocket
     void StartListen();
     void DisconnectClient();
     void Close();
-    void SendMessage(string message);
+    Task SendMessageAsync(string message);
 }
