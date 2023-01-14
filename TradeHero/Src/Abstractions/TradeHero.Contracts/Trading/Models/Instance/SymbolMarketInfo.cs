@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Binance.Net.Enums;
 using Binance.Net.Objects.Models;
 using TradeHero.Core.Enums;
@@ -41,8 +42,12 @@ public class SymbolMarketInfo
     public decimal PocOrdersCoefficient => GetCoefficient(PocBuyOrders, PocSellOrders);
     
     // OrderBook info
+    [JsonIgnore]
     public List<BinanceOrderBookEntry> Asks { get; } = new();
+    [JsonIgnore]
     public List<BinanceOrderBookEntry> Bids { get; } = new();
+    public decimal TotalAsks => Asks.Sum(x => x.Quantity);
+    public decimal TotalBids => Bids.Sum(x => x.Quantity);
     public decimal AsksBidsCoefficient => GetCoefficient(
         Asks.Sum(x => x.Quantity), 
         Bids.Sum(x => x.Quantity)
