@@ -23,7 +23,7 @@ internal static class MessageGenerator
     {
         var message =
             $"S: {symbolMarketInfo.FuturesUsdName}{Environment.NewLine}" +
-            $"S: {symbolMarketInfo.KlinePositionSide} | A: {symbolMarketInfo.KlineAction}{Environment.NewLine} | PIW: {symbolMarketInfo.IsPocInWick}" +
+            $"S: {symbolMarketInfo.KlinePositionSide} | A: {symbolMarketInfo.KlineAction} | PIW: {symbolMarketInfo.IsPocInWick}{Environment.NewLine}" +
             $"K.D.V.: {symbolMarketInfo.KlineDeltaVolume.ToReadable()} (B: {symbolMarketInfo.KlineBuyVolume.ToReadable()} S: {symbolMarketInfo.KlineSellVolume.ToReadable()}){Environment.NewLine}" +
             $"P.D.V.: {symbolMarketInfo.PocDeltaVolume.ToReadable()} (B: {symbolMarketInfo.PocBuyVolume.ToReadable()} S: {symbolMarketInfo.PocSellVolume.ToReadable()}){Environment.NewLine}" +
             $"P.D.O.: {symbolMarketInfo.PocDeltaTrades} (B: {symbolMarketInfo.PocBuyTrades} S: {symbolMarketInfo.PocSellTrades}){Environment.NewLine}" +
