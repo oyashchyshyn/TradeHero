@@ -19,6 +19,7 @@ internal class PercentLimitTradeLogicLogicOptions : BaseTradeLogicOptions
     public decimal PercentFromDepositForOpen { get; set; }
     public int MinTradesForOpen { get; set; }
     public decimal MinQuoteVolumeForOpen { get; set; }
+    public bool IsPocMustBeInWickForOpen { get; set; }
 
     // Average Position
     public bool EnableAveraging { get; set; }
@@ -28,6 +29,7 @@ internal class PercentLimitTradeLogicLogicOptions : BaseTradeLogicOptions
     public decimal AverageToRoe { get; set; }
     public int MinTradesForAverage { get; set; }
     public decimal MinQuoteVolumeForAverage { get; set; }
+    public bool IsPocMustBeInWickForAverage { get; set; }
 
     // Trailing Stop
     public bool EnableTrailingStops { get; set; }

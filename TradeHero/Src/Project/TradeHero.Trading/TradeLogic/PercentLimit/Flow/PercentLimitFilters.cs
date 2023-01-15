@@ -6,6 +6,7 @@ using TradeHero.Contracts.Services;
 using TradeHero.Contracts.Trading.Models;
 using TradeHero.Contracts.Trading.Models.Instance;
 using TradeHero.Core.Enums;
+using TradeHero.Core.Extensions;
 using TradeHero.Trading.TradeLogic.PercentLimit.Enums;
 using TradeHero.Trading.TradeLogic.PercentLimit.Models;
 using TradeHero.Trading.TradeLogic.PercentLimit.Options;
@@ -35,22 +36,24 @@ internal class PercentLimitFilters
         _environmentService = environmentService;
     }
 
-    public async Task<IEnumerable<SymbolMarketInfo>> GetFilteredOrdersForOpenPositionAsync(InstanceResult instanceResult, PercentLimitTradeLogicLogicOptions tradeLogicLogicOptions, 
-        List<Position> openedPositions, List<BinancePositionDetailsUsdt> positionsInfo)
+    public async Task<IEnumerable<SymbolMarketInfo>> GetFilteredOrdersForOpenPositionAsync(InstanceResult instanceResult, 
+        PercentLimitTradeLogicLogicOptions tradeLogicLogicOptions, List<Position> openedPositions, List<BinancePositionDetailsUsdt> positionsInfo)
     {
         try
         {
             var topShortKlines = instanceResult.ShortSignals
+                .WhereIf(tradeLogicLogicOptions.IsPocMustBeInWickForOpen, x => x.IsPocInWick)
                 .Where(x => GetKlineActionsFromKlineActionSignal(tradeLogicLogicOptions.KlineActionForOpen, x.KlinePositionSide).Contains(x.KlineAction))
                 .Where(x => GetKlinePowersFromKlinePowerSignal(tradeLogicLogicOptions.KlinePowerForOpen, x.KlinePositionSide).Contains(x.Power))
                 .Where(x => x.TotalTrades >= tradeLogicLogicOptions.MinTradesForOpen)
                 .Where(x => x.KlineAverageTradeQuoteVolume >= tradeLogicLogicOptions.MinQuoteVolumeForOpen)
-                .Where(x => x.Asks.Sum(y => y.Quantity) > x.Bids.Sum(y => y.Quantity))
+                .Where(x => x.TotalAsks > x.TotalBids)
                 .OrderByDescending(x => x.AsksBidsCoefficient)
                 .ThenByDescending(x => x.PocTradesCoefficient)
                 .ToArray();
         
             var topLongKlines = instanceResult.LongSignals
+                .WhereIf(tradeLogicLogicOptions.IsPocMustBeInWickForOpen, x => x.IsPocInWick)
                 .Where(x => GetKlineActionsFromKlineActionSignal(tradeLogicLogicOptions.KlineActionForOpen, x.KlinePositionSide).Contains(x.KlineAction))
                 .Where(x => GetKlinePowersFromKlinePowerSignal(tradeLogicLogicOptions.KlinePowerForOpen, x.KlinePositionSide).Contains(x.Power))
                 .Where(x => x.TotalTrades >= tradeLogicLogicOptions.MinTradesForOpen)
@@ -144,14 +147,6 @@ internal class PercentLimitFilters
     {
         try
         {
-            if (!tradeLogicLogicOptions.EnableAveraging)
-            {
-                _logger.LogError("{Position}. Averaging is disabled. In {Method}",
-                    openedPosition.ToString(), nameof(IsNeedToPlaceMarketAverageOrderAsync));
-                
-                return Task.FromResult(false);
-            }
-            
             if (symbolInfo.PriceFilter == null)
             {
                 _logger.LogError("{Position}. {Filter} is null. In {Method}",
@@ -160,10 +155,26 @@ internal class PercentLimitFilters
                 return Task.FromResult(false);
             }
             
+            if (!tradeLogicLogicOptions.EnableAveraging)
+            {
+                _logger.LogInformation("{Position}. Averaging is disabled. In {Method}",
+                    openedPosition.ToString(), nameof(IsNeedToPlaceMarketAverageOrderAsync));
+                
+                return Task.FromResult(false);
+            }
+            
             if (openedPosition.PositionSide != symbolMarketInfo.KlinePositionSide)
             {
                 _logger.LogInformation("{Position}. Not valid side for average. Kline side is {KlineSide}. In {Method}", 
                     openedPosition.ToString(), symbolMarketInfo.KlinePositionSide, nameof(IsNeedToPlaceMarketAverageOrderAsync));
+                    
+                return Task.FromResult(false);
+            }
+
+            if (tradeLogicLogicOptions.IsPocMustBeInWickForAverage && !symbolMarketInfo.IsPocInWick)
+            {
+                _logger.LogInformation("{Position}. Poc does not located in wick of kline. In {Method}", 
+                    openedPosition.ToString(), nameof(IsNeedToPlaceMarketAverageOrderAsync));
                     
                 return Task.FromResult(false);
             }
@@ -205,16 +216,13 @@ internal class PercentLimitFilters
                     
                 return Task.FromResult(false);
             }
-            
-            var asksTotalQuantity = symbolMarketInfo.Asks.Sum(x => x.Quantity);
-            var bidsTotalQuantity = symbolMarketInfo.Bids.Sum(x => x.Quantity);
 
-            if (symbolMarketInfo.KlinePositionSide == PositionSide.Short && asksTotalQuantity <= bidsTotalQuantity
-                || symbolMarketInfo.KlinePositionSide == PositionSide.Long && bidsTotalQuantity <= asksTotalQuantity)
+            if (symbolMarketInfo.KlinePositionSide == PositionSide.Short && symbolMarketInfo.TotalAsks <= symbolMarketInfo.TotalBids
+                || symbolMarketInfo.KlinePositionSide == PositionSide.Long && symbolMarketInfo.TotalBids <= symbolMarketInfo.TotalAsks)
             {
                 _logger.LogInformation("{Position}. Not valid Bids and Asks coefficient. Kline side is {KlineSide}. Asks: {Asks}. Bids {Bids}. In {Method}", 
-                    openedPosition.ToString(), symbolMarketInfo.KlinePositionSide, asksTotalQuantity, 
-                    bidsTotalQuantity, nameof(IsNeedToPlaceMarketAverageOrderAsync));
+                    openedPosition.ToString(), symbolMarketInfo.KlinePositionSide, symbolMarketInfo.TotalAsks, 
+                    symbolMarketInfo.TotalBids, nameof(IsNeedToPlaceMarketAverageOrderAsync));
                     
                 return Task.FromResult(false);
             }

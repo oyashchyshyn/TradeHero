@@ -23,12 +23,12 @@ internal static class MessageGenerator
     {
         var message =
             $"S: {symbolMarketInfo.FuturesUsdName}{Environment.NewLine}" +
-            $"S: {symbolMarketInfo.KlinePositionSide} | A: {symbolMarketInfo.KlineAction}{Environment.NewLine}" +
+            $"S: {symbolMarketInfo.KlinePositionSide} | A: {symbolMarketInfo.KlineAction}{Environment.NewLine} | PIW: {symbolMarketInfo.IsPocInWick}" +
             $"K.D.V.: {symbolMarketInfo.KlineDeltaVolume.ToReadable()} (B: {symbolMarketInfo.KlineBuyVolume.ToReadable()} S: {symbolMarketInfo.KlineSellVolume.ToReadable()}){Environment.NewLine}" +
             $"P.D.V.: {symbolMarketInfo.PocDeltaVolume.ToReadable()} (B: {symbolMarketInfo.PocBuyVolume.ToReadable()} S: {symbolMarketInfo.PocSellVolume.ToReadable()}){Environment.NewLine}" +
             $"P.D.O.: {symbolMarketInfo.PocDeltaTrades} (B: {symbolMarketInfo.PocBuyTrades} S: {symbolMarketInfo.PocSellTrades}){Environment.NewLine}" +
-            $"Asks: Q: {symbolMarketInfo.Asks.Sum(x => x.Quantity).ToReadable()} (F.L: {symbolMarketInfo.Asks.First().Price.ToReadable()} L.L: {symbolMarketInfo.Asks.Last().Price.ToReadable()}){Environment.NewLine}" +
-            $"Bids: Q: {symbolMarketInfo.Bids.Sum(x => x.Quantity).ToReadable()} (F.L: {symbolMarketInfo.Bids.First().Price.ToReadable()} L.L: {symbolMarketInfo.Bids.Last().Price.ToReadable()}){Environment.NewLine}{Environment.NewLine}";
+            $"Asks: Q: {symbolMarketInfo.TotalAsks.ToReadable()} (F.L: {symbolMarketInfo.Asks.First().Price.ToReadable()} L.L: {symbolMarketInfo.Asks.Last().Price.ToReadable()}){Environment.NewLine}" +
+            $"Bids: Q: {symbolMarketInfo.TotalBids.ToReadable()} (F.L: {symbolMarketInfo.Bids.First().Price.ToReadable()} L.L: {symbolMarketInfo.Bids.Last().Price.ToReadable()}){Environment.NewLine}{Environment.NewLine}";
         
         return message;
     }
