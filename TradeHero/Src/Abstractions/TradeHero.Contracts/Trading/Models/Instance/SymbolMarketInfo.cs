@@ -7,6 +7,8 @@ namespace TradeHero.Contracts.Trading.Models.Instance;
 
 public class SymbolMarketInfo
 {
+    public bool IsAvailableForTrade { get; set; }
+
     public string SpotName { get; init; } = string.Empty;
     public string FuturesUsdName { get; init; } = string.Empty;
     public string BaseFuturesUsdAsset { get; init; } = string.Empty;
