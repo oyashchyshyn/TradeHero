@@ -41,23 +41,23 @@ internal class PercentLimitFilters
         try
         {
             var topShortKlines = instanceResult.ShortSignals
-                .Where(x => GetKlineActionsFromKlineActionSignal(tradeLogicLogicOptions.KlineActionForOpen, x.KlinePositionSignal).Contains(x.KlineAction))
-                .Where(x => GetKlinePowersFromKlinePowerSignal(tradeLogicLogicOptions.KlinePowerForOpen, x.KlinePositionSignal).Contains(x.Power))
-                .Where(x => x.TotalOrders >= tradeLogicLogicOptions.MinTradesForOpen)
+                .Where(x => GetKlineActionsFromKlineActionSignal(tradeLogicLogicOptions.KlineActionForOpen, x.KlinePositionSide).Contains(x.KlineAction))
+                .Where(x => GetKlinePowersFromKlinePowerSignal(tradeLogicLogicOptions.KlinePowerForOpen, x.KlinePositionSide).Contains(x.Power))
+                .Where(x => x.TotalTrades >= tradeLogicLogicOptions.MinTradesForOpen)
                 .Where(x => x.KlineAverageTradeQuoteVolume >= tradeLogicLogicOptions.MinQuoteVolumeForOpen)
                 .Where(x => x.Asks.Sum(y => y.Quantity) > x.Bids.Sum(y => y.Quantity))
                 .OrderByDescending(x => x.AsksBidsCoefficient)
-                .ThenByDescending(x => x.PocOrdersCoefficient)
+                .ThenByDescending(x => x.PocTradesCoefficient)
                 .ToArray();
         
             var topLongKlines = instanceResult.LongSignals
-                .Where(x => GetKlineActionsFromKlineActionSignal(tradeLogicLogicOptions.KlineActionForOpen, x.KlinePositionSignal).Contains(x.KlineAction))
-                .Where(x => GetKlinePowersFromKlinePowerSignal(tradeLogicLogicOptions.KlinePowerForOpen, x.KlinePositionSignal).Contains(x.Power))
-                .Where(x => x.TotalOrders >= tradeLogicLogicOptions.MinTradesForOpen)
+                .Where(x => GetKlineActionsFromKlineActionSignal(tradeLogicLogicOptions.KlineActionForOpen, x.KlinePositionSide).Contains(x.KlineAction))
+                .Where(x => GetKlinePowersFromKlinePowerSignal(tradeLogicLogicOptions.KlinePowerForOpen, x.KlinePositionSide).Contains(x.Power))
+                .Where(x => x.TotalTrades >= tradeLogicLogicOptions.MinTradesForOpen)
                 .Where(x => x.KlineAverageTradeQuoteVolume >= tradeLogicLogicOptions.MinQuoteVolumeForOpen)
-                .Where(x => x.Bids.Sum(y => y.Quantity) > x.Asks.Sum(y => y.Quantity))
+                .Where(x => x.TotalBids > x.TotalAsks)
                 .OrderByDescending(x => x.AsksBidsCoefficient)
-                .ThenByDescending(x => x.PocOrdersCoefficient)
+                .ThenByDescending(x => x.PocTradesCoefficient)
                 .ToArray();
 
             _logger.LogInformation("Filtered Longs: {FilteredLongsCount}. Filtered Shorts: {FilteredShortsCount}. In {Method}",
@@ -160,18 +160,18 @@ internal class PercentLimitFilters
                 return Task.FromResult(false);
             }
             
-            if (openedPosition.PositionSide != symbolMarketInfo.KlinePositionSignal)
+            if (openedPosition.PositionSide != symbolMarketInfo.KlinePositionSide)
             {
                 _logger.LogInformation("{Position}. Not valid side for average. Kline side is {KlineSide}. In {Method}", 
-                    openedPosition.ToString(), symbolMarketInfo.KlinePositionSignal, nameof(IsNeedToPlaceMarketAverageOrderAsync));
+                    openedPosition.ToString(), symbolMarketInfo.KlinePositionSide, nameof(IsNeedToPlaceMarketAverageOrderAsync));
                     
                 return Task.FromResult(false);
             }
 
-            if (tradeLogicLogicOptions.MinTradesForAverage > symbolMarketInfo.TotalOrders)
+            if (tradeLogicLogicOptions.MinTradesForAverage > symbolMarketInfo.TotalTrades)
             {
                 _logger.LogInformation("{Position}. Not valid total trades. Kline trades is {KlineTrades}. Accepted trades in options. {TradesInOptions}. In {Method}", 
-                    openedPosition.ToString(), symbolMarketInfo.TotalOrders, tradeLogicLogicOptions.MinTradesForAverage, nameof(IsNeedToPlaceMarketAverageOrderAsync));
+                    openedPosition.ToString(), symbolMarketInfo.TotalTrades, tradeLogicLogicOptions.MinTradesForAverage, nameof(IsNeedToPlaceMarketAverageOrderAsync));
                     
                 return Task.FromResult(false);
             }
@@ -209,11 +209,11 @@ internal class PercentLimitFilters
             var asksTotalQuantity = symbolMarketInfo.Asks.Sum(x => x.Quantity);
             var bidsTotalQuantity = symbolMarketInfo.Bids.Sum(x => x.Quantity);
 
-            if (symbolMarketInfo.KlinePositionSignal == PositionSide.Short && asksTotalQuantity <= bidsTotalQuantity
-                || symbolMarketInfo.KlinePositionSignal == PositionSide.Long && bidsTotalQuantity <= asksTotalQuantity)
+            if (symbolMarketInfo.KlinePositionSide == PositionSide.Short && asksTotalQuantity <= bidsTotalQuantity
+                || symbolMarketInfo.KlinePositionSide == PositionSide.Long && bidsTotalQuantity <= asksTotalQuantity)
             {
                 _logger.LogInformation("{Position}. Not valid Bids and Asks coefficient. Kline side is {KlineSide}. Asks: {Asks}. Bids {Bids}. In {Method}", 
-                    openedPosition.ToString(), symbolMarketInfo.KlinePositionSignal, asksTotalQuantity, 
+                    openedPosition.ToString(), symbolMarketInfo.KlinePositionSide, asksTotalQuantity, 
                     bidsTotalQuantity, nameof(IsNeedToPlaceMarketAverageOrderAsync));
                     
                 return Task.FromResult(false);
@@ -368,7 +368,7 @@ internal class PercentLimitFilters
                 break;
             }
 
-            if (openedPositions.Any(x => x.Name == position.FuturesUsdName && x.PositionSide == position.KlinePositionSignal))
+            if (openedPositions.Any(x => x.Name == position.FuturesUsdName && x.PositionSide == position.KlinePositionSide))
             {
                 continue;
             }
@@ -396,19 +396,19 @@ internal class PercentLimitFilters
         {
             KlineActionSignal.Low when positionSide == PositionSide.Short => new List<KlineAction>
             {
-                KlineAction.StopSlow, KlineAction.Stop, KlineAction.StopStrong
+                KlineAction.StopSlow, KlineAction.None, KlineAction.StopStrong
             },
             KlineActionSignal.Low when positionSide == PositionSide.Long => new List<KlineAction>
             {
-                KlineAction.PushSlow, KlineAction.Push, KlineAction.PushStrong
+                KlineAction.PushSlow, KlineAction.None, KlineAction.PushStrong
             },
             KlineActionSignal.Middle when positionSide == PositionSide.Short => new List<KlineAction>
             {
-                KlineAction.Stop, KlineAction.StopStrong
+                KlineAction.StopSlow, KlineAction.StopStrong
             },
             KlineActionSignal.Middle when positionSide == PositionSide.Long => new List<KlineAction>
             {
-                KlineAction.Push, KlineAction.PushStrong
+                KlineAction.PushSlow, KlineAction.PushStrong
             },
             KlineActionSignal.Strong when positionSide == PositionSide.Short => new List<KlineAction>
             {
