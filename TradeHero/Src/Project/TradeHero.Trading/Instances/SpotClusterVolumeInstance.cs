@@ -49,8 +49,9 @@ internal class SpotClusterVolumeInstance : IInstance
             foreach (var futuresUsdSymbolInfo in futuresUsdSymbolsInfo)
             {
                 var spotSymbolInfo = store.Spot.ExchangerData.ExchangeInfo.Symbols
-                    .Where(x => x.Status == SymbolStatus.Trading)
-                    .FirstOrDefault(x => futuresUsdSymbolInfo.BaseAsset == x.BaseAsset || futuresUsdSymbolInfo.BaseAsset == $"1000{x.BaseAsset}");
+                    .Where(x => x.QuoteAsset == futuresUsdSymbolInfo.QuoteAsset)
+                    .Where(x => futuresUsdSymbolInfo.BaseAsset == x.BaseAsset || futuresUsdSymbolInfo.BaseAsset == $"1000{x.BaseAsset}")
+                    .FirstOrDefault(x => x.Status == SymbolStatus.Trading);
 
                 if (spotSymbolInfo == null)
                 {
