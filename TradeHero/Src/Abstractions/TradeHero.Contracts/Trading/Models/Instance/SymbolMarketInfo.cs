@@ -1,6 +1,6 @@
-using System.Text.Json.Serialization;
 using Binance.Net.Enums;
 using Binance.Net.Objects.Models;
+using Newtonsoft.Json;
 using TradeHero.Core.Enums;
 
 namespace TradeHero.Contracts.Trading.Models.Instance;
