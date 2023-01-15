@@ -5,8 +5,6 @@ public enum KlineAction
     None,
     StopSlow,
     PushSlow,
-    Stop,
-    Push,
     StopStrong,
     PushStrong
 }

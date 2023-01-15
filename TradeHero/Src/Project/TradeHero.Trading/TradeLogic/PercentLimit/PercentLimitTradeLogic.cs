@@ -207,7 +207,7 @@ internal class PercentLimitTradeLogic : BaseFuturesUsdTradeLogic
                 
                 var openedPosition = _percentLimitStore.Positions
                     .Where(x => x.Name == marketSignals.FuturesUsdName)
-                    .SingleOrDefault(x => x.PositionSide == marketSignals.KlinePositionSignal);
+                    .SingleOrDefault(x => x.PositionSide == marketSignals.KlinePositionSide);
 
                 if (openedPosition == null)
                 {

@@ -3,6 +3,7 @@ using Binance.Net.Enums;
 using Binance.Net.Objects.Models;
 using Microsoft.Extensions.Logging;
 using TradeHero.Contracts.Client;
+using TradeHero.Contracts.Client.Models;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.Trading;
 using TradeHero.Contracts.Trading.Models.Instance;
@@ -10,6 +11,7 @@ using TradeHero.Core.Enums;
 using TradeHero.Core.Exceptions;
 using TradeHero.Core.Extensions;
 using TradeHero.Core.Models;
+using TradeHero.Trading.Instances.Models;
 using TradeHero.Trading.Instances.Options;
 
 namespace TradeHero.Trading.Instances;
@@ -168,7 +170,7 @@ internal class SpotClusterVolumeInstance : IInstance
                         parallelCancellationToken
                     );
 
-                    switch (symbolMarketInfo.KlinePositionSignal)
+                    switch (symbolMarketInfo.KlinePositionSide)
                     {
                         case PositionSide.Short when instanceResult.Side is PositionSide.Both or PositionSide.Short:
                             instanceResult.ShortSignals.Add(symbolMarketInfo);
@@ -176,6 +178,9 @@ internal class SpotClusterVolumeInstance : IInstance
                         case PositionSide.Long when instanceResult.Side is PositionSide.Both or PositionSide.Long:
                             instanceResult.LongSignals.Add(symbolMarketInfo);
                             break;
+                        case PositionSide.Both:
+                        default:
+                            continue;
                     }
                 }
             });
@@ -257,7 +262,6 @@ internal class SpotClusterVolumeInstance : IInstance
                 market,
                 kline.OpenTime,
                 kline.CloseTime,
-                10,
                 cancellationToken
             );
 
@@ -277,7 +281,20 @@ internal class SpotClusterVolumeInstance : IInstance
                 return;
             }
 
-            var sumVolumes = previousKlineClusterVolumeRequest.Data.Sum(x => x.BuyVolume + x.SellVolume);
+            const int tradeRangeStep = 5;
+            
+            if (previousKlineClusterVolumeRequest.Data.Count < tradeRangeStep)
+            {
+                _logger.LogInformation("{Symbol}. Too low trades in kline. Trades count: {TradesCount}. In {Method}",
+                    symbolMarketInfo.FuturesUsdName, previousKlineClusterVolumeRequest.Data.Count, 
+                    nameof(SetKlineDetailInfoAsync));
+
+                return;
+            }
+
+            var tradedRanges = GetTradedRanges(previousKlineClusterVolumeRequest.Data, tradeRangeStep);
+            
+            var sumVolumes = tradedRanges.Sum(x => x.BuyVolume + x.SellVolume);
 
             // TODO: Remove this if check after testing
             if (kline.Volume > sumVolumes || kline.Volume < sumVolumes)
@@ -290,115 +307,50 @@ internal class SpotClusterVolumeInstance : IInstance
             symbolMarketInfo.Power = kline.OpenPrice < kline.ClosePrice ? KlinePower.Bull : KlinePower.Bear;
             symbolMarketInfo.KlineAveragePrice = (kline.LowPrice + kline.HighPrice) / 2;
 
-            var currentPoc = previousKlineClusterVolumeRequest.Data.MaxBy(x => x.TotalVolume);
+            var currentPoc = tradedRanges.MaxBy(x => x.SellVolume + x.BuyVolume);
             if (currentPoc == null)
             {
-                _logger.LogInformation("{Symbol}. There is no POC cluster volumes in request. In {Method}",
+                _logger.LogWarning("{Symbol}. There is no POC in tradedRanges. In {Method}",
                     symbolMarketInfo.FuturesUsdName, nameof(SetKlineDetailInfoAsync));
 
                 return;
             }
 
-            var openKlineIndexesCount = previousKlineClusterVolumeRequest.Data.Count(
-                x => x.StartPrice >= kline.OpenPrice && kline.OpenPrice >= x.EndPrice
-            );
-
-            var closeKlineIndexes = previousKlineClusterVolumeRequest.Data.Count(
-                x => x.StartPrice >= kline.ClosePrice && kline.ClosePrice >= x.EndPrice
-            );
-
-            if (openKlineIndexesCount > 1 || closeKlineIndexes > 1)
-            {
-                _logger.LogInformation("{Symbol}. Skip, because there is low count of trades. In {Method}",
-                    symbolMarketInfo.FuturesUsdName, nameof(SetKlineDetailInfoAsync));
-
-                return;
-            }
-
-            var closeKlineIndex = previousKlineClusterVolumeRequest.Data.Single(
-                x => x.StartPrice >= kline.OpenPrice && kline.OpenPrice >= x.EndPrice
-            ).Index;
-
-            var openKlineIndex = previousKlineClusterVolumeRequest.Data.Single(
-                x => x.StartPrice >= kline.ClosePrice && kline.ClosePrice >= x.EndPrice
-            ).Index;
-            
-            var isPocInBody = symbolMarketInfo.Power == KlinePower.Bear 
-                ? openKlineIndex <= currentPoc.Index && closeKlineIndex >= currentPoc.Index 
-                : openKlineIndex >= currentPoc.Index && closeKlineIndex <= currentPoc.Index;
-        
+            symbolMarketInfo.IsPocInWick = symbolMarketInfo.Power == KlinePower.Bear 
+                ? kline.OpenPrice <= currentPoc.StartPrice && kline.OpenPrice >= currentPoc.EndPrice 
+                : kline.OpenPrice >= currentPoc.StartPrice && kline.OpenPrice <= currentPoc.EndPrice;
             symbolMarketInfo.PocBuyVolume = currentPoc.BuyVolume;
             symbolMarketInfo.PocSellVolume = currentPoc.SellVolume;
-            symbolMarketInfo.PocBuyOrders = currentPoc.BuyOrders;
-            symbolMarketInfo.PocSellOrders = currentPoc.SellOrders;
+            symbolMarketInfo.PocBuyTrades = currentPoc.BuyTrades;
+            symbolMarketInfo.PocSellTrades = currentPoc.SellTrades;
             symbolMarketInfo.PocAveragePrice = (currentPoc.StartPrice + currentPoc.EndPrice) / 2;
             symbolMarketInfo.KlineBuyVolume = previousKlineClusterVolumeRequest.Data.Sum(x => x.BuyVolume);
             symbolMarketInfo.KlineSellVolume = previousKlineClusterVolumeRequest.Data.Sum(x => x.SellVolume);
 
-            switch (symbolMarketInfo.Power)
+            switch (currentPoc.Index)
             {
-                case KlinePower.Bull:
-                    if (openKlineIndex - currentPoc.Index <= -2 && !isPocInBody)
-                    {
-                        symbolMarketInfo.KlineAction = KlineAction.PushStrong;
-                        symbolMarketInfo.KlinePositionSignal = PositionSide.Long;
-                    }
-                    if (openKlineIndex - currentPoc.Index == 0 && isPocInBody)
-                    {
-                        symbolMarketInfo.KlineAction = KlineAction.Push;
-                        symbolMarketInfo.KlinePositionSignal = PositionSide.Long;
-                    }
-                    if (openKlineIndex - currentPoc.Index == 1 && isPocInBody)
-                    {
-                        symbolMarketInfo.KlineAction = KlineAction.PushSlow;
-                        symbolMarketInfo.KlinePositionSignal = PositionSide.Long;
-                    }
-                    if (closeKlineIndex - currentPoc.Index >= 2 && !isPocInBody)
-                    {
-                        symbolMarketInfo.KlineAction = KlineAction.StopStrong;
-                        symbolMarketInfo.KlinePositionSignal = PositionSide.Short;
-                    }
-                    if (closeKlineIndex - currentPoc.Index == 0 && isPocInBody)
-                    {
-                        symbolMarketInfo.KlineAction = KlineAction.Stop;
-                        symbolMarketInfo.KlinePositionSignal = PositionSide.Short;
-                    }
+                case 1:
+                    symbolMarketInfo.KlineAction = KlineAction.StopStrong;
+                    symbolMarketInfo.KlinePositionSide = PositionSide.Short;
                     break;
-                case KlinePower.Bear:
-                    if (openKlineIndex - currentPoc.Index <= 2 && !isPocInBody)
-                    {
-                        symbolMarketInfo.KlineAction = KlineAction.StopStrong;
-                        symbolMarketInfo.KlinePositionSignal = PositionSide.Short;
-                    }
-                    if (openKlineIndex - currentPoc.Index == 0 && isPocInBody)
-                    {
-                        symbolMarketInfo.KlineAction = KlineAction.Stop;
-                        symbolMarketInfo.KlinePositionSignal = PositionSide.Short;
-                    }
-                    if (openKlineIndex - currentPoc.Index == -1 && isPocInBody)
-                    {
-                        symbolMarketInfo.KlineAction = KlineAction.StopSlow;
-                        symbolMarketInfo.KlinePositionSignal = PositionSide.Short;
-                    }
-                    if (closeKlineIndex - currentPoc.Index <= -2 && !isPocInBody)
-                    {
-                        symbolMarketInfo.KlineAction = KlineAction.PushStrong;
-                        symbolMarketInfo.KlinePositionSignal = PositionSide.Long;
-                    }
-                    if (closeKlineIndex - currentPoc.Index == 0 && isPocInBody)
-                    {
-                        symbolMarketInfo.KlineAction = KlineAction.Push;
-                        symbolMarketInfo.KlinePositionSignal = PositionSide.Long;
-                    }
+                case 2:
+                    symbolMarketInfo.KlineAction = KlineAction.StopSlow;
+                    symbolMarketInfo.KlinePositionSide = PositionSide.Short;
+                    break;
+                case 3:
+                    symbolMarketInfo.KlineAction = KlineAction.None;
+                    symbolMarketInfo.KlinePositionSide = PositionSide.Both;
+                    break;
+                case 4:
+                    symbolMarketInfo.KlineAction = KlineAction.PushSlow;
+                    symbolMarketInfo.KlinePositionSide = PositionSide.Long;
+                    break;
+                case 5:
+                    symbolMarketInfo.KlineAction = KlineAction.PushStrong;
+                    symbolMarketInfo.KlinePositionSide = PositionSide.Long;
                     break;
                 default:
-                    symbolMarketInfo.KlineAction = KlineAction.None;
-                    break;
-            }
-
-            if (symbolMarketInfo.KlineAction is KlineAction.None)
-            {
-                return;
+                    return;
             }
 
             var orderBookRequest = await _restBinanceClient.SpotApi.ExchangeData.GetOrderBookAsync(
@@ -444,6 +396,55 @@ internal class SpotClusterVolumeInstance : IInstance
         var priceTo =  ordersArray.First().Price + valueFromPercent;
 
         return ordersArray.Where(x => isAsks ? x.Price <= priceTo : x.Price >= priceTo);
+    }
+    
+    private static List<TradedRange> GetTradedRanges(List<BinanceClusterVolume> clusterVolumes, int step)
+    {
+        var maxPrice = clusterVolumes.Max(x => x.Price);
+        var minPrice = clusterVolumes.Min(x => x.Price);
+        var priceStep = (maxPrice - minPrice) / step;
+        var tradedIndexes = new List<TradedRange>();
+
+        var priceStart = maxPrice;
+
+        for (var i = 0; i < step; i++)
+        {
+            var priceEnd = i == step - 1 ? minPrice : priceStart - priceStep;
+
+            var clusters = i == step - 1 
+                ? clusterVolumes.Where(x => x.Price <= priceStart && x.Price >= priceEnd).ToList() 
+                : clusterVolumes.Where(x => x.Price <= priceStart && x.Price > priceEnd).ToList();
+
+            var stepBinanceClusterVolume = new TradedRange
+            {
+                Index = i + 1
+            };
+
+            if (clusters.Any())
+            {
+                stepBinanceClusterVolume.StartPrice = clusters.Max(x => x.Price);
+                stepBinanceClusterVolume.EndPrice = clusters.Min(x => x.Price);
+                stepBinanceClusterVolume.SellVolume = clusters.Sum(x => x.SellVolume);
+                stepBinanceClusterVolume.BuyVolume = clusters.Sum(x => x.BuyVolume);
+                stepBinanceClusterVolume.BuyTrades = clusters.Sum(x => x.BuyTrades);
+                stepBinanceClusterVolume.SellTrades = clusters.Sum(x => x.SellTrades);
+            }
+            else
+            {
+                stepBinanceClusterVolume.StartPrice = priceStart;
+                stepBinanceClusterVolume.EndPrice = priceStart;
+                stepBinanceClusterVolume.SellVolume = 0;
+                stepBinanceClusterVolume.BuyVolume = 0;
+                stepBinanceClusterVolume.BuyTrades = 0;
+                stepBinanceClusterVolume.SellTrades = 0;
+            }
+
+            priceStart = priceEnd;
+
+            tradedIndexes.Add(stepBinanceClusterVolume);
+        }
+
+        return tradedIndexes;
     }
     
     #endregion

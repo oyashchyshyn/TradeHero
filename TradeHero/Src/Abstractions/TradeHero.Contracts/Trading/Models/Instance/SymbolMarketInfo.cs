@@ -14,7 +14,8 @@ public class SymbolMarketInfo
 
     public KlinePower Power { get; set; }
     public KlineAction KlineAction { get; set; }
-    public PositionSide KlinePositionSignal { get; set; } = PositionSide.Both;
+    public PositionSide KlinePositionSide { get; set; }
+    public bool IsPocInWick { get; set; }
 
     // Kline info
     public decimal KlineBuyVolume { get; set; }
@@ -35,11 +36,11 @@ public class SymbolMarketInfo
     public decimal PocVolumeCoefficient => GetCoefficient(PocBuyVolume, PocSellVolume);
 
     // Poc volume info
-    public int PocBuyOrders { get; set; }
-    public int PocSellOrders { get; set; }
-    public int PocDeltaOrders => PocBuyOrders - PocSellOrders;
-    public int TotalOrders => PocBuyOrders + PocSellOrders;
-    public decimal PocOrdersCoefficient => GetCoefficient(PocBuyOrders, PocSellOrders);
+    public int PocBuyTrades { get; set; }
+    public int PocSellTrades { get; set; }
+    public int PocDeltaTrades => PocBuyTrades - PocSellTrades;
+    public int TotalTrades => PocBuyTrades + PocSellTrades;
+    public decimal PocTradesCoefficient => GetCoefficient(PocBuyTrades, PocSellTrades);
     
     // OrderBook info
     [JsonIgnore]

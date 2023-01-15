@@ -24,16 +24,11 @@ internal class VolumeApi : IVolumeApi
     }
 
     public async Task<ThWebCallResult<List<BinanceClusterVolume>>> GetClusterVolumeAsync(string symbol, Market market,
-        DateTime startFrom, DateTime endTo, int step, CancellationToken cancellationToken = default)
+        DateTime startFrom, DateTime endTo, CancellationToken cancellationToken = default)
     {
          if (startFrom > endTo)
          {
              return new ThWebCallResult<List<BinanceClusterVolume>>(new ThError(null, "'startFrom' cannot be grater then 'endTo'", null));
-         }
-        
-         if (step < 0)
-         {
-             return new ThWebCallResult<List<BinanceClusterVolume>>(new ThError(null, "'step' cannot be less then zero", null));
          }
 
          var start = startFrom;
@@ -86,7 +81,15 @@ internal class VolumeApi : IVolumeApi
          {
              return new ThWebCallResult<List<BinanceClusterVolume>>(new List<BinanceClusterVolume>());
          }
-            
+
+         var invalidTrades = collectionOfTrades.Where(x =>
+             x.Price <= 0 || x.Quantity <= 0 || x.FirstTradeId <= -1 || x.LastTradeId <= -1);
+
+         foreach (var invalidTrade in invalidTrades)
+         {
+             collectionOfTrades.Remove(invalidTrade);
+         }
+
          var clusterVolumes = collectionOfTrades.GroupBy(x => x.Price)
              .Select(x =>
              {
@@ -95,77 +98,16 @@ internal class VolumeApi : IVolumeApi
 
                  return new BinanceClusterVolume
                  {
-                     Index = 1,
-                     StartPrice = x.Key,
-                     EndPrice = x.Key,
+                     Price = x.Key,
                      BuyVolume = buys.Any() ? buys.Sum(y => y.Quantity) : 0,
                      SellVolume = sells.Any() ? sells.Sum(y => y.Quantity) : 0,
-                     BuyOrders = buys.Count,
-                     SellOrders = sells.Count
+                     BuyTrades = buys.Count,
+                     SellTrades = sells.Count
                  };
              })
-             .OrderByDescending(x => x.StartPrice)
+             .OrderByDescending(x => x.Price)
              .ToList();
 
-         // Combine clusters in ranges
-         if (step == 0 || !clusterVolumes.Any())
-         {
-             return new ThWebCallResult<List<BinanceClusterVolume>>(clusterVolumes);
-         }
-
-         var maxPrice = clusterVolumes.Max(x => x.StartPrice);
-         var minPrice = clusterVolumes.Min(x => x.EndPrice);
-         var priceStep = (maxPrice - minPrice) / step;
-         var stepClusterVolumes = new List<BinanceClusterVolume>();
-
-         var priceStart = maxPrice;
-            
-         for (var i = 0; i < step; i++)
-         {
-             List<BinanceClusterVolume> clusters;
-
-             var priceEnd = i == step - 1 ? minPrice : priceStart - priceStep;
-                
-             if (i == step - 1)
-             {
-                 clusters = clusterVolumes.Where(x => x.StartPrice <= priceStart && x.EndPrice >= priceEnd)
-                     .ToList();   
-             }
-             else
-             {
-                 clusters = clusterVolumes.Where(x => x.StartPrice <= priceStart && x.EndPrice > priceEnd)
-                     .ToList();
-             }
-
-             var stepBinanceClusterVolume = new BinanceClusterVolume
-             {
-                 Index = i + 1
-             };
-                
-             if (clusters.Any())
-             {
-                 stepBinanceClusterVolume.StartPrice = clusters.Max(x => x.StartPrice);
-                 stepBinanceClusterVolume.EndPrice = clusters.Min(x => x.EndPrice);
-                 stepBinanceClusterVolume.SellVolume = clusters.Sum(x => x.SellVolume);
-                 stepBinanceClusterVolume.BuyVolume = clusters.Sum(x => x.BuyVolume);
-                 stepBinanceClusterVolume.BuyOrders = clusters.Sum(x => x.BuyOrders);
-                 stepBinanceClusterVolume.SellOrders = clusters.Sum(x => x.SellOrders);
-             }
-             else
-             {
-                 stepBinanceClusterVolume.StartPrice = priceStart;
-                 stepBinanceClusterVolume.EndPrice = priceStart;
-                 stepBinanceClusterVolume.SellVolume = 0;
-                 stepBinanceClusterVolume.BuyVolume = 0;
-                 stepBinanceClusterVolume.BuyOrders = 0;
-                 stepBinanceClusterVolume.SellOrders = 0;
-             }
-
-             priceStart = priceEnd;
-                
-             stepClusterVolumes.Add(stepBinanceClusterVolume);
-         }
-        
-         return new ThWebCallResult<List<BinanceClusterVolume>>(stepClusterVolumes);
+         return new ThWebCallResult<List<BinanceClusterVolume>>(clusterVolumes);
     }
 }
