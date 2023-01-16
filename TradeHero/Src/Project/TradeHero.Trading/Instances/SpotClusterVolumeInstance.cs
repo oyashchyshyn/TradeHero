@@ -48,7 +48,7 @@ internal class SpotClusterVolumeInstance : IInstance
                 .Where(x => x.ContractType is ContractType.Perpetual)
                 .Where(x => x.Status == SymbolStatus.Trading);
 
-            var symbolsMarketInfos = new List<SymbolMarketInfo>();
+            var symbolNameContainers = new List<SymbolNameContainer>();
             foreach (var futuresUsdSymbolInfo in futuresUsdSymbolsInfo)
             {
                 var spotSymbolInfo = store.Spot.ExchangerData.ExchangeInfo.Symbols
@@ -61,7 +61,7 @@ internal class SpotClusterVolumeInstance : IInstance
                     continue;
                 }
                 
-                symbolsMarketInfos.Add(new SymbolMarketInfo
+                symbolNameContainers.Add(new SymbolNameContainer
                 {
                     SpotName = spotSymbolInfo.Name,
                     FuturesUsdName = futuresUsdSymbolInfo.Name,
@@ -70,7 +70,7 @@ internal class SpotClusterVolumeInstance : IInstance
                 });
             }
             
-            if (!symbolsMarketInfos.Any())
+            if (!symbolNameContainers.Any())
             {
                 _logger.LogWarning("Combination of spot and futures-usd symbols info are empty. In {Method}", 
                     nameof(GenerateInstanceResultAsync));
@@ -90,7 +90,7 @@ internal class SpotClusterVolumeInstance : IInstance
                 return new GenericBaseResult<InstanceResult>(ActionResult.Error);
             }
 
-            var spotSymbolNames = symbolsMarketInfos.Select(x => x.SpotName)
+            var spotSymbolNames = symbolNameContainers.Select(x => x.SpotName)
                 .ToArray();
 
             var filteredTickersData = tickersRequest.Data.Where(x => spotSymbolNames.Contains(x.Symbol))
@@ -111,7 +111,7 @@ internal class SpotClusterVolumeInstance : IInstance
                 MarketMood = shortMoodPercent >= 60 ? MarketMood.Short : longMoodPercent >= 60 ? MarketMood.Long : MarketMood.Balanced
             };
 
-            var filteredSymbolMarketInfos = symbolsMarketInfos
+            var filteredSymbolNameContainers = symbolNameContainers
                 .WhereIf(localInstanceOptions.QuoteAssets.Any(), x => localInstanceOptions.QuoteAssets.Contains(x.QuoteAsset))
                 .WhereIf(localInstanceOptions.BaseAssets.Any(), x => localInstanceOptions.BaseAssets.Contains(x.BaseFuturesUsdAsset))
                 .WhereIf(localInstanceOptions.ExcludeAssets.Any(), x => !localInstanceOptions.ExcludeAssets.Contains(x.BaseFuturesUsdAsset))
@@ -121,16 +121,16 @@ internal class SpotClusterVolumeInstance : IInstance
             instanceResult.EndTo = _dateTimeService.GetUtcDateTime().AddSeconds(-(int)instanceResult.Interval);
             instanceResult.StartFrom = instanceResult.EndTo.AddSeconds(-seconds);
 
-            var listOfIterations = _calculatorService.GetIterationValues(filteredSymbolMarketInfos.Length, localInstanceOptions.ItemsInTask);
-            var groupsOfListsKlineInfo = new List<IEnumerable<SymbolMarketInfo>>();
+            var listOfIterations = _calculatorService.GetIterationValues(filteredSymbolNameContainers.Length, localInstanceOptions.ItemsInTask);
+            var groupsOfListsSymbolNameContainers = new List<IEnumerable<SymbolNameContainer>>();
             
             var counter = 0;
             foreach (var iteration in listOfIterations)
             {
-                var klineInfosContainer = filteredSymbolMarketInfos.Skip(counter * localInstanceOptions.ItemsInTask)
+                var slicedSymbolNameContainers = filteredSymbolNameContainers.Skip(counter * localInstanceOptions.ItemsInTask)
                     .Take(iteration);
                 
-                groupsOfListsKlineInfo.Add(klineInfosContainer);
+                groupsOfListsSymbolNameContainers.Add(slicedSymbolNameContainers);
                 counter++;
             }
 
@@ -144,13 +144,14 @@ internal class SpotClusterVolumeInstance : IInstance
             
             var parallelOptions = new ParallelOptions
             {
-                MaxDegreeOfParallelism = groupsOfListsKlineInfo.Count,
+                MaxDegreeOfParallelism = groupsOfListsSymbolNameContainers.Count,
                 CancellationToken = cancellationToken
             };
             
-            await Parallel.ForEachAsync(groupsOfListsKlineInfo, parallelOptions, async (symbolMarketInfos, parallelCancellationToken) =>
+            await Parallel.ForEachAsync(groupsOfListsSymbolNameContainers, 
+                parallelOptions, async (slicedSymbolNameContainers, parallelCancellationToken) =>
             {
-                foreach (var symbolMarketInfo in symbolMarketInfos)
+                foreach (var symbolNameContainer in slicedSymbolNameContainers)
                 {
                     if (cancellationToken.IsCancellationRequested)
                     {
@@ -160,8 +161,8 @@ internal class SpotClusterVolumeInstance : IInstance
                         return;
                     }
                     
-                    await SetKlineDetailInfoAsync(
-                        symbolMarketInfo,
+                    var symbolMarketInfo = await SetKlineDetailInfoAsync(
+                        symbolNameContainer,
                         localInstanceOptions.VolumeAverage,
                         localInstanceOptions.OrderBookDepthPercent,
                         instanceResult.Interval,
@@ -171,21 +172,23 @@ internal class SpotClusterVolumeInstance : IInstance
                         parallelCancellationToken
                     );
 
-                    if (symbolMarketInfo.IsAvailableForTrade)
+                    if (symbolMarketInfo == null)
                     {
-                        switch (symbolMarketInfo.PositionSide)
-                        {
-                            case PositionSide.Short when instanceResult.Side is PositionSide.Both or PositionSide.Short:
-                                instanceResult.ShortSignals.Add(symbolMarketInfo);
-                                break;
-                            case PositionSide.Long when instanceResult.Side is PositionSide.Both or PositionSide.Long:
-                                instanceResult.LongSignals.Add(symbolMarketInfo);
-                                break;
-                            case PositionSide.Both:
-                            default:
-                                continue;
-                        }   
+                        continue;
                     }
+                    
+                    switch (symbolMarketInfo.PositionSide)
+                    {
+                        case PositionSide.Short when instanceResult.Side is PositionSide.Both or PositionSide.Short:
+                            instanceResult.ShortSignals.Add(symbolMarketInfo);
+                            break;
+                        case PositionSide.Long when instanceResult.Side is PositionSide.Both or PositionSide.Long:
+                            instanceResult.LongSignals.Add(symbolMarketInfo);
+                            break;
+                        case PositionSide.Both:
+                        default:
+                            continue;
+                    }   
                 }
             });
 
@@ -208,11 +211,11 @@ internal class SpotClusterVolumeInstance : IInstance
 
     #region Private methods
     
-    private async Task SetKlineDetailInfoAsync(SymbolMarketInfo symbolMarketInfo, int volumeMovingAverage, decimal orderBookDepthPercent, 
+    private async Task<SymbolMarketInfo?> SetKlineDetailInfoAsync(SymbolNameContainer symbolNameContainer, int volumeMovingAverage, decimal orderBookDepthPercent, 
         KlineInterval interval, DateTime startFrom, DateTime endTo, Market market, CancellationToken cancellationToken)
     {
         var stopwatch = new Stopwatch();
-        
+
         try
         {
             stopwatch.Start();
@@ -222,11 +225,11 @@ internal class SpotClusterVolumeInstance : IInstance
                 _logger.LogWarning("CancellationToken is requested. In {Method}",
                     nameof(SetKlineDetailInfoAsync));
 
-                return;
+                return null;
             }
 
             var klines = await _restBinanceClient.CustomRestApi.Kline.GetKlineByDateRangeAsync(
-                symbolMarketInfo.SpotName,
+                symbolNameContainer.SpotName,
                 interval,
                 startFrom,
                 endTo,
@@ -236,18 +239,18 @@ internal class SpotClusterVolumeInstance : IInstance
 
             if (!klines.Success)
             {
-                _logger.LogWarning(new ThException(klines.Error), "{Symbol}. In {Method}", 
-                    symbolMarketInfo.FuturesUsdName, nameof(SetKlineDetailInfoAsync));
+                _logger.LogError(new ThException(klines.Error), "{Symbol}. In {Method}", 
+                    symbolNameContainer.FuturesUsdName, nameof(SetKlineDetailInfoAsync));
 
-                return;
+                return null;
             }
 
             if (!klines.Data.Any())
             {
-                _logger.LogWarning("{Symbol}. There is no klines in request. In {Method}",
-                    symbolMarketInfo.FuturesUsdName, nameof(SetKlineDetailInfoAsync));
+                _logger.LogError("{Symbol}. There is no klines in request. In {Method}",
+                    symbolNameContainer.FuturesUsdName, nameof(SetKlineDetailInfoAsync));
 
-                return;
+                return null;
             }
 
             var kline = klines.Data.Last();
@@ -257,12 +260,15 @@ internal class SpotClusterVolumeInstance : IInstance
                 var averageKlinesVolume = klines.Data.Average(x => x.Volume);
                 if (kline.Volume < averageKlinesVolume)
                 {
-                    return;
+                    _logger.LogInformation("{Symbol}. Kline volume is lower then average. In {Method}",
+                        symbolNameContainer.FuturesUsdName, nameof(SetKlineDetailInfoAsync));
+                    
+                    return null;
                 }
             }
 
             var previousKlineClusterVolumeRequest = await _restBinanceClient.CustomRestApi.Volume.GetClusterVolumeAsync(
-                symbolMarketInfo.SpotName,
+                symbolNameContainer.SpotName,
                 market,
                 kline.OpenTime,
                 kline.CloseTime,
@@ -271,18 +277,18 @@ internal class SpotClusterVolumeInstance : IInstance
 
             if (!previousKlineClusterVolumeRequest.Success)
             {
-                _logger.LogWarning(new ThException(previousKlineClusterVolumeRequest.Error), "{Symbol}. In {Method}", 
-                    symbolMarketInfo.FuturesUsdName, nameof(SetKlineDetailInfoAsync));
+                _logger.LogError(new ThException(previousKlineClusterVolumeRequest.Error), "{Symbol}. In {Method}", 
+                    symbolNameContainer.FuturesUsdName, nameof(SetKlineDetailInfoAsync));
 
-                return;
+                return null;
             }
 
             if (!previousKlineClusterVolumeRequest.Data.Any())
             {
-                _logger.LogInformation("{Symbol}. There is no cluster volumes in request. In {Method}",
-                    symbolMarketInfo.FuturesUsdName, nameof(SetKlineDetailInfoAsync));
+                _logger.LogError("{Symbol}. There is no cluster volumes in request. In {Method}",
+                    symbolNameContainer.FuturesUsdName, nameof(SetKlineDetailInfoAsync));
 
-                return;
+                return null;
             }
 
             const int tradeRangeStep = 5;
@@ -290,36 +296,42 @@ internal class SpotClusterVolumeInstance : IInstance
             if (previousKlineClusterVolumeRequest.Data.Count < tradeRangeStep)
             {
                 _logger.LogInformation("{Symbol}. Too low trades in kline. Trades count: {TradesCount}. In {Method}",
-                    symbolMarketInfo.FuturesUsdName, previousKlineClusterVolumeRequest.Data.Count, 
+                    symbolNameContainer.FuturesUsdName, previousKlineClusterVolumeRequest.Data.Count, 
                     nameof(SetKlineDetailInfoAsync));
 
-                return;
+                return null;
             }
 
             var tradedRanges = GetTradedRanges(previousKlineClusterVolumeRequest.Data, tradeRangeStep);
-            
-            symbolMarketInfo.Power = kline.OpenPrice < kline.ClosePrice ? KlinePower.Bull : KlinePower.Bear;
-            symbolMarketInfo.KlineAveragePrice = (kline.LowPrice + kline.HighPrice) / 2;
 
             var currentPoc = tradedRanges.MaxBy(x => x.SellVolume + x.BuyVolume);
             if (currentPoc == null)
             {
                 _logger.LogInformation("{Symbol}. There is no POC in tradedRanges. In {Method}",
-                    symbolMarketInfo.FuturesUsdName, nameof(SetKlineDetailInfoAsync));
+                    symbolNameContainer.FuturesUsdName, nameof(SetKlineDetailInfoAsync));
 
-                return;
+                return null;
             }
 
-            symbolMarketInfo.IsPocInWick =
-                (currentPoc.EndPrice > kline.OpenPrice && currentPoc.EndPrice > kline.ClosePrice)
-                || (currentPoc.StartPrice < kline.OpenPrice && currentPoc.StartPrice < kline.ClosePrice);
-            symbolMarketInfo.PocBuyVolume = currentPoc.BuyVolume;
-            symbolMarketInfo.PocSellVolume = currentPoc.SellVolume;
-            symbolMarketInfo.PocBuyTrades = currentPoc.BuyTrades;
-            symbolMarketInfo.PocSellTrades = currentPoc.SellTrades;
-            symbolMarketInfo.PocAveragePrice = (currentPoc.StartPrice + currentPoc.EndPrice) / 2;
-            symbolMarketInfo.KlineBuyVolume = previousKlineClusterVolumeRequest.Data.Sum(x => x.BuyVolume);
-            symbolMarketInfo.KlineSellVolume = previousKlineClusterVolumeRequest.Data.Sum(x => x.SellVolume);
+            var symbolMarketInfo = new SymbolMarketInfo
+            {
+                SpotName = symbolNameContainer.SpotName,
+                FuturesUsdName = symbolNameContainer.FuturesUsdName,
+                BaseFuturesUsdAsset = symbolNameContainer.BaseFuturesUsdAsset,
+                QuoteAsset = symbolNameContainer.QuoteAsset,
+                Power = kline.OpenPrice < kline.ClosePrice ? KlinePower.Bull : KlinePower.Bear,
+                KlineAveragePrice = (kline.LowPrice + kline.HighPrice) / 2,
+                IsPocInWick =
+                    (currentPoc.EndPrice > kline.OpenPrice && currentPoc.EndPrice > kline.ClosePrice)
+                    || (currentPoc.StartPrice < kline.OpenPrice && currentPoc.StartPrice < kline.ClosePrice),
+                PocBuyVolume = currentPoc.BuyVolume,
+                PocSellVolume = currentPoc.SellVolume,
+                PocBuyTrades = currentPoc.BuyTrades,
+                PocSellTrades = currentPoc.SellTrades,
+                PocAveragePrice = (currentPoc.StartPrice + currentPoc.EndPrice) / 2,
+                KlineBuyVolume = previousKlineClusterVolumeRequest.Data.Sum(x => x.BuyVolume),
+                KlineSellVolume = previousKlineClusterVolumeRequest.Data.Sum(x => x.SellVolume)
+            };
 
             switch (currentPoc.Index)
             {
@@ -353,7 +365,7 @@ internal class SpotClusterVolumeInstance : IInstance
             
             if (!orderBookRequest.Success)
             {
-                _logger.LogWarning(new ThException(orderBookRequest.Error), "In {Method}", 
+                _logger.LogError(new ThException(orderBookRequest.Error), "In {Method}", 
                     nameof(SetKlineDetailInfoAsync));
             }
             else
@@ -367,17 +379,21 @@ internal class SpotClusterVolumeInstance : IInstance
             
             stopwatch.Stop();
 
-            symbolMarketInfo.IsAvailableForTrade = true;
+            return symbolMarketInfo;
         }
         catch (TaskCanceledException taskCanceledException)
         {
             _logger.LogWarning("{Symbol}. {Message}. In {Method}",
-                symbolMarketInfo.FuturesUsdName, taskCanceledException.Message, nameof(SetKlineDetailInfoAsync));
+                symbolNameContainer.FuturesUsdName, taskCanceledException.Message, nameof(SetKlineDetailInfoAsync));
+
+            return null;
         }
         catch (Exception exception)
         {
             _logger.LogCritical(exception, "{Symbol}. In {Method}", 
-                symbolMarketInfo.FuturesUsdName, nameof(SetKlineDetailInfoAsync));
+                symbolNameContainer.FuturesUsdName, nameof(SetKlineDetailInfoAsync));
+            
+            return null;
         }
     }
     
