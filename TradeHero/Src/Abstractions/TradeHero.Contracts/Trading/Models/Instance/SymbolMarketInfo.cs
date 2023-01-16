@@ -16,7 +16,7 @@ public class SymbolMarketInfo
 
     public KlinePower Power { get; set; }
     public KlineAction KlineAction { get; set; }
-    public PositionSide KlinePositionSide { get; set; }
+    public PositionSide PositionSide { get; set; }
     public bool IsPocInWick { get; set; }
 
     // Kline info

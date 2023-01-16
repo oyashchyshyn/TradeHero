@@ -7,6 +7,7 @@ using TradeHero.Contracts.Client.Models;
 using TradeHero.Contracts.Services;
 using TradeHero.Contracts.Trading;
 using TradeHero.Contracts.Trading.Models.Instance;
+using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Exceptions;
 using TradeHero.Core.Extensions;
@@ -172,7 +173,7 @@ internal class SpotClusterVolumeInstance : IInstance
 
                     if (symbolMarketInfo.IsAvailableForTrade)
                     {
-                        switch (symbolMarketInfo.KlinePositionSide)
+                        switch (symbolMarketInfo.PositionSide)
                         {
                             case PositionSide.Short when instanceResult.Side is PositionSide.Both or PositionSide.Short:
                                 instanceResult.ShortSignals.Add(symbolMarketInfo);
@@ -309,9 +310,9 @@ internal class SpotClusterVolumeInstance : IInstance
                 return;
             }
 
-            symbolMarketInfo.IsPocInWick = symbolMarketInfo.Power == KlinePower.Bear 
-                ? kline.OpenPrice <= currentPoc.StartPrice && kline.OpenPrice >= currentPoc.EndPrice 
-                : kline.OpenPrice >= currentPoc.StartPrice && kline.OpenPrice <= currentPoc.EndPrice;
+            symbolMarketInfo.IsPocInWick =
+                (currentPoc.StartPrice > kline.OpenPrice && currentPoc.StartPrice > kline.ClosePrice)
+                || (currentPoc.EndPrice < kline.OpenPrice && currentPoc.EndPrice < kline.ClosePrice);
             symbolMarketInfo.PocBuyVolume = currentPoc.BuyVolume;
             symbolMarketInfo.PocSellVolume = currentPoc.SellVolume;
             symbolMarketInfo.PocBuyTrades = currentPoc.BuyTrades;
@@ -324,29 +325,29 @@ internal class SpotClusterVolumeInstance : IInstance
             {
                 case 1:
                     symbolMarketInfo.KlineAction = KlineAction.StopStrong;
-                    symbolMarketInfo.KlinePositionSide = PositionSide.Short;
+                    symbolMarketInfo.PositionSide = PositionSide.Short;
                     break;
                 case 2:
                     symbolMarketInfo.KlineAction = KlineAction.StopSlow;
-                    symbolMarketInfo.KlinePositionSide = PositionSide.Short;
+                    symbolMarketInfo.PositionSide = PositionSide.Short;
                     break;
                 case 3:
                     symbolMarketInfo.KlineAction = KlineAction.None;
-                    symbolMarketInfo.KlinePositionSide = PositionSide.Both;
+                    symbolMarketInfo.PositionSide = PositionSide.Both;
                     break;
                 case 4:
                     symbolMarketInfo.KlineAction = KlineAction.PushSlow;
-                    symbolMarketInfo.KlinePositionSide = PositionSide.Long;
+                    symbolMarketInfo.PositionSide = PositionSide.Long;
                     break;
                 case 5:
                     symbolMarketInfo.KlineAction = KlineAction.PushStrong;
-                    symbolMarketInfo.KlinePositionSide = PositionSide.Long;
+                    symbolMarketInfo.PositionSide = PositionSide.Long;
                     break;
             }
 
             var orderBookRequest = await _restBinanceClient.SpotApi.ExchangeData.GetOrderBookAsync(
                 symbolMarketInfo.SpotName, 
-                500,
+                ApiConstants.OrderBookItemsWithMinimalWeightAndMaximumCount,
                 cancellationToken
             );
             
@@ -391,7 +392,7 @@ internal class SpotClusterVolumeInstance : IInstance
         return ordersArray.Where(x => isAsks ? x.Price <= priceTo : x.Price >= priceTo);
     }
     
-    private static List<TradedRange> GetTradedRanges(IReadOnlyCollection<BinanceClusterVolume> clusterVolumes, int step)
+    private static IEnumerable<TradedRange> GetTradedRanges(IReadOnlyCollection<BinanceClusterVolume> clusterVolumes, int step)
     {
         var maxPrice = clusterVolumes.Max(x => x.Price);
         var minPrice = clusterVolumes.Min(x => x.Price);

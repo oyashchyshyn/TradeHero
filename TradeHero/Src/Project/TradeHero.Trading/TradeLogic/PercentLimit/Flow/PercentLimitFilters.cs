@@ -43,8 +43,8 @@ internal class PercentLimitFilters
         {
             var topShortKlines = instanceResult.ShortSignals
                 .WhereIf(tradeLogicLogicOptions.IsPocMustBeInWickForOpen, x => x.IsPocInWick)
-                .Where(x => GetKlineActionsFromKlineActionSignal(tradeLogicLogicOptions.KlineActionForOpen, x.KlinePositionSide).Contains(x.KlineAction))
-                .Where(x => GetKlinePowersFromKlinePowerSignal(tradeLogicLogicOptions.KlinePowerForOpen, x.KlinePositionSide).Contains(x.Power))
+                .Where(x => GetKlineActionsFromKlineActionSignal(tradeLogicLogicOptions.KlineActionForOpen, x.PositionSide).Contains(x.KlineAction))
+                .Where(x => GetKlinePowersFromKlinePowerSignal(tradeLogicLogicOptions.KlinePowerForOpen, x.PositionSide).Contains(x.Power))
                 .Where(x => x.TotalTrades >= tradeLogicLogicOptions.MinTradesForOpen)
                 .Where(x => x.KlineAverageTradeQuoteVolume >= tradeLogicLogicOptions.MinQuoteVolumeForOpen)
                 .Where(x => x.TotalAsks > x.TotalBids)
@@ -54,8 +54,8 @@ internal class PercentLimitFilters
         
             var topLongKlines = instanceResult.LongSignals
                 .WhereIf(tradeLogicLogicOptions.IsPocMustBeInWickForOpen, x => x.IsPocInWick)
-                .Where(x => GetKlineActionsFromKlineActionSignal(tradeLogicLogicOptions.KlineActionForOpen, x.KlinePositionSide).Contains(x.KlineAction))
-                .Where(x => GetKlinePowersFromKlinePowerSignal(tradeLogicLogicOptions.KlinePowerForOpen, x.KlinePositionSide).Contains(x.Power))
+                .Where(x => GetKlineActionsFromKlineActionSignal(tradeLogicLogicOptions.KlineActionForOpen, x.PositionSide).Contains(x.KlineAction))
+                .Where(x => GetKlinePowersFromKlinePowerSignal(tradeLogicLogicOptions.KlinePowerForOpen, x.PositionSide).Contains(x.Power))
                 .Where(x => x.TotalTrades >= tradeLogicLogicOptions.MinTradesForOpen)
                 .Where(x => x.KlineAverageTradeQuoteVolume >= tradeLogicLogicOptions.MinQuoteVolumeForOpen)
                 .Where(x => x.TotalBids > x.TotalAsks)
@@ -163,10 +163,10 @@ internal class PercentLimitFilters
                 return Task.FromResult(false);
             }
             
-            if (openedPosition.PositionSide != symbolMarketInfo.KlinePositionSide)
+            if (openedPosition.PositionSide != symbolMarketInfo.PositionSide)
             {
                 _logger.LogInformation("{Position}. Not valid side for average. Kline side is {KlineSide}. In {Method}", 
-                    openedPosition.ToString(), symbolMarketInfo.KlinePositionSide, nameof(IsNeedToPlaceMarketAverageOrderAsync));
+                    openedPosition.ToString(), symbolMarketInfo.PositionSide, nameof(IsNeedToPlaceMarketAverageOrderAsync));
                     
                 return Task.FromResult(false);
             }
@@ -217,11 +217,11 @@ internal class PercentLimitFilters
                 return Task.FromResult(false);
             }
 
-            if (symbolMarketInfo.KlinePositionSide == PositionSide.Short && symbolMarketInfo.TotalAsks <= symbolMarketInfo.TotalBids
-                || symbolMarketInfo.KlinePositionSide == PositionSide.Long && symbolMarketInfo.TotalBids <= symbolMarketInfo.TotalAsks)
+            if (symbolMarketInfo.PositionSide == PositionSide.Short && symbolMarketInfo.TotalAsks <= symbolMarketInfo.TotalBids
+                || symbolMarketInfo.PositionSide == PositionSide.Long && symbolMarketInfo.TotalBids <= symbolMarketInfo.TotalAsks)
             {
                 _logger.LogInformation("{Position}. Not valid Bids and Asks coefficient. Kline side is {KlineSide}. Asks: {Asks}. Bids {Bids}. In {Method}", 
-                    openedPosition.ToString(), symbolMarketInfo.KlinePositionSide, symbolMarketInfo.TotalAsks, 
+                    openedPosition.ToString(), symbolMarketInfo.PositionSide, symbolMarketInfo.TotalAsks, 
                     symbolMarketInfo.TotalBids, nameof(IsNeedToPlaceMarketAverageOrderAsync));
                     
                 return Task.FromResult(false);
@@ -376,7 +376,7 @@ internal class PercentLimitFilters
                 break;
             }
 
-            if (openedPositions.Any(x => x.Name == position.FuturesUsdName && x.PositionSide == position.KlinePositionSide))
+            if (openedPositions.Any(x => x.Name == position.FuturesUsdName && x.PositionSide == position.PositionSide))
             {
                 continue;
             }
