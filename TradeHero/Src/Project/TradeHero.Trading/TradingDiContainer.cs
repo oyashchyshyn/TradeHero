@@ -6,14 +6,14 @@ using TradeHero.Trading.Endpoints.Socket;
 using TradeHero.Trading.Endpoints.Socket.Implementation;
 using TradeHero.Trading.Factory;
 using TradeHero.Trading.Instances;
-using TradeHero.Trading.TradeLogic.PercentLimit;
-using TradeHero.Trading.TradeLogic.PercentLimit.Factory;
-using TradeHero.Trading.TradeLogic.PercentLimit.Flow;
-using TradeHero.Trading.TradeLogic.PercentLimit.Streams;
-using TradeHero.Trading.TradeLogic.PercentMove;
-using TradeHero.Trading.TradeLogic.PercentMove.Factory;
-using TradeHero.Trading.TradeLogic.PercentMove.Flow;
-using TradeHero.Trading.TradeLogic.PercentMove.Streams;
+using TradeHero.Trading.Logic.PercentLimit;
+using TradeHero.Trading.Logic.PercentLimit.Factory;
+using TradeHero.Trading.Logic.PercentLimit.Flow;
+using TradeHero.Trading.Logic.PercentLimit.Streams;
+using TradeHero.Trading.Logic.PercentMove;
+using TradeHero.Trading.Logic.PercentMove.Factory;
+using TradeHero.Trading.Logic.PercentMove.Flow;
+using TradeHero.Trading.Logic.PercentMove.Streams;
 
 namespace TradeHero.Trading;
 
