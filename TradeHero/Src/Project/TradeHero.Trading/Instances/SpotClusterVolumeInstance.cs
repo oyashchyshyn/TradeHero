@@ -311,8 +311,8 @@ internal class SpotClusterVolumeInstance : IInstance
             }
 
             symbolMarketInfo.IsPocInWick =
-                (currentPoc.StartPrice > kline.OpenPrice && currentPoc.StartPrice > kline.ClosePrice)
-                || (currentPoc.EndPrice < kline.OpenPrice && currentPoc.EndPrice < kline.ClosePrice);
+                (currentPoc.EndPrice > kline.OpenPrice && currentPoc.EndPrice > kline.ClosePrice)
+                || (currentPoc.StartPrice < kline.OpenPrice && currentPoc.StartPrice < kline.ClosePrice);
             symbolMarketInfo.PocBuyVolume = currentPoc.BuyVolume;
             symbolMarketInfo.PocSellVolume = currentPoc.SellVolume;
             symbolMarketInfo.PocBuyTrades = currentPoc.BuyTrades;
