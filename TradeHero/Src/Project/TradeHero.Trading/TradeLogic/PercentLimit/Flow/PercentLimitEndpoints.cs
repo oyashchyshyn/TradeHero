@@ -40,12 +40,12 @@ internal class PercentLimitEndpoints
         try
         {
             _logger.LogInformation("{Symbol} | {Side}. Start create open position market order. In {Method}",
-                symbolMarketInfo.FuturesUsdName, symbolMarketInfo.KlinePositionSide, nameof(CreateBuyMarketOrderAsync));
+                symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, nameof(CreateBuyMarketOrderAsync));
 
             if (symbolInfo.MinNotionalFilter == null)
             {
                 _logger.LogError("{Symbol} | {Side}. {Filter} is null. In {Method}",
-                    symbolMarketInfo.FuturesUsdName, symbolMarketInfo.KlinePositionSide,
+                    symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide,
                     nameof(symbolInfo.MinNotionalFilter), nameof(CreateBuyMarketOrderAsync));
 
                 return ActionResult.Error;
@@ -54,7 +54,7 @@ internal class PercentLimitEndpoints
             if (symbolInfo.LotSizeFilter == null)
             {
                 _logger.LogError("{Symbol} | {Side}. {Filter} is null. In {Method}",
-                    symbolMarketInfo.FuturesUsdName, symbolMarketInfo.KlinePositionSide,
+                    symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide,
                     nameof(symbolInfo.LotSizeFilter), nameof(CreateBuyMarketOrderAsync));
                 
                 return ActionResult.Error;
@@ -65,7 +65,7 @@ internal class PercentLimitEndpoints
                 : symbolInfo.MinNotionalFilter.MinNotional; 
                 
             _logger.LogInformation("{Symbol} | {Side}. Percent from deposit is {Percent}%. Margin with leverage is {Margin}. In {Method}",
-                symbolMarketInfo.FuturesUsdName, symbolMarketInfo.KlinePositionSide, tradeLogicLogicOptions.PercentFromDepositForOpen, 
+                symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, tradeLogicLogicOptions.PercentFromDepositForOpen, 
                 initialMargin, nameof(CreateBuyMarketOrderAsync));
 
             var orderQuantity = _calculatorService.GetOrderQuantity(
@@ -77,13 +77,13 @@ internal class PercentLimitEndpoints
             var marginForOrder = orderQuantity * lastPrice / positionInfo.Leverage;
             
             _logger.LogInformation("{Symbol} | {Side}. Future position quantity: {Quantity}. Last price: {LastPrice}. Margin for order: {Margin}. In {Method}",
-                symbolMarketInfo.FuturesUsdName, symbolMarketInfo.KlinePositionSide, orderQuantity, lastPrice, marginForOrder,
+                symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, orderQuantity, lastPrice, marginForOrder,
                 nameof(CreateBuyMarketOrderAsync));
             
             if (balance.WalletBalance <= 0)
             {
                 _logger.LogWarning("{Symbol} | {Side}. Wallet balance is lower or equal to zero. In {Method}",
-                    symbolMarketInfo.FuturesUsdName, symbolMarketInfo.KlinePositionSide, nameof(CreateMarketAverageBuyOrderAsync));
+                    symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, nameof(CreateMarketAverageBuyOrderAsync));
                 
                 return ActionResult.Error;
             }
@@ -99,7 +99,7 @@ internal class PercentLimitEndpoints
                 _logger.LogWarning("{Symbol} | {Side}. Margin is not available. Margin percent for trading is {MarginPercentIsSettings}. " +
                                 "Current balance percent in use with future order is {BalancePercentInUse}. " +
                                 "Current balance: {Balance}. Available balance: {AvailableBalance}. In {Method}",
-                    symbolMarketInfo.FuturesUsdName, symbolMarketInfo.KlinePositionSide, 
+                    symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, 
                     tradeLogicLogicOptions.AvailableDepositPercentForTrading, 100.0m - availableBalancePercent, 
                     balance.WalletBalance, balance.AvailableBalance, nameof(CreateMarketAverageBuyOrderAsync));
                 
@@ -120,29 +120,29 @@ internal class PercentLimitEndpoints
 
                     var placeOrderRequest = await _restBinanceClient.UsdFuturesApi.Trading.PlaceOrderAsync(
                         symbol: symbolMarketInfo.FuturesUsdName,
-                        side: symbolMarketInfo.KlinePositionSide == PositionSide.Short ? OrderSide.Sell : OrderSide.Buy,
+                        side: symbolMarketInfo.PositionSide == PositionSide.Short ? OrderSide.Sell : OrderSide.Buy,
                         type: FuturesOrderType.Market,
                         quantity: futureOrderQuantity,
-                        positionSide: symbolMarketInfo.KlinePositionSide,
+                        positionSide: symbolMarketInfo.PositionSide,
                         ct: cancellationToken
                     );
 
                     if (placeOrderRequest.Success)
                     {
                         _logger.LogInformation("{Symbol} | {Side}. Open position market order with id {OrderId} and quantity {Quantity} placed successfully. In {Method}",
-                            symbolMarketInfo.FuturesUsdName, symbolMarketInfo.KlinePositionSide, placeOrderRequest.Data.Id, 
+                            symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, placeOrderRequest.Data.Id, 
                             futureOrderQuantity, nameof(CreateBuyMarketOrderAsync)); 
                         
                         break;
                     }
 
                     _logger.LogWarning(new ThException(placeOrderRequest.Error),"{Symbol} | {Side}. In {Method}",
-                        symbolMarketInfo.FuturesUsdName, symbolMarketInfo.KlinePositionSide, nameof(CreateBuyMarketOrderAsync));
+                        symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, nameof(CreateBuyMarketOrderAsync));
 
                     if (placeOrderRequest.Error?.Code == (int)ApiErrorCodes.MaximumExceededAtCurrentLeverage)
                     {
                         _logger.LogInformation("{Symbol} | {Side}. Order won't be placed due to last warning. In {Method}",
-                            symbolMarketInfo.FuturesUsdName, symbolMarketInfo.KlinePositionSide, nameof(CreateBuyMarketOrderAsync));
+                            symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, nameof(CreateBuyMarketOrderAsync));
                         
                         return ActionResult.ClientError;
                     }
@@ -153,7 +153,7 @@ internal class PercentLimitEndpoints
                     }
                     
                     _logger.LogError("{Symbol} | {Side}. {Number} retries exceeded In {Method}",
-                        symbolMarketInfo.FuturesUsdName, symbolMarketInfo.KlinePositionSide, maxRetries, nameof(CreateBuyMarketOrderAsync));
+                        symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, maxRetries, nameof(CreateBuyMarketOrderAsync));
 
                     return ActionResult.ClientError;
                 }
@@ -171,7 +171,7 @@ internal class PercentLimitEndpoints
         catch (Exception exception)
         {
             _logger.LogCritical(exception, "{Symbol} | {Side}. In {Method}",
-                symbolMarketInfo.FuturesUsdName, symbolMarketInfo.KlinePositionSide, nameof(CreateBuyMarketOrderAsync));
+                symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, nameof(CreateBuyMarketOrderAsync));
 
             return ActionResult.SystemError;
         }
