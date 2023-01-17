@@ -204,14 +204,16 @@ internal class PercentLimitPositionWorker : BasePositionWorker
         {
             var plsStore = (PercentLimitStore)tradeLogicStore;
          
+            plsStore.Positions.Remove(openedPosition);
             plsStore.PositionsInfo.Remove($"{openedPosition.Name}_{openedPosition.PositionSide}");
             
-            if (plsStore.Positions.Count(x => x.Name == openedPosition.Name) == 1)
+            if (plsStore.Positions.Count(x => x.Name == openedPosition.Name) == 1 
+                && plsStore.UsdFuturesTickerStreams.ContainsKey(openedPosition.Name))
             {
                 var stream = plsStore.UsdFuturesTickerStreams[openedPosition.Name];
                 await _socketBinanceClient.UnsubscribeAsync(stream.SocketSubscription);
-                plsStore.UsdFuturesTickerStreams.Remove(openedPosition.Name);
-                
+                plsStore.UsdFuturesTickerStreams.Remove(openedPosition.Name);    
+                    
                 _logger.LogInformation("{Position}. Unsubscribed from socket. In {Method}", 
                     openedPositionString, nameof(DeletePositionAsync));
             }
@@ -221,9 +223,7 @@ internal class PercentLimitPositionWorker : BasePositionWorker
                 openedPosition.PositionSide, 
                 cancellationToken: cancellationToken
             );
-            
-            plsStore.Positions.Remove(openedPosition);
-            
+
             _logger.LogInformation("{Position}. Position Removed. In {Method}", 
                 openedPositionString, nameof(DeletePositionAsync));
             
