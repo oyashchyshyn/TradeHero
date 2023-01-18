@@ -2,7 +2,7 @@ using System.Net.Http.Headers;
 using Microsoft.Extensions.Logging;
 using Octokit;
 using TradeHero.Contracts.Services;
-using TradeHero.Contracts.Services.Models.Update;
+using TradeHero.Contracts.Services.Models.Github;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Extensions;
 using TradeHero.Core.Models;

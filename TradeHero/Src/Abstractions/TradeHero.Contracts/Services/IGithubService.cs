@@ -1,4 +1,4 @@
-using TradeHero.Contracts.Services.Models.Update;
+using TradeHero.Contracts.Services.Models.Github;
 using TradeHero.Core.Models;
 
 namespace TradeHero.Contracts.Services;

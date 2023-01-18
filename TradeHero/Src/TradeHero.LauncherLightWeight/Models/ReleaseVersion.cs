@@ -1,6 +1,6 @@
-namespace TradeHero.Contracts.Services.Models.Github;
+﻿namespace TradeHero.LauncherLightWeight.Models;
 
-public class ReleaseVersion
+internal class ReleaseVersion
 {
     public bool IsNewAvailable { get; init; }
     public Version Version { get; init; } = new();

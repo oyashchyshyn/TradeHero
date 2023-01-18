@@ -52,6 +52,11 @@ internal static class Program
                 })
                 .Build();
 
+            if (!await host.Services.GetRequiredService<IStartupService>().ManageDatabaseDataAsync())
+            {
+                throw new Exception("Cannot manage with database.");
+            }
+            
             var store = host.Services.GetRequiredService<IStoreService>();
 
             await host.RunAsync();

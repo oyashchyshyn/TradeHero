@@ -1,4 +1,4 @@
-namespace TradeHero.Contracts.Services.Models.Update;
+namespace TradeHero.Contracts.Services.Models.Github;
 
 public class DownloadResponse
 {
