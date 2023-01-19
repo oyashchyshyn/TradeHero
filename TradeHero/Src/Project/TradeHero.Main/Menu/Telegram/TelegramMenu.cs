@@ -1,12 +1,12 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Menu;
-using TradeHero.Contracts.Menu.Commands;
-using TradeHero.Contracts.Repositories;
-using TradeHero.Contracts.Services;
-using TradeHero.Contracts.Services.Models.Telegram;
-using TradeHero.Contracts.Trading;
 using TradeHero.Core.Enums;
+using TradeHero.Core.Types.Menu;
+using TradeHero.Core.Types.Menu.Commands;
+using TradeHero.Core.Types.Repositories;
+using TradeHero.Core.Types.Services;
+using TradeHero.Core.Types.Services.Models.Telegram;
+using TradeHero.Core.Types.Trading;
 using TradeHero.Main.Menu.Telegram.Store;
 
 namespace TradeHero.Main.Menu.Telegram;

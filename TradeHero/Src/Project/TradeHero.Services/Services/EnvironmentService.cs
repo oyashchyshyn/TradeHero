@@ -4,10 +4,10 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using TradeHero.Contracts.Services;
 using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
-using TradeHero.Core.Settings.AppSettings;
+using TradeHero.Core.Types.Services;
+using TradeHero.Core.Types.Settings.AppSettings;
 
 namespace TradeHero.Services.Services;
 
@@ -52,7 +52,7 @@ internal class EnvironmentService : IEnvironmentService
 
     public RunnerType GetRunnerType()
     {
-        return (RunnerType)Enum.Parse(typeof(RunnerType), _configuration[HostConstants.RunningType] ?? string.Empty);
+        return (RunnerType)Enum.Parse(typeof(RunnerType), _configuration[HostConstants.RunnerType] ?? string.Empty);
     }
     
     public int GetCurrentProcessId()

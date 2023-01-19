@@ -1,6 +1,6 @@
 using CryptoExchange.Net.Sockets;
-using TradeHero.Contracts.Trading;
 using TradeHero.Core.Enums;
+using TradeHero.Core.Types.Trading;
 
 namespace TradeHero.Trading.Endpoints.Socket;
 

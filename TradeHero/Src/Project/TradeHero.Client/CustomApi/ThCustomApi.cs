@@ -1,6 +1,6 @@
-using TradeHero.Contracts.Client;
-using TradeHero.Contracts.Client.CustomApi;
-using TradeHero.Contracts.Services;
+using TradeHero.Core.Types.Client;
+using TradeHero.Core.Types.Client.CustomApi;
+using TradeHero.Core.Types.Services;
 
 namespace TradeHero.Client.CustomApi;
 

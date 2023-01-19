@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Menu;
-using TradeHero.Contracts.Services;
 using TradeHero.Core.Enums;
+using TradeHero.Core.Types.Menu;
+using TradeHero.Core.Types.Services;
 
 namespace TradeHero.Main.Menu.Console;
 

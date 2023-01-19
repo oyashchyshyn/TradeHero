@@ -3,11 +3,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TradeHero.Application.Host;
-using TradeHero.Contracts.Extensions;
-using TradeHero.Contracts.Services;
+using TradeHero.Client;
 using TradeHero.Core.Enums;
+using TradeHero.Core.Extensions;
 using TradeHero.Core.Helpers;
-using TradeHero.Dependencies;
+using TradeHero.Database;
+using TradeHero.Main;
+using TradeHero.Services;
+using TradeHero.Trading;
 using HostApp = Microsoft.Extensions.Hosting.Host;
 
 namespace TradeHero.Application;
@@ -52,23 +55,7 @@ internal static class Program
                 })
                 .Build();
 
-            if (!await host.Services.GetRequiredService<IStartupService>().ManageDatabaseDataAsync())
-            {
-                throw new Exception("Cannot manage with database.");
-            }
-            
-            var store = host.Services.GetRequiredService<IStoreService>();
-
             await host.RunAsync();
-
-            if (store.Application.Update.IsNeedToUpdateApplication)
-            {
-                Environment.ExitCode = (int)AppExitCode.Update;
-            }
-            else
-            {
-                Environment.ExitCode = (int)AppExitCode.Success;
-            }
         }
         catch (Exception exception)
         {

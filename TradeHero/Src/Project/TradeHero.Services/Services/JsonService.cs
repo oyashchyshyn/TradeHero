@@ -3,10 +3,10 @@ using CryptoExchange.Net.Converters;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using TradeHero.Contracts.Services;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Extensions;
 using TradeHero.Core.Models;
+using TradeHero.Core.Types.Services;
 using TradeHero.Services.ContractResolvers;
 
 namespace TradeHero.Services.Services;

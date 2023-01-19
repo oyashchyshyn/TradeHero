@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Services;
+using TradeHero.Core.Enums;
+using TradeHero.Core.Types.Services;
 
 namespace TradeHero.Services.Services;
 
@@ -25,7 +26,7 @@ internal class ApplicationService : IApplicationService
         _actionsBeforeStopApplication = actionsBeforeStopApplication;
     }
     
-    public void StopApplication()
+    public void StopApplication(AppExitCode? appExitCode = null)
     {
         if (_actionsBeforeStopApplication != null)
         {
@@ -35,5 +36,10 @@ internal class ApplicationService : IApplicationService
         }
 
         _hostApplicationLifetime.StopApplication();
+
+        if (appExitCode.HasValue)
+        {
+            Environment.ExitCode = (int)appExitCode.Value;
+        }
     }
 }

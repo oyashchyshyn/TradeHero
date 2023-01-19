@@ -1,9 +1,7 @@
-
+using Telegram.Bot.Types.ReplyMarkups;
+using TradeHero.Core.Types.Services;
 
 // ReSharper disable ConvertToConstant.Global
-
-using Telegram.Bot.Types.ReplyMarkups;
-using TradeHero.Contracts.Services;
 
 namespace TradeHero.Main.Menu.Telegram.Store;
 

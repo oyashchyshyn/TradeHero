@@ -2,8 +2,8 @@ using Binance.Net.Objects;
 using CryptoExchange.Net.Authentication;
 using Microsoft.Extensions.Logging;
 using TradeHero.Client.Clients;
-using TradeHero.Contracts.Client;
-using TradeHero.Contracts.Client.Resolvers;
+using TradeHero.Core.Types.Client;
+using TradeHero.Core.Types.Client.Resolvers;
 
 namespace TradeHero.Client.Resolvers;
 

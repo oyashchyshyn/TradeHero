@@ -1,11 +1,11 @@
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Client.Resolvers;
-using TradeHero.Contracts.Menu.Commands;
-using TradeHero.Contracts.Repositories;
-using TradeHero.Contracts.Repositories.Models;
-using TradeHero.Contracts.Services;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Exceptions;
+using TradeHero.Core.Types.Client.Resolvers;
+using TradeHero.Core.Types.Menu.Commands;
+using TradeHero.Core.Types.Repositories;
+using TradeHero.Core.Types.Repositories.Models;
+using TradeHero.Core.Types.Services;
 using TradeHero.Main.Data;
 using TradeHero.Main.Menu.Telegram.Store;
 

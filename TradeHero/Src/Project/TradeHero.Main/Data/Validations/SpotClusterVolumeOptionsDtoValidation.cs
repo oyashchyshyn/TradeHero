@@ -1,9 +1,9 @@
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Services;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Extensions;
+using TradeHero.Core.Types.Services;
 using TradeHero.Main.Data.Dtos.Instance;
 
 namespace TradeHero.Main.Data.Validations;

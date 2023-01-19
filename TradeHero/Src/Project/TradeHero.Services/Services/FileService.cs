@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Services;
+using TradeHero.Core.Types.Services;
 
 namespace TradeHero.Services.Services;
 

@@ -13,10 +13,6 @@
       <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
       <PackageReference Include="Skender.Stock.Indicators" Version="2.4.7" />
     </ItemGroup>
-    
-    <ItemGroup>
-      <ProjectReference Include="..\..\Abstractions\TradeHero.Contracts\TradeHero.Contracts.csproj" />
-    </ItemGroup>
 
     <ItemGroup>
         <Folder Include="Properties" />
@@ -24,6 +20,10 @@
 
     <ItemGroup>
         <Compile Include="..\..\..\SharedAssemblyInfo.cs" Link="Properties\AssemblyInfo.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\TradeHero.Core\TradeHero.Core.csproj" />
     </ItemGroup>
     
 </Project>

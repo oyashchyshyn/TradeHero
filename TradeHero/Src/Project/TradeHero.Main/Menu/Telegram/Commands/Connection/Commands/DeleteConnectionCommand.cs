@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types.ReplyMarkups;
-using TradeHero.Contracts.Menu.Commands;
-using TradeHero.Contracts.Repositories;
-using TradeHero.Contracts.Services;
+using TradeHero.Core.Types.Menu.Commands;
+using TradeHero.Core.Types.Repositories;
+using TradeHero.Core.Types.Services;
 using TradeHero.Main.Menu.Telegram.Store;
 
 namespace TradeHero.Main.Menu.Telegram.Commands.Connection.Commands;

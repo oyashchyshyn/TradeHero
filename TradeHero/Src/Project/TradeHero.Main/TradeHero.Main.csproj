@@ -19,10 +19,12 @@
     <ItemGroup>
       <PackageReference Include="FluentValidation" Version="11.4.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\Abstractions\TradeHero.Contracts\TradeHero.Contracts.csproj" />
+      <ProjectReference Include="..\TradeHero.Core\TradeHero.Core.csproj" />
     </ItemGroup>
 
 </Project>

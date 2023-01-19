@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Repositories;
-using TradeHero.Contracts.Repositories.Models;
+using TradeHero.Core.Types.Repositories;
+using TradeHero.Core.Types.Repositories.Models;
 using TradeHero.Database.Context;
 using TradeHero.Database.Entities;
 

@@ -1,8 +1,8 @@
 using System.Reflection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Services;
 using TradeHero.Core.Enums;
+using TradeHero.Core.Types.Services;
 
 namespace TradeHero.Application.Host;
 
@@ -74,11 +74,9 @@ internal class AppHostLifeTime : IHostLifetime, IDisposable
     {
         _logger.LogInformation("Exit button is pressed. In {Method}", nameof(OnProcessExit));
         
-        _applicationService.StopApplication();
+        _applicationService.StopApplication(AppExitCode.Success);
 
         _shutdownBlock.WaitOne();
-        
-        Environment.ExitCode = (int)AppExitCode.Success;
     }
     
     private void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
@@ -87,7 +85,7 @@ internal class AppHostLifeTime : IHostLifetime, IDisposable
         
         e.Cancel = true;
         
-        _applicationService.StopApplication();
+        _applicationService.StopApplication(AppExitCode.Success);
     }
 
     #endregion

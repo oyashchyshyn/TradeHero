@@ -1,7 +1,7 @@
 using System.Net.NetworkInformation;
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Services;
-using TradeHero.Core.Settings.AppSettings;
+using TradeHero.Core.Types.Services;
+using TradeHero.Core.Types.Settings.AppSettings;
 
 namespace TradeHero.Services.Services;
 

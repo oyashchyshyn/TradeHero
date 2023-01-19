@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
-using TradeHero.Contracts.Menu;
-using TradeHero.Contracts.Menu.Commands;
+using TradeHero.Core.Types.Menu;
+using TradeHero.Core.Types.Menu.Commands;
 using TradeHero.Main.Menu.Telegram.Commands;
 using TradeHero.Main.Menu.Telegram.Commands.Bot;
 using TradeHero.Main.Menu.Telegram.Commands.Bot.Commands;

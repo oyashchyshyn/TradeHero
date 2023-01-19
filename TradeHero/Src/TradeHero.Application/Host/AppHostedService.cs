@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Menu;
-using TradeHero.Contracts.Services;
 using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
+using TradeHero.Core.Types.Menu;
+using TradeHero.Core.Types.Services;
 
 namespace TradeHero.Application.Host;
 

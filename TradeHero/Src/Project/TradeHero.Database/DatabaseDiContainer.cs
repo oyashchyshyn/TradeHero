@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Repositories;
-using TradeHero.Contracts.Services;
+using TradeHero.Core.Types.Repositories;
+using TradeHero.Core.Types.Services;
 using TradeHero.Database.Context;
 using TradeHero.Database.Entities;
 using TradeHero.Database.Repositories;
@@ -12,7 +12,7 @@ namespace TradeHero.Database;
 
 public static class DatabaseDiContainer
 {
-    public static void Register(IServiceCollection serviceCollection)
+    public static void AddDatabase(this IServiceCollection serviceCollection)
     {
         serviceCollection.AddSingleton<DatabaseFileWorker>();
         
