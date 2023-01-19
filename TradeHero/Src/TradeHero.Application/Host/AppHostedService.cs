@@ -10,7 +10,6 @@ namespace TradeHero.Application.Host;
 internal class AppHostedService : IHostedService
 {
     private readonly ILogger<AppHostedService> _logger;
-    private readonly IApplicationService _applicationService;
     private readonly IJobService _jobService;
     private readonly IInternetConnectionService _internetConnectionService;
     private readonly IFileService _fileService;
@@ -22,17 +21,15 @@ internal class AppHostedService : IHostedService
     
     public AppHostedService(
         ILogger<AppHostedService> logger,
-        IApplicationService applicationService,
         IJobService jobService,
         IInternetConnectionService internetConnectionService,
         IFileService fileService,
         IEnvironmentService environmentService,
         IStoreService storeService,
         IMenuFactory menuFactory
-        )
+    )
     {
         _logger = logger;
-        _applicationService = applicationService;
         _jobService = jobService;
         _internetConnectionService = internetConnectionService;
         _fileService = fileService;
@@ -51,7 +48,7 @@ internal class AppHostedService : IHostedService
             _logger.LogInformation("Base path: {GetBasePath}", _environmentService.GetBasePath());
             _logger.LogInformation("Runner type: {RunnerType}", _environmentService.GetRunnerType());
             
-            _applicationService.SetActionsBeforeStopApplication(StopServices);
+            _environmentService.SetActionsBeforeStop(StopServices);
             
             if (_environmentService.GetEnvironmentType() == EnvironmentType.Development)
             {

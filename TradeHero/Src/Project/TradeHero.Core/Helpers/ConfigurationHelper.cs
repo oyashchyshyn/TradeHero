@@ -1,5 +1,7 @@
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
+using TradeHero.Core.Constants;
+using TradeHero.Core.Enums;
 using TradeHero.Core.Types.Settings.AppSettings;
 
 namespace TradeHero.Core.Helpers;
@@ -24,6 +26,16 @@ public static class ConfigurationHelper
             .AddJsonStream(stream)
             .AddCommandLine(args)
             .Build();
+    }
+
+    public static IConfiguration SetEnvironmentProperties(IConfiguration configuration, string basePath, 
+        RunnerType runnerType, EnvironmentType environmentType)
+    {
+        configuration[EnvironmentConstants.BasePath] = basePath;
+        configuration[EnvironmentConstants.RunnerType] = runnerType.ToString();
+        configuration[EnvironmentConstants.EnvironmentType] = environmentType.ToString();
+
+        return configuration;
     }
     
     public static AppSettings ConvertConfigurationToAppSettings(IConfiguration configuration)

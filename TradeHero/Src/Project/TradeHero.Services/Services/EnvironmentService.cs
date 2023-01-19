@@ -1,9 +1,7 @@
-﻿using System.Net;
-using System.Net.Sockets;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Types.Services;
@@ -13,16 +11,22 @@ namespace TradeHero.Services.Services;
 
 internal class EnvironmentService : IEnvironmentService
 {
-    private readonly IHostEnvironment _hostingEnvironment;
+    private readonly ILogger<EnvironmentService> _logger;
     private readonly IConfiguration _configuration;
 
+    private readonly CancellationTokenSource _cancellationTokenSource;
+    
+    private Action? _actionsBeforeStopApplication;
+
     public EnvironmentService(
-        IHostEnvironment hostingEnvironment, 
-        IConfiguration configuration
+        ILogger<EnvironmentService> logger,
+        IConfiguration configuration,
+        CancellationTokenSource cancellationTokenSource
         )
     {
-        _hostingEnvironment = hostingEnvironment;
+        _logger = logger;
         _configuration = configuration;
+        _cancellationTokenSource = cancellationTokenSource;
     }
 
     public string[] GetEnvironmentArgs()
@@ -42,17 +46,17 @@ internal class EnvironmentService : IEnvironmentService
     
     public string GetBasePath()
     {
-        return _hostingEnvironment.ContentRootPath;
+        return _configuration[EnvironmentConstants.BasePath] ?? string.Empty;
     }
 
     public EnvironmentType GetEnvironmentType()
     {
-        return (EnvironmentType)Enum.Parse(typeof(EnvironmentType), _hostingEnvironment.EnvironmentName);
+        return (EnvironmentType)Enum.Parse(typeof(EnvironmentType), _configuration[EnvironmentConstants.EnvironmentType] ?? string.Empty);
     }
 
     public RunnerType GetRunnerType()
     {
-        return (RunnerType)Enum.Parse(typeof(RunnerType), _configuration[HostConstants.RunnerType] ?? string.Empty);
+        return (RunnerType)Enum.Parse(typeof(RunnerType), _configuration[EnvironmentConstants.RunnerType] ?? string.Empty);
     }
     
     public int GetCurrentProcessId()
@@ -109,18 +113,26 @@ internal class EnvironmentService : IEnvironmentService
 
         return applicationName;
     }
-    
-    public IPAddress GetLocalIpAddress()
+
+    public void SetActionsBeforeStop(Action actionsBeforeStopApplication)
     {
-        var host = Dns.GetHostEntry(Dns.GetHostName());
-        foreach (var ip in host.AddressList)
+        _actionsBeforeStopApplication = actionsBeforeStopApplication;
+    }
+    
+    public void StopApplication(AppExitCode? appExitCode = null)
+    {
+        if (_actionsBeforeStopApplication != null)
         {
-            if (ip.AddressFamily == AddressFamily.InterNetwork)
-            {
-                return ip;
-            }
+            _actionsBeforeStopApplication.Invoke();
+            
+            _logger.LogInformation("Clear resources. In {Method}", nameof(StopApplication));
+        }
+
+        if (appExitCode.HasValue)
+        {
+            Environment.ExitCode = (int)appExitCode.Value;
         }
         
-        throw new Exception("No network adapters with an IPv4 address in the system!");
+        _cancellationTokenSource.Cancel();
     }
 }

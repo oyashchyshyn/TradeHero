@@ -1,5 +1,4 @@
-﻿using System.Net;
-using TradeHero.Core.Enums;
+﻿using TradeHero.Core.Enums;
 using TradeHero.Core.Types.Settings.AppSettings;
 
 namespace TradeHero.Core.Types.Services;
@@ -16,5 +15,6 @@ public interface IEnvironmentService
     OperationSystem GetCurrentOperationSystem();
     string GetRunningApplicationName();
     string GetReleaseApplicationName();
-    IPAddress GetLocalIpAddress();
+    void SetActionsBeforeStop(Action actionsBeforeStopApplication);
+    void StopApplication(AppExitCode? appExitCode = null);
 }

@@ -11,7 +11,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Abstractions\TradeHero.Core\TradeHero.Core.csproj" />
         <ProjectReference Include="..\Project\TradeHero.Client\TradeHero.Client.csproj" />
         <ProjectReference Include="..\Project\TradeHero.Core\TradeHero.Core.csproj" />
         <ProjectReference Include="..\Project\TradeHero.Database\TradeHero.Database.csproj" />

@@ -24,22 +24,25 @@ internal static class Program
         var configuration = ConfigurationHelper.GenerateConfiguration(args);
         var environmentSettings = ConfigurationHelper.ConvertConfigurationToAppSettings(configuration);
         var environmentType = ArgsHelper.GetEnvironmentType(args);
+        var cancellationTokenSource = new CancellationTokenSource();
 
         try
         {
+            configuration = ConfigurationHelper.SetEnvironmentProperties(configuration, 
+                AppDomain.CurrentDomain.BaseDirectory, RunnerType.App, environmentType);
+            
             ArgsHelper.IsRunAppKeyExist(args, environmentSettings.Application.RunAppKey);
 
             var host = HostApp.CreateDefaultBuilder(args)
                 .UseEnvironment(environmentType.ToString())
                 .UseContentRoot(AppDomain.CurrentDomain.BaseDirectory)
-                .UseRunningType(RunnerType.App.ToString())
                 .ConfigureAppConfiguration((_, config) =>
                 {
                     config.AddConfiguration(configuration);
                 })
                 .ConfigureServices((_, serviceCollection) =>
                 {
-                    serviceCollection.AddServices();
+                    serviceCollection.AddServices(cancellationTokenSource);
                     serviceCollection.AddClient();
                     serviceCollection.AddDatabase();
                     serviceCollection.AddTrading();
@@ -55,7 +58,7 @@ internal static class Program
                 })
                 .Build();
 
-            await host.RunAsync();
+            await host.RunAsync(token: cancellationTokenSource.Token);
         }
         catch (Exception exception)
         {

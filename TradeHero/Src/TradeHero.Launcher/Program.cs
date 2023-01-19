@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
-using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Helpers;
 using TradeHero.Launcher.Providers;
@@ -13,8 +12,6 @@ internal static class Program
     private static async Task Main(string[] args)
     {
         var configuration = ConfigurationHelper.GenerateConfiguration(args);
-        configuration[HostConstants.RunnerType] = RunnerType.Launcher.ToString();
-        
         var appSettings = ConfigurationHelper.ConvertConfigurationToAppSettings(configuration);
         var baseDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, appSettings.Folder.DataFolderName);
 
@@ -32,9 +29,8 @@ internal static class Program
                 Directory.CreateDirectory(baseDirectory);
             }
 
-            var environmentType = ArgsHelper.GetEnvironmentType(args);
-
-            await using (var serviceProvider = LauncherServiceProvider.Build(configuration, baseDirectory, environmentType))
+            await using (var serviceProvider = LauncherServiceProvider.Build(configuration, baseDirectory, 
+                             ArgsHelper.GetEnvironmentType(args), RunnerType.Launcher, new CancellationTokenSource()))
             {
                 var launcherService = serviceProvider.GetRequiredService<LauncherStartupService>();
                 
