@@ -257,7 +257,7 @@ internal class LauncherStartupService
                 if (!File.Exists(appPath))
                 {
                     _terminalService.WriteLine("Preparing application...");
-                    
+
                     var latestRelease = await _githubService.GetLatestReleaseAsync();
                     if (latestRelease.ActionResult != ActionResult.Success)
                     {
@@ -269,6 +269,8 @@ internal class LauncherStartupService
                     {
                         throw new Exception("Cannot download remote additional data for bot.");
                     }
+                    
+                    _terminalService.ClearConsole();
                 }
 
                 var arguments = $"{ArgumentKeyConstants.Environment}{_environmentService.GetEnvironmentType()} " +
