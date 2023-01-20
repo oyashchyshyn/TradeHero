@@ -39,7 +39,7 @@ internal static class Program
                 
                 if (!await launcherService.ManageDatabaseDataAsync())
                 {
-                    throw new Exception("Cannot manage with database.");
+                    throw new Exception("Cannot manage with local data, please see logs.");
                 }
         
                 launcherService.RunApp();

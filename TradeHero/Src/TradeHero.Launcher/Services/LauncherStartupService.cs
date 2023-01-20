@@ -300,8 +300,14 @@ internal class LauncherStartupService
                 _runningProcess = Process.Start(processStartInfo);
                 if (_runningProcess == null)
                 {
-                    _logger.LogWarning("App process did not started! In {Method}", nameof(RunApp));
+                    _logger.LogWarning("App process did not started! Process is null. In {Method}", 
+                        nameof(RunApp));
 
+                    _waitAppClosed.Set();
+                    AppWaiting.Set();
+                    
+                    _terminalService.WriteLine("Cannot start bot, please see logs.");
+                    
                     return;
                 }
                 
