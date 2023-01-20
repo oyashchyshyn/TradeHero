@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using TradeHero.Core.Types.Services;
-using TradeHero.Core.Types.Settings.AppSettings;
+using TradeHero.Core.Types.Settings;
 using TradeHero.Database.Entities;
 using TradeHero.Database.Worker;
 

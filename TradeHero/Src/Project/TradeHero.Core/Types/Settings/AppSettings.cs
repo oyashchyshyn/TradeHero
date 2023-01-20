@@ -1,4 +1,4 @@
-namespace TradeHero.Core.Types.Settings.AppSettings;
+namespace TradeHero.Core.Types.Settings;
 
 public class AppSettings
 {
@@ -9,4 +9,5 @@ public class AppSettings
     public GithubSettings Github { get; set; } = new();
     public FolderSettings Folder { get; set; } = new();
     public DatabaseSettings Database { get; set; } = new();
+    public Dictionary<string, string> CustomValues { get; } = new();
 }

@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace TradeHero.Core.Types.Settings.AppSettings;
+namespace TradeHero.Core.Types.Settings;
 
 public class LoggerSettings
 {

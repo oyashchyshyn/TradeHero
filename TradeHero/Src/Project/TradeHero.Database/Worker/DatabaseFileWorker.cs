@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using TradeHero.Core.Types.Services;
-using TradeHero.Core.Types.Settings.AppSettings;
+using TradeHero.Core.Types.Settings;
 using TradeHero.Database.Entities;
 
 namespace TradeHero.Database.Worker;

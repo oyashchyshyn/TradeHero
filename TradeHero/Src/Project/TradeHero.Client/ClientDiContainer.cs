@@ -9,7 +9,7 @@ using TradeHero.Core.Types.Client;
 using TradeHero.Core.Types.Client.Resolvers;
 using TradeHero.Core.Types.Repositories;
 using TradeHero.Core.Types.Services;
-using TradeHero.Core.Types.Settings.AppSettings;
+using TradeHero.Core.Types.Settings;
 
 namespace TradeHero.Client;
 

@@ -1,9 +1,8 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Telegram.Bot;
 using TradeHero.Core.Types.Repositories;
 using TradeHero.Core.Types.Services;
+using TradeHero.Core.Types.Settings;
 using TradeHero.Main.Telegram;
 using TradeHero.Services.Services;
 
@@ -11,8 +10,10 @@ namespace TradeHero.Services;
 
 public static class ServicesDiContainer
 {
-    public static void AddServices(this IServiceCollection serviceCollection, CancellationTokenSource cancellationTokenSource)
+    public static void AddServices(this IServiceCollection serviceCollection, AppSettings appSettings, 
+        CancellationTokenSource cancellationTokenSource)
     {
+        // Services
         serviceCollection.AddSingleton<IJsonService, JsonService>();
         serviceCollection.AddSingleton<ICalculatorService, CalculatorService>();
         serviceCollection.AddSingleton<IDateTimeService, DateTimeService>();
@@ -24,12 +25,7 @@ public static class ServicesDiContainer
         serviceCollection.AddSingleton<IStoreService, StoreService>();
         
         // Environment
-        serviceCollection.AddSingleton<IEnvironmentService>(sp =>
-        {
-            var configuration = sp.GetRequiredService<IConfiguration>();
-
-            return new EnvironmentService(configuration, cancellationTokenSource);
-        });
+        serviceCollection.AddSingleton<IEnvironmentService>(_ => new EnvironmentService(appSettings, cancellationTokenSource));
         
         // Telegram
         serviceCollection.AddSingleton<ITelegramService, TelegramService>();

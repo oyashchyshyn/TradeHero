@@ -1,4 +1,4 @@
-namespace TradeHero.Core.Types.Settings.AppSettings;
+namespace TradeHero.Core.Types.Settings;
 
 public class DatabaseSettings
 {

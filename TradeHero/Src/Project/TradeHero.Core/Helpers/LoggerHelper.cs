@@ -9,9 +9,9 @@ public static class LoggerHelper
         {
             Directory.CreateDirectory(directoryPath);
         }
-            
-        await File.AppendAllTextAsync(
-            Path.Combine(directoryPath, fileName), string.Join(string.Empty, exception.ToString(), Environment.NewLine)
-        );
+
+        var message = $"{DateTimeOffset.UtcNow} {string.Join(string.Empty, exception.ToString(), Environment.NewLine)}";
+        
+        await File.AppendAllTextAsync(Path.Combine(directoryPath, fileName), message);
     }
 }

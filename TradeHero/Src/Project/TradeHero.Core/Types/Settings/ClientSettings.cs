@@ -1,6 +1,6 @@
 using TradeHero.Core.Enums;
 
-namespace TradeHero.Core.Types.Settings.AppSettings;
+namespace TradeHero.Core.Types.Settings;
 
 public class ClientSettings
 {

@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
+using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Helpers;
 using TradeHero.Launcher.Providers;
@@ -11,29 +12,26 @@ internal static class Program
 {
     public static async Task Main(string[] args)
     {
-        var environmentType = ArgsHelper.GetEnvironmentType(args);
-        var appSettings = ConfigurationHelper.ConvertConfigurationToAppSettings(
-            ConfigurationHelper.GenerateConfiguration(AppDomain.CurrentDomain.BaseDirectory, environmentType, RunnerType.Launcher)
-        );
-        
-        var baseDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, appSettings.Folder.DataFolderName);
-        
         try
         {
+            EnvironmentHelper.SetCulture();
+            
             if (Process.GetProcesses().Count(x => x.ProcessName == Process.GetCurrentProcess().ProcessName) > 1)
             {
                 throw new Exception("Bot already running!");
             }
-        
-            EnvironmentHelper.SetCulture();
-        
+            
+            var environmentType = ArgsHelper.GetEnvironmentType(args);
+            var baseDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FolderConstants.DataFolder);
+
             if (!Directory.Exists(baseDirectory))
             {
                 Directory.CreateDirectory(baseDirectory);
             }
-        
-            var configurationForLauncher = ConfigurationHelper.GenerateConfiguration(baseDirectory, environmentType, RunnerType.Launcher);
-            await using (var serviceProvider = LauncherServiceProvider.Build(configurationForLauncher, new CancellationTokenSource()))
+            
+            var appSettings = AppSettingsHelper.GenerateAppSettings(baseDirectory, environmentType, RunnerType.Launcher);
+            
+            await using (var serviceProvider = LauncherServiceProvider.Build(appSettings, new CancellationTokenSource()))
             {
                 var launcherService = serviceProvider.GetRequiredService<LauncherStartupService>();
                 
@@ -55,8 +53,8 @@ internal static class Program
         }
         catch (Exception exception)
         {
-            var logsPath = Path.Combine(baseDirectory, appSettings.Folder.LogsFolderName);
-            await LoggerHelper.WriteLogToFileAsync(exception, logsPath, "launcher_fatal.txt");
+            var logsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FolderConstants.DataFolder, FolderConstants.LogsFolder);
+            await LoggerHelper.WriteLogToFileAsync(exception, logsPath, FileConstants.LauncherFatalLogsName);
         
             await MessageHelper.WriteMessageAsync(exception.Message);
         

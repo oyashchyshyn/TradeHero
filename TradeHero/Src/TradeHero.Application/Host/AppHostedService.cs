@@ -104,8 +104,6 @@ internal class AppHostedService : IHostedService
             _internetConnectionService.OnInternetDisconnected -= InternetConnectionServiceOnOnInternetDisconnected;
         
             _internetConnectionService.StopInternetConnectionChecking();
-
-            _logger.LogInformation("App stopped");
         }
         catch (Exception exception)
         {

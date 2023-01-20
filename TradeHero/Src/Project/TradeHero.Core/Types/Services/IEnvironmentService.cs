@@ -1,5 +1,5 @@
 ﻿using TradeHero.Core.Enums;
-using TradeHero.Core.Types.Settings.AppSettings;
+using TradeHero.Core.Types.Settings;
 
 namespace TradeHero.Core.Types.Services;
 

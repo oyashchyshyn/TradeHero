@@ -1,27 +1,26 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
-using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Types.Services;
-using TradeHero.Core.Types.Settings.AppSettings;
+using TradeHero.Core.Types.Settings;
 
 namespace TradeHero.Services.Services;
 
 internal class EnvironmentService : IEnvironmentService
 {
-    private readonly IConfiguration _configuration;
-
+    private readonly AppSettings _appSettings;
     private readonly CancellationTokenSource _cancellationTokenSource;
-    
+
     private Action? _actionsBeforeStopApplication;
 
     public EnvironmentService(
-        IConfiguration configuration,
+        AppSettings appSettings, 
         CancellationTokenSource cancellationTokenSource
         )
     {
-        _configuration = configuration;
+        _appSettings = appSettings;
         _cancellationTokenSource = cancellationTokenSource;
     }
 
@@ -32,7 +31,7 @@ internal class EnvironmentService : IEnvironmentService
 
     public AppSettings GetAppSettings()
     {
-        return _configuration.Get<AppSettings>() ?? new AppSettings();
+        return _appSettings;
     }
 
     public Version GetCurrentApplicationVersion()
@@ -42,17 +41,17 @@ internal class EnvironmentService : IEnvironmentService
     
     public string GetBasePath()
     {
-        return _configuration[EnvironmentConstants.BasePath] ?? string.Empty;
+        return _appSettings.CustomValues[EnvironmentConstants.BasePath];
     }
 
     public EnvironmentType GetEnvironmentType()
     {
-        return (EnvironmentType)Enum.Parse(typeof(EnvironmentType), _configuration[EnvironmentConstants.EnvironmentType] ?? string.Empty);
+        return (EnvironmentType)Enum.Parse(typeof(EnvironmentType), _appSettings.CustomValues[EnvironmentConstants.EnvironmentType]);
     }
 
     public RunnerType GetRunnerType()
     {
-        return (RunnerType)Enum.Parse(typeof(RunnerType), _configuration[EnvironmentConstants.RunnerType] ?? string.Empty);
+        return (RunnerType)Enum.Parse(typeof(RunnerType), _appSettings.CustomValues[EnvironmentConstants.RunnerType]);
     }
     
     public int GetCurrentProcessId()
