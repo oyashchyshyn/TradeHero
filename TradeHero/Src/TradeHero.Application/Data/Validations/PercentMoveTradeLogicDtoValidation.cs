@@ -48,14 +48,14 @@ internal class PercentMoveStrategyDtoValidation : AbstractValidator<PercentMoveT
     private void GeneralRules()
     {
         RuleFor(x => x.Name)
-            .MustAsync(ValidateNameAsync);
+            .CustomAsync(ValidateNameAsync);
         
         RuleFor(x => x.PricePercentMove)
-            .MustAsync(ValidatePricePercentMoveAsync);
+            .CustomAsync(ValidatePricePercentMoveAsync);
     }
     
-    private async Task<bool> ValidateNameAsync(PercentMoveTradeLogicDto percentMoveTradeLogicDto, 
-        string name, ValidationContext<PercentMoveTradeLogicDto> propertyContext, CancellationToken cancellationToken)
+    private async Task ValidateNameAsync(string name, ValidationContext<PercentMoveTradeLogicDto> propertyContext, 
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -64,7 +64,7 @@ internal class PercentMoveStrategyDtoValidation : AbstractValidator<PercentMoveT
                 propertyContext.AddFailure(new ValidationFailure(
                     _propertyNames[nameof(PercentMoveTradeLogicDto.Name)], "Cannot be empty."));
                 
-                return false;
+                return;
             }
 
             switch (name.Length)
@@ -72,11 +72,11 @@ internal class PercentMoveStrategyDtoValidation : AbstractValidator<PercentMoveT
                 case < 3:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentMoveTradeLogicDto.Name)], "Minimum length 3."));
-                    return false;
+                    return;
                 case > 40:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentMoveTradeLogicDto.Name)], "Maximum length 40."));
-                    return false;
+                    return;
             }
 
             var databaseCheckResult = false;
@@ -86,7 +86,7 @@ internal class PercentMoveStrategyDtoValidation : AbstractValidator<PercentMoveT
                     databaseCheckResult = await _strategyRepository.IsNameExistInDatabaseForCreate(name);
                     break;
                 case ValidationRuleSet.Update:
-                    databaseCheckResult = await _strategyRepository.IsNameExistInDatabaseForUpdate(percentMoveTradeLogicDto.Id, name);
+                    databaseCheckResult = await _strategyRepository.IsNameExistInDatabaseForUpdate(propertyContext.InstanceToValidate.Id, name);
                     break;
             }
 
@@ -94,11 +94,7 @@ internal class PercentMoveStrategyDtoValidation : AbstractValidator<PercentMoveT
             {
                 propertyContext.AddFailure(new ValidationFailure(
                     _propertyNames[nameof(PercentMoveTradeLogicDto.Name)], $"Strategy with name '{name}' already exist."));
-
-                return false;
             }
-
-            return true;
         }
         catch (Exception exception)
         {
@@ -107,13 +103,11 @@ internal class PercentMoveStrategyDtoValidation : AbstractValidator<PercentMoveT
             propertyContext.AddFailure(new ValidationFailure(
                 $"{_propertyNames[nameof(PercentMoveTradeLogicDto.Name)]}", 
                 "Validation failed."));
-            
-            return false;
         }
     }
     
-    private Task<bool> ValidatePricePercentMoveAsync(PercentMoveTradeLogicDto percentMoveTradeLogicDto, 
-        decimal pricePercentMove, ValidationContext<PercentMoveTradeLogicDto> propertyContext, CancellationToken cancellationToken)
+    private Task ValidatePricePercentMoveAsync(decimal pricePercentMove, ValidationContext<PercentMoveTradeLogicDto> propertyContext, 
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -123,15 +117,15 @@ internal class PercentMoveStrategyDtoValidation : AbstractValidator<PercentMoveT
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentMoveTradeLogicDto.PricePercentMove)], 
                         "Cannot be lower then 0.01."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
                 case > 1000.00m:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentMoveTradeLogicDto.PricePercentMove)], 
                         "Cannot be higher then 1000.00."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
             }
 
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
         catch (Exception exception)
         {
@@ -141,7 +135,7 @@ internal class PercentMoveStrategyDtoValidation : AbstractValidator<PercentMoveT
                 $"{_propertyNames[nameof(PercentMoveTradeLogicDto.PricePercentMove)]}", 
                 "Validation failed."));
             
-            return Task.FromResult(false);
+            return Task.CompletedTask;
         }
     }
     

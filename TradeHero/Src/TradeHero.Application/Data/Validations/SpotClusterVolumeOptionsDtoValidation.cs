@@ -22,36 +22,35 @@ internal class SpotClusterVolumeOptionsDtoValidation : AbstractValidator<SpotClu
     {
         _logger = logger;
         _telegramService = telegramService;
-        
+
         RuleSet(ValidationRuleSet.Default.ToString(), () =>
         {
             RuleFor(x => x.ItemsInTask)
-                .MustAsync(ValidateItemsInTaskAsync);
+                .CustomAsync(ValidateItemsInTaskAsync);
 
             RuleFor(x => x.VolumeAverage)
-                .MustAsync(ValidateVolumeAverageAsync);
+                .CustomAsync(ValidateVolumeAverageAsync);
         
             RuleFor(x => x.OrderBookDepthPercent)
-                .MustAsync(ValidateOrderBookDepthPercentAsync);
+                .CustomAsync(ValidateOrderBookDepthPercentAsync);
             
             RuleFor(x => x.TelegramChannelId)
-                .MustAsync(ValidateTelegramChannelIdAsync)
+                .CustomAsync(ValidateTelegramChannelIdAsync)
                 .When(x => x.TelegramChannelId.HasValue);
 
             RuleFor(x => x.TelegramChannelName)
-                .MustAsync(ValidateTelegramChannelNameAsync)
+                .CustomAsync(ValidateTelegramChannelNameAsync)
                 .When(x => x.TelegramChannelName != null);
             
             RuleFor(x => x.TelegramIsNeedToSendMessages)
-                .MustAsync(ValidateTelegramIsNeedToSendMessagesAsync)
+                .CustomAsync(ValidateTelegramIsNeedToSendMessagesAsync)
                 .When(x => x.TelegramChannelId.HasValue && x.TelegramIsNeedToSendMessages != null && x.TelegramIsNeedToSendMessages.Value);
         });
     }
 
     #region Private methods
 
-    private Task<bool> ValidateItemsInTaskAsync(SpotClusterVolumeOptionsDto spotClusterVolumeOptionsDto, 
-        int itemsInTask, ValidationContext<SpotClusterVolumeOptionsDto> propertyContext, CancellationToken cancellationToken)
+    private Task ValidateItemsInTaskAsync(int itemsInTask, ValidationContext<SpotClusterVolumeOptionsDto> propertyContext, CancellationToken cancellationToken)
     {
         try
         {
@@ -61,15 +60,15 @@ internal class SpotClusterVolumeOptionsDtoValidation : AbstractValidator<SpotClu
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(SpotClusterVolumeOptionsDto.ItemsInTask)], 
                         "Cannot be lower then 1."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
                 case > 200:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(SpotClusterVolumeOptionsDto.ItemsInTask)], 
                         "Cannot be higher then 200."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
             }
-
-            return Task.FromResult(true);
+            
+            return Task.CompletedTask;
         }
         catch (Exception exception)
         {
@@ -79,12 +78,12 @@ internal class SpotClusterVolumeOptionsDtoValidation : AbstractValidator<SpotClu
                 $"{_propertyNames[nameof(SpotClusterVolumeOptionsDto.ItemsInTask)]}", 
                 "Validation failed."));
             
-            return Task.FromResult(false);
+            return Task.CompletedTask;
         }
     }
     
-    private Task<bool> ValidateVolumeAverageAsync(SpotClusterVolumeOptionsDto spotClusterVolumeOptionsDto, 
-        int volumeAverage, ValidationContext<SpotClusterVolumeOptionsDto> propertyContext, CancellationToken cancellationToken)
+    private Task ValidateVolumeAverageAsync(int volumeAverage, ValidationContext<SpotClusterVolumeOptionsDto> propertyContext, 
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -94,15 +93,15 @@ internal class SpotClusterVolumeOptionsDtoValidation : AbstractValidator<SpotClu
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(SpotClusterVolumeOptionsDto.VolumeAverage)], 
                         "Cannot be lower then 0."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
                 case > 10000:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(SpotClusterVolumeOptionsDto.VolumeAverage)], 
                         "Cannot be higher then 10000."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
             }
 
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
         catch (Exception exception)
         {
@@ -112,12 +111,12 @@ internal class SpotClusterVolumeOptionsDtoValidation : AbstractValidator<SpotClu
                 $"{_propertyNames[nameof(SpotClusterVolumeOptionsDto.VolumeAverage)]}", 
                 "Validation failed."));
             
-            return Task.FromResult(false);
+            return Task.CompletedTask;
         }
     }
     
-    private Task<bool> ValidateOrderBookDepthPercentAsync(SpotClusterVolumeOptionsDto spotClusterVolumeOptionsDto, 
-        decimal orderBookDepthPercent, ValidationContext<SpotClusterVolumeOptionsDto> propertyContext, CancellationToken cancellationToken)
+    private Task ValidateOrderBookDepthPercentAsync(decimal orderBookDepthPercent, ValidationContext<SpotClusterVolumeOptionsDto> propertyContext, 
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -127,15 +126,15 @@ internal class SpotClusterVolumeOptionsDtoValidation : AbstractValidator<SpotClu
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(SpotClusterVolumeOptionsDto.OrderBookDepthPercent)], 
                         "Cannot be lower then 0.01."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
                 case > 20.00m:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(SpotClusterVolumeOptionsDto.OrderBookDepthPercent)], 
                         "Cannot be higher then 20.00."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
             }
 
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
         catch (Exception exception)
         {
@@ -145,24 +144,24 @@ internal class SpotClusterVolumeOptionsDtoValidation : AbstractValidator<SpotClu
                 $"{_propertyNames[nameof(SpotClusterVolumeOptionsDto.OrderBookDepthPercent)]}", 
                 "Validation failed."));
             
-            return Task.FromResult(false);
+            return Task.CompletedTask;
         }
     }
 
-    private async Task<bool> ValidateTelegramChannelIdAsync(SpotClusterVolumeOptionsDto spotClusterVolumeOptionsDto, 
-        long? telegramChannelId, ValidationContext<SpotClusterVolumeOptionsDto> propertyContext, CancellationToken cancellationToken)
+    private async Task ValidateTelegramChannelIdAsync(long? telegramChannelId, ValidationContext<SpotClusterVolumeOptionsDto> propertyContext, 
+        CancellationToken cancellationToken)
     {
         try
         {
             switch (telegramChannelId)
             {
                 case null:
-                    return false;
+                    return;
                 case > -1:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(SpotClusterVolumeOptionsDto.TelegramChannelId)], 
                         "Cannot be higher then -1."));
-                    return false;
+                    break;
             }
 
             var result = await _telegramService.GetBotChat(
@@ -175,11 +174,7 @@ internal class SpotClusterVolumeOptionsDtoValidation : AbstractValidator<SpotClu
                 propertyContext.AddFailure(new ValidationFailure(
                     _propertyNames[nameof(SpotClusterVolumeOptionsDto.TelegramChannelId)], 
                     $"Bot does not has access to channel with id '{telegramChannelId}'"));
-
-                return false;
             }
-
-            return true;
         }
         catch (Exception exception)
         {
@@ -188,19 +183,17 @@ internal class SpotClusterVolumeOptionsDtoValidation : AbstractValidator<SpotClu
             propertyContext.AddFailure(new ValidationFailure(
                 $"{_propertyNames[nameof(SpotClusterVolumeOptionsDto.TelegramChannelId)]}", 
                 "Validation failed."));
-            
-            return false;
         }
     }
 
-    private async Task<bool> ValidateTelegramChannelNameAsync(SpotClusterVolumeOptionsDto spotClusterVolumeOptionsDto, 
-        string? telegramChannelName, ValidationContext<SpotClusterVolumeOptionsDto> propertyContext, CancellationToken cancellationToken)
+    private async Task ValidateTelegramChannelNameAsync(string? telegramChannelName, ValidationContext<SpotClusterVolumeOptionsDto> propertyContext, 
+        CancellationToken cancellationToken)
     {
         try
         {
             if (telegramChannelName == null)
             {
-                return false;
+                return;
             }
             
             switch (telegramChannelName.Length)
@@ -209,38 +202,36 @@ internal class SpotClusterVolumeOptionsDtoValidation : AbstractValidator<SpotClu
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(SpotClusterVolumeOptionsDto.TelegramChannelName)], 
                         "Length cannot be lower then 3 symbols."));
-                    return false;
+                    return;
                 case > 125:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(SpotClusterVolumeOptionsDto.TelegramChannelName)], 
                         "Length cannot be higher then 125 symbols."));
-                    return false;
+                    return;
             }
 
-            if (!spotClusterVolumeOptionsDto.TelegramChannelId.HasValue)
+            if (!propertyContext.InstanceToValidate.TelegramChannelId.HasValue)
             {
                 propertyContext.AddFailure(new ValidationFailure(
                     _propertyNames[nameof(SpotClusterVolumeOptionsDto.TelegramChannelName)], 
                     $"Cannot have name because '{_propertyNames[nameof(SpotClusterVolumeOptionsDto.TelegramChannelId)]}' does not have value."));
 
-                return false;
+                return;
             }
             
             var result = await _telegramService.GetBotChat(
-                spotClusterVolumeOptionsDto.TelegramChannelId.Value,
+                propertyContext.InstanceToValidate.TelegramChannelId.Value,
                 cancellationToken: cancellationToken
             );
 
             if (result.ActionResult == ActionResult.Success)
             {
-                return true;
+                return;
             }
             
             propertyContext.AddFailure(new ValidationFailure(
                 _propertyNames[nameof(SpotClusterVolumeOptionsDto.TelegramChannelName)], 
                 "Cannot change name because bot does not have access to channel."));
-
-            return false;
         }
         catch (Exception exception)
         {
@@ -249,45 +240,41 @@ internal class SpotClusterVolumeOptionsDtoValidation : AbstractValidator<SpotClu
             propertyContext.AddFailure(new ValidationFailure(
                 $"{_propertyNames[nameof(SpotClusterVolumeOptionsDto.TelegramChannelName)]}", 
                 "Validation failed."));
-            
-            return false;
         }
     }
     
-    private async Task<bool> ValidateTelegramIsNeedToSendMessagesAsync(SpotClusterVolumeOptionsDto spotClusterVolumeOptionsDto, 
-        bool? telegramIsNeedToSendMessages, ValidationContext<SpotClusterVolumeOptionsDto> propertyContext, CancellationToken cancellationToken)
+    private async Task ValidateTelegramIsNeedToSendMessagesAsync(bool? telegramIsNeedToSendMessages, ValidationContext<SpotClusterVolumeOptionsDto> propertyContext, 
+        CancellationToken cancellationToken)
     {
         try
         {
             if (telegramIsNeedToSendMessages == null || !telegramIsNeedToSendMessages.Value)
             {
-                return true;
+                return;
             }
 
-            if (!spotClusterVolumeOptionsDto.TelegramChannelId.HasValue)
+            if (!propertyContext.InstanceToValidate.TelegramChannelId.HasValue)
             {
                 propertyContext.AddFailure(new ValidationFailure(
                     _propertyNames[nameof(SpotClusterVolumeOptionsDto.TelegramIsNeedToSendMessages)], 
                     $"Bot cannot send messages because '{_propertyNames[nameof(SpotClusterVolumeOptionsDto.TelegramChannelId)]}' does not have value."));
 
-                return false;
+                return;
             }
             
             var result = await _telegramService.GetBotChat(
-                spotClusterVolumeOptionsDto.TelegramChannelId.Value,
+                propertyContext.InstanceToValidate.TelegramChannelId.Value,
                 cancellationToken: cancellationToken
             );
 
             if (result.ActionResult == ActionResult.Success)
             {
-                return true;
+                return;
             }
             
             propertyContext.AddFailure(new ValidationFailure(
                 _propertyNames[nameof(SpotClusterVolumeOptionsDto.TelegramIsNeedToSendMessages)], 
                 "Bot cannot send messaged because bot does not have access to channel."));
-
-            return false;
         }
         catch (Exception exception)
         {
@@ -296,8 +283,6 @@ internal class SpotClusterVolumeOptionsDtoValidation : AbstractValidator<SpotClu
             propertyContext.AddFailure(new ValidationFailure(
                 $"{_propertyNames[nameof(SpotClusterVolumeOptionsDto.TelegramIsNeedToSendMessages)]}", 
                 "Validation failed."));
-            
-            return false;
         }
     }
 

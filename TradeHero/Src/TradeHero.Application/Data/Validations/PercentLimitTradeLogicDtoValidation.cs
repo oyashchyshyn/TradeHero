@@ -48,79 +48,79 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
     private void GeneralRules()
     {
         RuleFor(x => x.Name)
-            .MustAsync(ValidateNameAsync);
+            .CustomAsync(ValidateNameAsync);
         
         RuleFor(x => x.Leverage)
-            .MustAsync(ValidateLeverageAsync);
+            .CustomAsync(ValidateLeverageAsync);
         
         RuleFor(x => x.MaximumPositions)
-            .MustAsync(ValidateMaximumPositionsAsync);
+            .CustomAsync(ValidateMaximumPositionsAsync);
         
         RuleFor(x => x.MaximumPositionsPerIteration)
-            .MustAsync(ValidateMaximumPositionsPerIterationAsync);
+            .CustomAsync(ValidateMaximumPositionsPerIterationAsync);
         
         RuleFor(x => x.AvailableDepositPercentForTrading)
-            .MustAsync(ValidateAvailableDepositPercentForTradingAsync);
+            .CustomAsync(ValidateAvailableDepositPercentForTradingAsync);
         
         RuleFor(x => x.PercentFromDepositForOpen)
-            .MustAsync(ValidatePercentFromDepositForOpenAsync)
+            .CustomAsync(ValidatePercentFromDepositForOpenAsync)
             .When(x => x.EnableOpenPositions);
 
         RuleFor(x => x.MinTradesForOpen)
-            .MustAsync(ValidateMinTradesForOpenAsync)
+            .CustomAsync(ValidateMinTradesForOpenAsync)
             .When(x => x.EnableOpenPositions);
         
         RuleFor(x => x.MinQuoteVolumeForOpen)
-            .MustAsync(ValidateMinQuoteVolumeForOpenAsync)
+            .CustomAsync(ValidateMinQuoteVolumeForOpenAsync)
             .When(x => x.EnableOpenPositions);
 
         RuleFor(x => x.AverageToRoe)
-            .MustAsync(ValidateAverageToRoeAsync)
+            .CustomAsync(ValidateAverageToRoeAsync)
             .When(x => x.EnableAveraging);
         
         RuleFor(x => x.AverageFromRoe)
-            .MustAsync(ValidateAverageFromRoeAsync)
+            .CustomAsync(ValidateAverageFromRoeAsync)
             .When(x => x.EnableAveraging);
         
         RuleFor(x => x.MinTradesForAverage)
-            .MustAsync(ValidateMinTradesForAverageAsync)
+            .CustomAsync(ValidateMinTradesForAverageAsync)
             .When(x => x.EnableAveraging);
         
         RuleFor(x => x.MinQuoteVolumeForAverage)
-            .MustAsync(ValidateMinQuoteVolumeForAverageAsync)
+            .CustomAsync(ValidateMinQuoteVolumeForAverageAsync)
             .When(x => x.EnableAveraging);
         
         RuleFor(x => x.TrailingStopRoe)
-            .MustAsync(ValidateTrailingStopRoeAsync)
+            .CustomAsync(ValidateTrailingStopRoeAsync)
             .When(x => x.EnableTrailingStops);
         
         RuleFor(x => x.CallbackRate)
-            .MustAsync(ValidateCallbackRateAsync)
+            .CustomAsync(ValidateCallbackRateAsync)
             .When(x => x.EnableTrailingStops);
 
         RuleFor(x => x.MarketStopSafePriceFromLastPricePercent)
-            .MustAsync(ValidateMarketStopSafePriceFromLastPricePercentAsync)
+            .CustomAsync(ValidateMarketStopSafePriceFromLastPricePercentAsync)
             .When(x => x.EnableTrailingStops && x.MarketStopSafePriceFromLastPricePercent.HasValue);
 
         RuleFor(x => x.MarketStopExitRoeActivation)
-            .MustAsync(ValidateMarketStopExitRoeActivationAsync)
+            .CustomAsync(ValidateMarketStopExitRoeActivationAsync)
             .When(x => x.EnableMarketStopToExit);
         
         RuleFor(x => x.MarketStopExitPriceFromLastPricePercent)
-            .MustAsync(ValidateMarketStopExitPriceFromLastPricePercentAsync)
+            .CustomAsync(ValidateMarketStopExitPriceFromLastPricePercentAsync)
             .When(x => x.EnableMarketStopToExit);
         
         RuleFor(x => x.MarketStopExitActivationFromAvailableBalancePercent)
-            .MustAsync(ValidateMarketStopExitActivationFromAvailableBalancePercentAsync)
+            .CustomAsync(ValidateMarketStopExitActivationFromAvailableBalancePercentAsync)
             .When(x => x.EnableMarketStopToExit && x.MarketStopExitActivationFromAvailableBalancePercent.HasValue);
         
         RuleFor(x => x.MarketStopExitActivationAfterTime)
-            .MustAsync(ValidateMarketStopExitActivationAfterTimeAsync)
+            .CustomAsync(ValidateMarketStopExitActivationAfterTimeAsync)
             .When(x => x.EnableMarketStopToExit && x.MarketStopExitActivationAfterTime.HasValue);
     }
 
-    private async Task<bool> ValidateNameAsync(PercentLimitTradeLogicDto percentLimitTradeLogicDto, 
-        string name, ValidationContext<PercentLimitTradeLogicDto> propertyContext, CancellationToken cancellationToken)
+    private async Task ValidateNameAsync(string name, ValidationContext<PercentLimitTradeLogicDto> propertyContext, 
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -129,7 +129,7 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                 propertyContext.AddFailure(new ValidationFailure(
                     _propertyNames[nameof(PercentLimitTradeLogicDto.Name)], "Cannot be empty."));
                 
-                return false;
+                return;
             }
 
             switch (name.Length)
@@ -137,33 +137,25 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                 case < 3:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.Name)], "Minimum length 3."));
-                    return false;
+                    return;
                 case > 40:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.Name)], "Maximum length 40."));
-                    return false;
+                    return;
             }
 
-            var databaseCheckResult = false;
-            switch (_validationRuleSet)
+            var databaseCheckResult = _validationRuleSet switch
             {
-                case ValidationRuleSet.Create:
-                    databaseCheckResult = await _strategyRepository.IsNameExistInDatabaseForCreate(name);
-                    break;
-                case ValidationRuleSet.Update:
-                    databaseCheckResult = await _strategyRepository.IsNameExistInDatabaseForUpdate(percentLimitTradeLogicDto.Id, name);
-                    break;
-            }
+                ValidationRuleSet.Create => await _strategyRepository.IsNameExistInDatabaseForCreate(name),
+                ValidationRuleSet.Update => await _strategyRepository.IsNameExistInDatabaseForUpdate(propertyContext.InstanceToValidate.Id, name),
+                _ => false
+            };
 
             if (databaseCheckResult)
             {
                 propertyContext.AddFailure(new ValidationFailure(
                     _propertyNames[nameof(PercentLimitTradeLogicDto.Name)], $"Strategy with name '{name}' already exist."));
-
-                return false;
             }
-
-            return true;
         }
         catch (Exception exception)
         {
@@ -172,13 +164,11 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
             propertyContext.AddFailure(new ValidationFailure(
                 $"{_propertyNames[nameof(PercentLimitTradeLogicDto.Name)]}", 
                 "Validation failed."));
-            
-            return false;
         }
     }
     
-    private Task<bool> ValidateLeverageAsync(PercentLimitTradeLogicDto percentLimitTradeLogicDto, 
-        int leverage, ValidationContext<PercentLimitTradeLogicDto> propertyContext, CancellationToken cancellationToken)
+    private Task ValidateLeverageAsync(int leverage, ValidationContext<PercentLimitTradeLogicDto> propertyContext, 
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -188,15 +178,15 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.Leverage)], 
                         "Cannot be lower then 1."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
                 case > 125:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.Leverage)], 
                         "Cannot be higher then 125."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
             }
 
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
         catch (Exception exception)
         {
@@ -206,12 +196,12 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                 $"{_propertyNames[nameof(PercentLimitTradeLogicDto.Leverage)]}", 
                 "Validation failed."));
             
-            return Task.FromResult(false);
+            return Task.CompletedTask;
         }
     }
     
-    private Task<bool> ValidateMaximumPositionsAsync(PercentLimitTradeLogicDto percentLimitTradeLogicDto, 
-        int maximumPositions, ValidationContext<PercentLimitTradeLogicDto> propertyContext, CancellationToken cancellationToken)
+    private Task ValidateMaximumPositionsAsync(int maximumPositions, ValidationContext<PercentLimitTradeLogicDto> propertyContext, 
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -221,15 +211,15 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.MaximumPositions)], 
                         "Cannot be lower then 0."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
                 case > 1000:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.MaximumPositions)], 
                         "Cannot be higher then 1000."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
             }
 
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
         catch (Exception exception)
         {
@@ -239,30 +229,30 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                 $"{_propertyNames[nameof(PercentLimitTradeLogicDto.MaximumPositions)]}", 
                 "Validation failed."));
             
-            return Task.FromResult(false);
+            return Task.CompletedTask;
         }
     }
     
-    private Task<bool> ValidateMaximumPositionsPerIterationAsync(PercentLimitTradeLogicDto percentLimitTradeLogicDto, 
-        int maximumPositionsPerIteration, ValidationContext<PercentLimitTradeLogicDto> propertyContext, CancellationToken cancellationToken)
+    private Task ValidateMaximumPositionsPerIterationAsync(int maximumPositionsPerIteration, 
+        ValidationContext<PercentLimitTradeLogicDto> propertyContext, CancellationToken cancellationToken)
     {
         try
         {
             switch (maximumPositionsPerIteration)
             {
-                case < 1:
+                case < 0:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.MaximumPositionsPerIteration)], 
-                        "Cannot be lower then 1."));
-                    return Task.FromResult(false);
+                        "Cannot be lower then 0."));
+                    return Task.CompletedTask;
                 case > 1000:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.MaximumPositionsPerIteration)], 
                         "Cannot be higher then 1000."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
             }
 
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
         catch (Exception exception)
         {
@@ -272,12 +262,12 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                 $"{_propertyNames[nameof(PercentLimitTradeLogicDto.MaximumPositionsPerIteration)]}", 
                 "Validation failed."));
             
-            return Task.FromResult(false);
+            return Task.CompletedTask;
         }
     }
     
-    private Task<bool> ValidateAvailableDepositPercentForTradingAsync(PercentLimitTradeLogicDto percentLimitTradeLogicDto, 
-        decimal availableDepositPercentForTrading, ValidationContext<PercentLimitTradeLogicDto> propertyContext, CancellationToken cancellationToken)
+    private Task ValidateAvailableDepositPercentForTradingAsync(decimal availableDepositPercentForTrading, 
+        ValidationContext<PercentLimitTradeLogicDto> propertyContext, CancellationToken cancellationToken)
     {
         try
         {
@@ -287,15 +277,15 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.AvailableDepositPercentForTrading)], 
                         "Cannot be lower then 0.01."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
                 case > 100.00m:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.AvailableDepositPercentForTrading)], 
                         "Cannot be higher then 100.00."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
             }
 
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
         catch (Exception exception)
         {
@@ -305,12 +295,12 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                 $"{_propertyNames[nameof(PercentLimitTradeLogicDto.AvailableDepositPercentForTrading)]}", 
                 "Validation failed."));
             
-            return Task.FromResult(false);
+            return Task.CompletedTask;
         }
     }
     
-    private Task<bool> ValidatePercentFromDepositForOpenAsync(PercentLimitTradeLogicDto percentLimitTradeLogicDto, 
-        decimal percentFromDepositForOpen, ValidationContext<PercentLimitTradeLogicDto> propertyContext, CancellationToken cancellationToken)
+    private Task ValidatePercentFromDepositForOpenAsync(decimal percentFromDepositForOpen, 
+        ValidationContext<PercentLimitTradeLogicDto> propertyContext, CancellationToken cancellationToken)
     {
         try
         {
@@ -320,15 +310,15 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.PercentFromDepositForOpen)], 
                         "Cannot be lower then 0.01."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
                 case > 100.00m:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.PercentFromDepositForOpen)], 
                         "Cannot be higher then 100.00."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
             }
 
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
         catch (Exception exception)
         {
@@ -338,12 +328,12 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                 $"{_propertyNames[nameof(PercentLimitTradeLogicDto.PercentFromDepositForOpen)]}", 
                 "Validation failed."));
             
-            return Task.FromResult(false);
+            return Task.CompletedTask;
         }
     }
     
-    private Task<bool> ValidateMinTradesForOpenAsync(PercentLimitTradeLogicDto percentLimitTradeLogicDto, 
-        int minTradesForOpen, ValidationContext<PercentLimitTradeLogicDto> propertyContext, CancellationToken cancellationToken)
+    private Task ValidateMinTradesForOpenAsync(int minTradesForOpen, ValidationContext<PercentLimitTradeLogicDto> propertyContext, 
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -353,15 +343,15 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.MinTradesForOpen)], 
                         "Cannot be lower then 0."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
                 case > 1000000:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.MinTradesForOpen)], 
                         "Cannot be higher then 1000000."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
             }
 
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
         catch (Exception exception)
         {
@@ -371,12 +361,12 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                 $"{_propertyNames[nameof(PercentLimitTradeLogicDto.MinTradesForOpen)]}", 
                 "Validation failed."));
             
-            return Task.FromResult(false);
+            return Task.CompletedTask;
         }
     }
     
-    private Task<bool> ValidateMinQuoteVolumeForOpenAsync(PercentLimitTradeLogicDto percentLimitTradeLogicDto, 
-        decimal minQuoteVolumeForOpen, ValidationContext<PercentLimitTradeLogicDto> propertyContext, CancellationToken cancellationToken)
+    private Task ValidateMinQuoteVolumeForOpenAsync(decimal minQuoteVolumeForOpen, 
+        ValidationContext<PercentLimitTradeLogicDto> propertyContext, CancellationToken cancellationToken)
     {
         try
         {
@@ -386,15 +376,15 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.MinQuoteVolumeForOpen)], 
                         "Cannot be lower then 0.00."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
                 case > 100000000.00m:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.MinQuoteVolumeForOpen)], 
                         "Cannot be higher then 100000000.00."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
             }
 
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
         catch (Exception exception)
         {
@@ -404,12 +394,12 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                 $"{_propertyNames[nameof(PercentLimitTradeLogicDto.MinQuoteVolumeForOpen)]}", 
                 "Validation failed."));
             
-            return Task.FromResult(false);
+            return Task.CompletedTask;
         }
     }
 
-    private Task<bool> ValidateAverageToRoeAsync(PercentLimitTradeLogicDto percentLimitTradeLogicDto, 
-        decimal averageToRoe, ValidationContext<PercentLimitTradeLogicDto> propertyContext, CancellationToken cancellationToken)
+    private Task ValidateAverageToRoeAsync(decimal averageToRoe, ValidationContext<PercentLimitTradeLogicDto> propertyContext, 
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -419,15 +409,15 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.AverageToRoe)], 
                         "Cannot be lower then -10000.00."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
                 case > 0.00m:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.AverageToRoe)], 
                         "Cannot be higher then 0.00."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
             }
 
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
         catch (Exception exception)
         {
@@ -437,12 +427,12 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                 $"{_propertyNames[nameof(PercentLimitTradeLogicDto.AverageToRoe)]}", 
                 "Validation failed."));
             
-            return Task.FromResult(false);
+            return Task.CompletedTask;
         }
     }
     
-    private Task<bool> ValidateAverageFromRoeAsync(PercentLimitTradeLogicDto percentLimitTradeLogicDto, 
-        decimal averageFromRoe, ValidationContext<PercentLimitTradeLogicDto> propertyContext, CancellationToken cancellationToken)
+    private Task ValidateAverageFromRoeAsync(decimal averageFromRoe, ValidationContext<PercentLimitTradeLogicDto> propertyContext, 
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -452,15 +442,15 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.AverageFromRoe)], 
                         "Cannot be lower then -10000.00."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
                 case > 10000.00m:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.AverageFromRoe)], 
                         "Cannot be higher then 10000.00."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
             }
 
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
         catch (Exception exception)
         {
@@ -470,12 +460,12 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                 $"{_propertyNames[nameof(PercentLimitTradeLogicDto.AverageFromRoe)]}", 
                 "Validation failed."));
             
-            return Task.FromResult(false);
+            return Task.CompletedTask;
         }
     }
     
-    private Task<bool> ValidateMinTradesForAverageAsync(PercentLimitTradeLogicDto percentLimitTradeLogicDto, 
-        int minTradesForOpen, ValidationContext<PercentLimitTradeLogicDto> propertyContext, CancellationToken cancellationToken)
+    private Task ValidateMinTradesForAverageAsync(int minTradesForOpen, ValidationContext<PercentLimitTradeLogicDto> propertyContext, 
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -485,15 +475,15 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.MinTradesForAverage)], 
                         "Cannot be lower then 0."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
                 case > 1000000:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.MinTradesForAverage)], 
                         "Cannot be higher then 1000000."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
             }
 
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
         catch (Exception exception)
         {
@@ -503,12 +493,12 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                 $"{_propertyNames[nameof(PercentLimitTradeLogicDto.MinTradesForAverage)]}", 
                 "Validation failed."));
             
-            return Task.FromResult(false);
+            return Task.CompletedTask;
         }
     }
     
-    private Task<bool> ValidateMinQuoteVolumeForAverageAsync(PercentLimitTradeLogicDto percentLimitTradeLogicDto, 
-        decimal minQuoteVolumeForAverage, ValidationContext<PercentLimitTradeLogicDto> propertyContext, CancellationToken cancellationToken)
+    private Task ValidateMinQuoteVolumeForAverageAsync(decimal minQuoteVolumeForAverage, ValidationContext<PercentLimitTradeLogicDto> propertyContext, 
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -518,15 +508,15 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.MinQuoteVolumeForAverage)], 
                         "Cannot be lower then 0.00."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
                 case > 100000000.00m:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.MinQuoteVolumeForAverage)], 
                         "Cannot be higher then 100000000.00."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
             }
 
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
         catch (Exception exception)
         {
@@ -536,12 +526,12 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                 $"{_propertyNames[nameof(PercentLimitTradeLogicDto.MinQuoteVolumeForAverage)]}", 
                 "Validation failed."));
             
-            return Task.FromResult(false);
+            return Task.CompletedTask;
         }
     }
     
-    private Task<bool> ValidateTrailingStopRoeAsync(PercentLimitTradeLogicDto percentLimitTradeLogicDto, 
-        decimal trailingStopRoe, ValidationContext<PercentLimitTradeLogicDto> propertyContext, CancellationToken cancellationToken)
+    private Task ValidateTrailingStopRoeAsync(decimal trailingStopRoe, ValidationContext<PercentLimitTradeLogicDto> propertyContext, 
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -551,15 +541,15 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.TrailingStopRoe)], 
                         "Cannot be lower then -10000.0."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
                 case > 10000.0m:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.TrailingStopRoe)], 
                         "Cannot be higher then 10000.0."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
             }
 
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
         catch (Exception exception)
         {
@@ -569,12 +559,12 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                 $"{_propertyNames[nameof(PercentLimitTradeLogicDto.TrailingStopRoe)]}", 
                 "Validation failed."));
             
-            return Task.FromResult(false);
+            return Task.CompletedTask;
         }
     }
     
-    private Task<bool> ValidateCallbackRateAsync(PercentLimitTradeLogicDto percentLimitTradeLogicDto, 
-        decimal callbackRate, ValidationContext<PercentLimitTradeLogicDto> propertyContext, CancellationToken cancellationToken)
+    private Task ValidateCallbackRateAsync(decimal callbackRate, ValidationContext<PercentLimitTradeLogicDto> propertyContext, 
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -584,15 +574,15 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.CallbackRate)], 
                         "Cannot be lower then 0.1."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
                 case > 5.0m:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.CallbackRate)], 
                         "Cannot be higher then 5.0."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
             }
 
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
         catch (Exception exception)
         {
@@ -602,12 +592,12 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                 $"{_propertyNames[nameof(PercentLimitTradeLogicDto.CallbackRate)]}", 
                 "Validation failed."));
             
-            return Task.FromResult(false);
+            return Task.CompletedTask;
         }
     }
 
-    private Task<bool> ValidateMarketStopSafePriceFromLastPricePercentAsync(PercentLimitTradeLogicDto percentLimitTradeLogicDto, 
-        decimal? marketStopSafePriceFromLastPricePercent, ValidationContext<PercentLimitTradeLogicDto> propertyContext, CancellationToken cancellationToken)
+    private Task ValidateMarketStopSafePriceFromLastPricePercentAsync(decimal? marketStopSafePriceFromLastPricePercent, 
+        ValidationContext<PercentLimitTradeLogicDto> propertyContext, CancellationToken cancellationToken)
     {
         try
         {
@@ -617,15 +607,15 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.MarketStopSafePriceFromLastPricePercent)], 
                         "Cannot be lower then 0.01."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
                 case > 100.00m:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.MarketStopSafePriceFromLastPricePercent)], 
                         "Cannot be higher then 100.00."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
             }
 
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
         catch (Exception exception)
         {
@@ -635,12 +625,12 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                 $"{_propertyNames[nameof(PercentLimitTradeLogicDto.MarketStopSafePriceFromLastPricePercent)]}", 
                 "Validation failed."));
             
-            return Task.FromResult(false);
+            return Task.CompletedTask;
         }
     }
     
-    private Task<bool> ValidateMarketStopExitRoeActivationAsync(PercentLimitTradeLogicDto percentLimitTradeLogicDto, 
-        decimal marketStopExitRoeActivation, ValidationContext<PercentLimitTradeLogicDto> propertyContext, CancellationToken cancellationToken)
+    private Task ValidateMarketStopExitRoeActivationAsync(decimal marketStopExitRoeActivation, 
+        ValidationContext<PercentLimitTradeLogicDto> propertyContext, CancellationToken cancellationToken)
     {
         try
         {
@@ -650,15 +640,15 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.MarketStopExitRoeActivation)], 
                         "Cannot be lower then -10000.00."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
                 case > 10000.00m:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.MarketStopExitRoeActivation)], 
                         "Cannot be higher then 10000.00."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
             }
 
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
         catch (Exception exception)
         {
@@ -668,12 +658,12 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                 $"{_propertyNames[nameof(PercentLimitTradeLogicDto.MarketStopExitRoeActivation)]}", 
                 "Validation failed."));
             
-            return Task.FromResult(false);
+            return Task.CompletedTask;
         }
     }
     
-    private Task<bool> ValidateMarketStopExitPriceFromLastPricePercentAsync(PercentLimitTradeLogicDto percentLimitTradeLogicDto, 
-        decimal marketStopExitRoeActivation, ValidationContext<PercentLimitTradeLogicDto> propertyContext, CancellationToken cancellationToken)
+    private Task ValidateMarketStopExitPriceFromLastPricePercentAsync(decimal marketStopExitRoeActivation, 
+        ValidationContext<PercentLimitTradeLogicDto> propertyContext, CancellationToken cancellationToken)
     {
         try
         {
@@ -683,15 +673,15 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.MarketStopExitPriceFromLastPricePercent)], 
                         "Cannot be lower then 0.0."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
                 case > 100.0m:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.MarketStopExitPriceFromLastPricePercent)], 
                         "Cannot be higher then 100.0."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
             }
 
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
         catch (Exception exception)
         {
@@ -701,12 +691,12 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                 $"{_propertyNames[nameof(PercentLimitTradeLogicDto.MarketStopExitPriceFromLastPricePercent)]}", 
                 "Validation failed."));
             
-            return Task.FromResult(false);
+            return Task.CompletedTask;
         }
     }
     
-    private Task<bool> ValidateMarketStopExitActivationFromAvailableBalancePercentAsync(PercentLimitTradeLogicDto percentLimitTradeLogicDto, 
-        decimal? marketStopExitActivationFromAvailableBalancePercent, ValidationContext<PercentLimitTradeLogicDto> propertyContext, CancellationToken cancellationToken)
+    private Task ValidateMarketStopExitActivationFromAvailableBalancePercentAsync(decimal? marketStopExitActivationFromAvailableBalancePercent, 
+        ValidationContext<PercentLimitTradeLogicDto> propertyContext, CancellationToken cancellationToken)
     {
         try
         {
@@ -716,15 +706,15 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.MarketStopExitActivationFromAvailableBalancePercent)], 
                         "Cannot be lower then 0.00."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
                 case > 100.00m:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.MarketStopExitActivationFromAvailableBalancePercent)], 
                         "Cannot be higher then 100.00."));
-                    return Task.FromResult(false);
+                    return Task.CompletedTask;
             }
 
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
         catch (Exception exception)
         {
@@ -734,18 +724,18 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                 $"{_propertyNames[nameof(PercentLimitTradeLogicDto.MarketStopExitActivationFromAvailableBalancePercent)]}", 
                 "Validation failed."));
             
-            return Task.FromResult(false);
+            return Task.CompletedTask;
         }
     }
     
-    private Task<bool> ValidateMarketStopExitActivationAfterTimeAsync(PercentLimitTradeLogicDto percentLimitTradeLogicDto, 
-        TimeSpan? marketStopExitActivationAfterTime, ValidationContext<PercentLimitTradeLogicDto> propertyContext, CancellationToken cancellationToken)
+    private Task ValidateMarketStopExitActivationAfterTimeAsync(TimeSpan? marketStopExitActivationAfterTime, 
+        ValidationContext<PercentLimitTradeLogicDto> propertyContext, CancellationToken cancellationToken)
     {
         try
         {
             if (!marketStopExitActivationAfterTime.HasValue)
             {
-                return Task.FromResult(true);
+                return Task.CompletedTask;
             }
 
             if (marketStopExitActivationAfterTime.Value < TimeSpan.Parse("00:00:01"))
@@ -754,7 +744,7 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                     _propertyNames[nameof(PercentLimitTradeLogicDto.MarketStopExitActivationAfterTime)], 
                     "Cannot be lower then 00:00:01."));
                 
-                return Task.FromResult(false);
+                return Task.CompletedTask;
             }
             
             if (marketStopExitActivationAfterTime.Value > TimeSpan.Parse("24:00:00"))
@@ -762,11 +752,9 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                 propertyContext.AddFailure(new ValidationFailure(
                     _propertyNames[nameof(PercentLimitTradeLogicDto.MarketStopExitActivationAfterTime)], 
                     "Cannot be higher then 24:00:00."));
-                
-                return Task.FromResult(false);
             }
 
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
         catch (Exception exception)
         {
@@ -776,7 +764,7 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                 $"{_propertyNames[nameof(PercentLimitTradeLogicDto.MarketStopExitActivationAfterTime)]}", 
                 "Validation failed."));
             
-            return Task.FromResult(false);
+            return Task.CompletedTask;
         }
     }
     

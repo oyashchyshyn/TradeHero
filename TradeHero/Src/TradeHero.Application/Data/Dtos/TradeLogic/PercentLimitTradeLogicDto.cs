@@ -26,7 +26,7 @@ internal class PercentLimitTradeLogicDto : BaseStrategyDto
     [JsonProperty("max_pos")]
     public int MaximumPositions { get; set; }
     
-    [Description("Maximum allowed to open position per instance run. Available range is 1 to 1000.")]
+    [Description("Maximum allowed to open position per instance run. Available range is 0 to 1000.")]
     [JsonProperty("max_pos_per_instance")]
     public int MaximumPositionsPerIteration { get; set; }
     
