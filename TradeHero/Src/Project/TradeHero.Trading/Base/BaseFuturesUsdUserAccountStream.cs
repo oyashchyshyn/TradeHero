@@ -2,12 +2,12 @@
 using Binance.Net.Objects.Models.Futures.Socket;
 using CryptoExchange.Net.Sockets;
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Client;
-using TradeHero.Contracts.Services;
-using TradeHero.Contracts.Trading;
-using TradeHero.Contracts.Trading.Models.Args;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Exceptions;
+using TradeHero.Core.Types.Client;
+using TradeHero.Core.Types.Services;
+using TradeHero.Core.Types.Trading;
+using TradeHero.Core.Types.Trading.Models.Args;
 
 namespace TradeHero.Trading.Base;
 

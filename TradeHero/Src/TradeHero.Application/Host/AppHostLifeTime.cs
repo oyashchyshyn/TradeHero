@@ -1,25 +1,29 @@
 using System.Reflection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Services;
 using TradeHero.Core.Enums;
+using TradeHero.Core.Types.Services;
 
 namespace TradeHero.Application.Host;
 
 internal class AppHostLifeTime : IHostLifetime, IDisposable
 {
     private readonly ILogger<AppHostLifeTime> _logger;
-    private readonly IApplicationService _applicationService;
+    private readonly IEnvironmentService _environmentService;
+    
+    private readonly ApplicationShutdown _applicationShutdown;
 
     private readonly ManualResetEvent _shutdownBlock = new(false);
     
     public AppHostLifeTime(
         ILogger<AppHostLifeTime> logger,
-        IApplicationService applicationService
+        IEnvironmentService environmentService, 
+        ApplicationShutdown applicationShutdown
         )
     {
         _logger = logger;
-        _applicationService = applicationService;
+        _environmentService = environmentService;
+        _applicationShutdown = applicationShutdown;
     }
 
     public Task WaitForStartAsync(CancellationToken cancellationToken)
@@ -74,11 +78,9 @@ internal class AppHostLifeTime : IHostLifetime, IDisposable
     {
         _logger.LogInformation("Exit button is pressed. In {Method}", nameof(OnProcessExit));
         
-        _applicationService.StopApplication();
+        _applicationShutdown.Shutdown(AppExitCode.Success);
 
         _shutdownBlock.WaitOne();
-        
-        Environment.ExitCode = (int)AppExitCode.Success;
     }
     
     private void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
@@ -87,7 +89,7 @@ internal class AppHostLifeTime : IHostLifetime, IDisposable
         
         e.Cancel = true;
         
-        _applicationService.StopApplication();
+        _applicationShutdown.Shutdown(AppExitCode.Success);
     }
 
     #endregion

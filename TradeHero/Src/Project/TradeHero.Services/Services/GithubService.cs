@@ -1,11 +1,11 @@
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Logging;
 using Octokit;
-using TradeHero.Contracts.Services;
-using TradeHero.Contracts.Services.Models.Update;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Extensions;
 using TradeHero.Core.Models;
+using TradeHero.Core.Types.Services;
+using TradeHero.Core.Types.Services.Models.Github;
 using FileMode = System.IO.FileMode;
 using ProductHeaderValue = Octokit.ProductHeaderValue;
 

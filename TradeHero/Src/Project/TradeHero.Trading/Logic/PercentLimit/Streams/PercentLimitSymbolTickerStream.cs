@@ -1,7 +1,7 @@
 using Binance.Net.Interfaces;
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Client;
 using TradeHero.Core.Enums;
+using TradeHero.Core.Types.Client;
 using TradeHero.Trading.Base;
 using TradeHero.Trading.Logic.PercentLimit.Enums;
 using TradeHero.Trading.Logic.PercentLimit.Flow;
