@@ -21,18 +21,16 @@ internal static class Program
     {
         EnvironmentHelper.SetCulture();
         
-        var configuration = ConfigurationHelper.GenerateConfiguration(args);
-        var environmentSettings = ConfigurationHelper.ConvertConfigurationToAppSettings(configuration);
         var environmentType = ArgsHelper.GetEnvironmentType(args);
-        var cancellationTokenSource = new CancellationTokenSource();
-
+        var configuration = ConfigurationHelper.GenerateConfiguration(AppDomain.CurrentDomain.BaseDirectory, environmentType, RunnerType.App);
+        var environmentSettings = ConfigurationHelper.ConvertConfigurationToAppSettings(configuration);
+        
         try
         {
-            configuration = ConfigurationHelper.SetEnvironmentProperties(configuration, 
-                AppDomain.CurrentDomain.BaseDirectory, RunnerType.App, environmentType);
-            
             ArgsHelper.IsRunAppKeyExist(args, environmentSettings.Application.RunAppKey);
 
+            var cancellationTokenSource = new CancellationTokenSource();
+            
             var host = HostApp.CreateDefaultBuilder(args)
                 .UseEnvironment(environmentType.ToString())
                 .UseContentRoot(AppDomain.CurrentDomain.BaseDirectory)

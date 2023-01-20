@@ -23,7 +23,7 @@ public static class ServicesDiContainer
         serviceCollection.AddSingleton<ITerminalService, TerminalService>();
         serviceCollection.AddSingleton<IStoreService, StoreService>();
         
-        // Envrionment
+        // Environment
         serviceCollection.AddSingleton<IEnvironmentService>(sp =>
         {
             var configuration = sp.GetRequiredService<IConfiguration>();

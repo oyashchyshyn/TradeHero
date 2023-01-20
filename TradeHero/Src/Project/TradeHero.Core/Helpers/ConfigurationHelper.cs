@@ -8,7 +8,8 @@ namespace TradeHero.Core.Helpers;
 
 public static class ConfigurationHelper
 {
-    public static IConfiguration GenerateConfiguration(string[] args)
+    public static IConfiguration GenerateConfiguration(string basePath, 
+        EnvironmentType environmentType, RunnerType runnerType)
     {
         var assembly = Assembly.GetAssembly(typeof(AppSettings));
         if (assembly == null)
@@ -22,22 +23,17 @@ public static class ConfigurationHelper
             throw new Exception("Cannot find app.json");
         }
 
-        return new ConfigurationBuilder()
+        var configuration = new ConfigurationBuilder()
             .AddJsonStream(stream)
-            .AddCommandLine(args)
             .Build();
-    }
-
-    public static IConfiguration SetEnvironmentProperties(IConfiguration configuration, string basePath, 
-        RunnerType runnerType, EnvironmentType environmentType)
-    {
+        
         configuration[EnvironmentConstants.BasePath] = basePath;
         configuration[EnvironmentConstants.RunnerType] = runnerType.ToString();
         configuration[EnvironmentConstants.EnvironmentType] = environmentType.ToString();
 
         return configuration;
     }
-    
+
     public static AppSettings ConvertConfigurationToAppSettings(IConfiguration configuration)
     {
         return configuration.Get<AppSettings>() ?? new AppSettings();

@@ -5,17 +5,10 @@
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <NeutralLanguage>en-001</NeutralLanguage>
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
         <AssemblyName>trade_hero</AssemblyName>
         <ApplicationIcon>trade_hero.ico</ApplicationIcon>
     </PropertyGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\Project\TradeHero.Core\TradeHero.Core.csproj" />
-      <ProjectReference Include="..\Project\TradeHero.Database\TradeHero.Database.csproj" />
-      <ProjectReference Include="..\Project\TradeHero.Services\TradeHero.Services.csproj" />
-    </ItemGroup>
 
     <ItemGroup>
         <Folder Include="Properties" />
@@ -23,6 +16,12 @@
 
     <ItemGroup>
         <Compile Include="..\..\SharedAssemblyInfo.cs" Link="Properties\AssemblyInfo.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Project\TradeHero.Core\TradeHero.Core.csproj" />
+      <ProjectReference Include="..\Project\TradeHero.Database\TradeHero.Database.csproj" />
+      <ProjectReference Include="..\Project\TradeHero.Services\TradeHero.Services.csproj" />
     </ItemGroup>
 
 </Project>
