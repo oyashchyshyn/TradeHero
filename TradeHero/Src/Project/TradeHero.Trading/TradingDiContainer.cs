@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using TradeHero.Contracts.Trading;
+using TradeHero.Core.Types.Trading;
 using TradeHero.Trading.Endpoints.Rest;
 using TradeHero.Trading.Endpoints.Rest.Implementation;
 using TradeHero.Trading.Endpoints.Socket;
@@ -19,7 +19,7 @@ namespace TradeHero.Trading;
 
 public static class TradingDiContainer
 {
-    public static void Register(IServiceCollection serviceCollection)
+    public static void AddTrading(this IServiceCollection serviceCollection)
     {
         // Instance
         serviceCollection.AddTransient<IInstanceFactory, InstanceFactory>();

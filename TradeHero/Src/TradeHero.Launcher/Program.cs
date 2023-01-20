@@ -1,78 +1,63 @@
 ﻿using System.Diagnostics;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Extensions;
+using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Helpers;
-using TradeHero.Dependencies;
-using TradeHero.Launcher.Host;
+using TradeHero.Launcher.Providers;
 using TradeHero.Launcher.Services;
-using HostApp = Microsoft.Extensions.Hosting.Host;
 
 namespace TradeHero.Launcher;
 
 internal static class Program
 {
-    private static async Task Main(string[] args)
+    public static async Task Main(string[] args)
     {
-        var configuration = ConfigurationHelper.GenerateConfiguration(args);
-        var environmentSettings = ConfigurationHelper.ConvertConfigurationToAppSettings(configuration);
-        var baseDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, environmentSettings.Folder.DataFolderName);
-
         try
         {
-            if (!Directory.Exists(baseDirectory))
-            {
-                Directory.CreateDirectory(baseDirectory);
-            }
+            EnvironmentHelper.SetCulture();
             
             if (Process.GetProcesses().Count(x => x.ProcessName == Process.GetCurrentProcess().ProcessName) > 1)
             {
                 throw new Exception("Bot already running!");
             }
-
-            EnvironmentHelper.SetCulture();
             
             var environmentType = ArgsHelper.GetEnvironmentType(args);
+            var baseDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FolderConstants.DataFolder);
 
-            var host = HostApp.CreateDefaultBuilder(args)
-                .UseEnvironment(environmentType.ToString())
-                .UseContentRoot(baseDirectory)
-                .UseRunningType(RunnerType.Launcher.ToString())
-                .ConfigureAppConfiguration((_, config) =>
+            if (!Directory.Exists(baseDirectory))
+            {
+                Directory.CreateDirectory(baseDirectory);
+            }
+            
+            var appSettings = AppSettingsHelper.GenerateAppSettings(baseDirectory, environmentType, RunnerType.Launcher);
+            
+            await using (var serviceProvider = LauncherServiceProvider.Build(appSettings))
+            {
+                var launcherService = serviceProvider.GetRequiredService<LauncherStartupService>();
+                
+                launcherService.Start();
+                
+                if (!await launcherService.ManageDatabaseDataAsync())
                 {
-                    config.AddConfiguration(configuration);
-                })
-                .ConfigureServices((_, serviceCollection) =>
-                {
-                    serviceCollection.AddSingleton<IHostLifetime, LauncherHostedLifeTime>();
-                    serviceCollection.AddHostedService<LauncherHostedService>();
-                    
-                    serviceCollection.AddServices();
-                    serviceCollection.AddDatabase();
+                    throw new Exception("Cannot manage with local data, please see logs.");
+                }
+        
+                launcherService.RunApp();
 
-                    serviceCollection.AddSingleton<AppService>();
-                })
-                .ConfigureLogging(loggingBuilder =>
-                {
-                    loggingBuilder.ClearProviders();
-                    loggingBuilder.AddThSerilog();
-                })
-                .Build();
-
-            await host.RunAsync();
-
+                launcherService.AppWaiting.WaitOne();
+                
+                launcherService.Finish();
+            }
+        
             Environment.ExitCode = (int)AppExitCode.Success;
         }
         catch (Exception exception)
         {
-            var logsPath = Path.Combine(baseDirectory, environmentSettings.Folder.LogsFolderName);
-            await LoggerHelper.WriteLogToFileAsync(exception, logsPath, "launcher_fatal.txt");
-            
+            var logsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FolderConstants.DataFolder, FolderConstants.LogsFolder);
+            await LoggerHelper.WriteLogToFileAsync(exception, logsPath, FileConstants.LauncherFatalLogsName);
+        
             await MessageHelper.WriteMessageAsync(exception.Message);
-            
+        
             Environment.ExitCode = (int)AppExitCode.Failure;
         }
     }

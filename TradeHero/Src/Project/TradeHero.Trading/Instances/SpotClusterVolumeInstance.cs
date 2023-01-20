@@ -2,16 +2,16 @@ using System.Diagnostics;
 using Binance.Net.Enums;
 using Binance.Net.Objects.Models;
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Client;
-using TradeHero.Contracts.Client.Models;
-using TradeHero.Contracts.Services;
-using TradeHero.Contracts.Trading;
-using TradeHero.Contracts.Trading.Models.Instance;
 using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Exceptions;
 using TradeHero.Core.Extensions;
 using TradeHero.Core.Models;
+using TradeHero.Core.Types.Client;
+using TradeHero.Core.Types.Client.Models;
+using TradeHero.Core.Types.Services;
+using TradeHero.Core.Types.Trading;
+using TradeHero.Core.Types.Trading.Models.Instance;
 using TradeHero.Trading.Instances.Models;
 using TradeHero.Trading.Instances.Options;
 
@@ -285,7 +285,7 @@ internal class SpotClusterVolumeInstance : IInstance
 
             if (!previousKlineClusterVolumeRequest.Data.Any())
             {
-                _logger.LogError("{Symbol}. There is no cluster volumes in request. In {Method}",
+                _logger.LogInformation("{Symbol}. There is no cluster volumes in request. In {Method}",
                     symbolNameContainer.FuturesUsdName, nameof(SetKlineDetailInfoAsync));
 
                 return null;

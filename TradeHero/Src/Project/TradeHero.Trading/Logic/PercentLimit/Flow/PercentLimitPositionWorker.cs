@@ -2,12 +2,12 @@ using Binance.Net.Enums;
 using Binance.Net.Objects.Models.Futures;
 using Binance.Net.Objects.Models.Futures.Socket;
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Client;
-using TradeHero.Contracts.Services;
-using TradeHero.Contracts.Trading;
-using TradeHero.Contracts.Trading.Models;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Exceptions;
+using TradeHero.Core.Types.Client;
+using TradeHero.Core.Types.Services;
+using TradeHero.Core.Types.Trading;
+using TradeHero.Core.Types.Trading.Models;
 using TradeHero.Trading.Base;
 using TradeHero.Trading.Endpoints.Rest;
 using TradeHero.Trading.Logic.PercentLimit.Factory;
@@ -204,14 +204,16 @@ internal class PercentLimitPositionWorker : BasePositionWorker
         {
             var plsStore = (PercentLimitStore)tradeLogicStore;
          
+            plsStore.Positions.Remove(openedPosition);
             plsStore.PositionsInfo.Remove($"{openedPosition.Name}_{openedPosition.PositionSide}");
             
-            if (plsStore.Positions.Count(x => x.Name == openedPosition.Name) == 1)
+            if (plsStore.Positions.Count(x => x.Name == openedPosition.Name) == 1 
+                && plsStore.UsdFuturesTickerStreams.ContainsKey(openedPosition.Name))
             {
                 var stream = plsStore.UsdFuturesTickerStreams[openedPosition.Name];
                 await _socketBinanceClient.UnsubscribeAsync(stream.SocketSubscription);
-                plsStore.UsdFuturesTickerStreams.Remove(openedPosition.Name);
-                
+                plsStore.UsdFuturesTickerStreams.Remove(openedPosition.Name);    
+                    
                 _logger.LogInformation("{Position}. Unsubscribed from socket. In {Method}", 
                     openedPositionString, nameof(DeletePositionAsync));
             }
@@ -221,9 +223,7 @@ internal class PercentLimitPositionWorker : BasePositionWorker
                 openedPosition.PositionSide, 
                 cancellationToken: cancellationToken
             );
-            
-            plsStore.Positions.Remove(openedPosition);
-            
+
             _logger.LogInformation("{Position}. Position Removed. In {Method}", 
                 openedPositionString, nameof(DeletePositionAsync));
             

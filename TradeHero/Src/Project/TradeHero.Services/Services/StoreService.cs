@@ -1,5 +1,5 @@
-using TradeHero.Contracts.Services;
-using TradeHero.Contracts.Services.Models.Store;
+using TradeHero.Core.Types.Services;
+using TradeHero.Core.Types.Services.Models.Store;
 
 namespace TradeHero.Services.Services;
 

@@ -1,12 +1,12 @@
 using System.Text;
 using Binance.Net.Enums;
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Client;
-using TradeHero.Contracts.Services;
-using TradeHero.Contracts.Trading;
-using TradeHero.Contracts.Trading.Models.Instance;
 using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
+using TradeHero.Core.Types.Client;
+using TradeHero.Core.Types.Services;
+using TradeHero.Core.Types.Trading;
+using TradeHero.Core.Types.Trading.Models.Instance;
 using TradeHero.Trading.Base;
 using TradeHero.Trading.Endpoints.Rest;
 using TradeHero.Trading.Endpoints.Socket;
@@ -269,7 +269,7 @@ internal class PercentLimitTradeLogic : BaseFuturesUsdTradeLogic
             
             if (_percentLimitStore.Positions.Count >= _percentLimitStore.TradeLogicLogicOptions.MaximumPositions)
             {
-                Logger.LogWarning("Cannot open new positions. Opened positions: {OpenedPositions}, available: {AvailablePositions}. In {Method}",
+                Logger.LogInformation("Cannot open new positions. Opened positions: {OpenedPositions}, available: {AvailablePositions}. In {Method}",
                     _percentLimitStore.Positions.Count, _percentLimitStore.TradeLogicLogicOptions.MaximumPositions, nameof(ManageMarketBuyOrdersAsync));
                 
                 return;

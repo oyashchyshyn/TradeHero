@@ -1,5 +1,5 @@
-using TradeHero.Contracts.Trading.Models.Instance;
 using TradeHero.Core.Enums;
+using TradeHero.Core.Types.Trading.Models.Instance;
 
 namespace TradeHero.Trading.Instances.Options;
 
@@ -14,7 +14,7 @@ internal class SpotClusterVolumeOptions : BaseInstanceOptions
 
     public decimal OrderBookDepthPercent { get; set; }
     
-    public Market Market => Market.Spot;
+    public override Market Market => Market.Spot;
 
     public override string ToString()
     {

@@ -1,5 +1,5 @@
-using TradeHero.Contracts.Trading.Models.Instance;
 using TradeHero.Core.Extensions;
+using TradeHero.Core.Types.Trading.Models.Instance;
 
 namespace TradeHero.Trading.Helpers;
 

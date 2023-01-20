@@ -5,14 +5,14 @@ using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
-using TradeHero.Contracts.Repositories;
-using TradeHero.Contracts.Services;
-using TradeHero.Contracts.Services.Models.Telegram;
 using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Models;
+using TradeHero.Core.Types.Repositories;
+using TradeHero.Core.Types.Services;
+using TradeHero.Core.Types.Services.Models.Telegram;
 
-namespace TradeHero.Services.Services;
+namespace TradeHero.Main.Telegram;
 
 internal class TelegramService : ITelegramService
 {

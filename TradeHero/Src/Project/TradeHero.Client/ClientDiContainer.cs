@@ -4,18 +4,18 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TradeHero.Client.Clients;
 using TradeHero.Client.Resolvers;
-using TradeHero.Contracts.Client;
-using TradeHero.Contracts.Client.Resolvers;
-using TradeHero.Contracts.Repositories;
-using TradeHero.Contracts.Services;
 using TradeHero.Core.Enums;
-using TradeHero.Core.Settings.AppSettings;
+using TradeHero.Core.Types.Client;
+using TradeHero.Core.Types.Client.Resolvers;
+using TradeHero.Core.Types.Repositories;
+using TradeHero.Core.Types.Services;
+using TradeHero.Core.Types.Settings;
 
 namespace TradeHero.Client;
 
 public static class ClientDiContainer
 {
-    public static void Register(IServiceCollection serviceCollection)
+    public static void AddClient(this IServiceCollection serviceCollection)
     {
         serviceCollection.AddTransient<IThRestBinanceClient, ThRestBinanceClient>(serviceProvider =>
         {
@@ -63,7 +63,7 @@ public static class ClientDiContainer
 
         serviceCollection.AddSingleton<IBinanceResolver, BinanceResolver>();
     }
-    
+
     #region Private methods
 
     private static BinanceClientOptions GetBinanceClientOptions(AppSettings appSettings, 

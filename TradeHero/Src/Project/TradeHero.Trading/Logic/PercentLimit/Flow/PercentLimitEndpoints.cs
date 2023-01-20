@@ -1,13 +1,13 @@
 using Binance.Net.Enums;
 using Binance.Net.Objects.Models.Futures;
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Client;
-using TradeHero.Contracts.Services;
-using TradeHero.Contracts.Services.Models.Calculator;
-using TradeHero.Contracts.Trading.Models;
-using TradeHero.Contracts.Trading.Models.Instance;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Exceptions;
+using TradeHero.Core.Types.Client;
+using TradeHero.Core.Types.Services;
+using TradeHero.Core.Types.Services.Models.Calculator;
+using TradeHero.Core.Types.Trading.Models;
+using TradeHero.Core.Types.Trading.Models.Instance;
 using TradeHero.Trading.Endpoints.Rest;
 using TradeHero.Trading.Logic.PercentLimit.Options;
 

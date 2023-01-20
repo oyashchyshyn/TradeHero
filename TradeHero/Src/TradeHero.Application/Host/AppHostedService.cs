@@ -1,16 +1,15 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using TradeHero.Contracts.Menu;
-using TradeHero.Contracts.Services;
 using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
+using TradeHero.Core.Types.Menu;
+using TradeHero.Core.Types.Services;
 
 namespace TradeHero.Application.Host;
 
 internal class AppHostedService : IHostedService
 {
     private readonly ILogger<AppHostedService> _logger;
-    private readonly IApplicationService _applicationService;
     private readonly IJobService _jobService;
     private readonly IInternetConnectionService _internetConnectionService;
     private readonly IFileService _fileService;
@@ -18,27 +17,29 @@ internal class AppHostedService : IHostedService
     private readonly IStoreService _storeService;
     private readonly IMenuFactory _menuFactory;
 
+    private readonly ApplicationShutdown _applicationShutdown;
+
     private CancellationTokenSource _cancellationTokenSource = new();
     
     public AppHostedService(
         ILogger<AppHostedService> logger,
-        IApplicationService applicationService,
         IJobService jobService,
         IInternetConnectionService internetConnectionService,
         IFileService fileService,
         IEnvironmentService environmentService,
         IStoreService storeService,
-        IMenuFactory menuFactory
+        IMenuFactory menuFactory, 
+        ApplicationShutdown applicationShutdown
         )
     {
         _logger = logger;
-        _applicationService = applicationService;
         _jobService = jobService;
         _internetConnectionService = internetConnectionService;
         _fileService = fileService;
         _environmentService = environmentService;
         _storeService = storeService;
         _menuFactory = menuFactory;
+        _applicationShutdown = applicationShutdown;
     }
     
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -51,7 +52,7 @@ internal class AppHostedService : IHostedService
             _logger.LogInformation("Base path: {GetBasePath}", _environmentService.GetBasePath());
             _logger.LogInformation("Runner type: {RunnerType}", _environmentService.GetRunnerType());
             
-            _applicationService.SetActionsBeforeStopApplication(StopServices);
+            _applicationShutdown.SetActionsBeforeStop(StopServices);
             
             if (_environmentService.GetEnvironmentType() == EnvironmentType.Development)
             {
@@ -107,8 +108,6 @@ internal class AppHostedService : IHostedService
             _internetConnectionService.OnInternetDisconnected -= InternetConnectionServiceOnOnInternetDisconnected;
         
             _internetConnectionService.StopInternetConnectionChecking();
-
-            _logger.LogInformation("App stopped");
         }
         catch (Exception exception)
         {
