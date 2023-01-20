@@ -328,19 +328,31 @@ internal class UpdateStrategyCommand : ITelegramMenuCommand
                 return;
             }
 
-            var updatedDataData = _jsonService.SerializeObject(objectWithData.Data, Formatting.None,
-                JsonSerializationSettings.IgnoreJsonPropertyName).Data;
-
             switch (_telegramMenuStore.StrategyData.StrategyObjectToUpdate)
             {
                 case StrategyObject.TradeLogic:
-                    strategy.TradeLogicJson = updatedDataData;
-                    break;
+                {
+                    var tradingLogicJObject = _jsonService.GetJObject(objectWithData.Data, JsonSerializationSettings.IgnoreJsonPropertyName);
+                    if (tradingLogicJObject.ActionResult != ActionResult.Success)
+                    {
+                        await SendMessageWithClearDataAsync("Error during data validation, please try again.", cancellationToken);
+                    
+                        return;
+                    }
+
+                    tradingLogicJObject.Data.Remove(nameof(BaseStrategyDto.Name));
+                    strategy.TradeLogicJson = tradingLogicJObject.Data.ToString();
+                }
+                break;
                 case StrategyObject.Instance:
-                    strategy.InstanceJson = updatedDataData;
-                    break;
+                {
+                    strategy.InstanceJson = _jsonService.SerializeObject(objectWithData.Data, Formatting.None,
+                        JsonSerializationSettings.IgnoreJsonPropertyName).Data;    
+                }
+                break;
                 case StrategyObject.None:
                 default:
+                {
                     _logger.LogError("{StrategyObject} cannot be update. In {Method}", 
                         _telegramMenuStore.StrategyData.StrategyObjectToUpdate, nameof(HandleIncomeDataAsync));
                     await _telegramService.SendTextMessageToUserAsync(
@@ -348,7 +360,8 @@ internal class UpdateStrategyCommand : ITelegramMenuCommand
                         _telegramMenuStore.GetGoBackKeyboard(_telegramMenuStore.TelegramButtons.Strategies),
                         cancellationToken: cancellationToken
                     );
-                    break;
+                }
+                break;
             }
 
             if (!await UpdateStrategyAsync(strategy, cancellationToken))

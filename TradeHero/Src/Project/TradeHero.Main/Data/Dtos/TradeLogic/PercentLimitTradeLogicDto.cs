@@ -58,6 +58,10 @@ internal class PercentLimitTradeLogicDto : BaseStrategyDto
     [Description("Average quote volume for candle to open position. Available range is 0.00 to 100000000.00.")]
     [JsonProperty("open_pos_min_quote_v")]
     public decimal MinQuoteVolumeForOpen { get; set; }
+    
+    [Description("Defining is POC must be only in wich of candles.")]
+    [JsonProperty("open_poc_in_wick")]
+    public bool IsPocMustBeInWickForOpen { get; set; }
 
     // Average Position
     [Description("Enables automatic average of position. Bot will automatically open aaverage orders by parameters for average.")]
@@ -87,6 +91,10 @@ internal class PercentLimitTradeLogicDto : BaseStrategyDto
     [Description("Average quote volume for candle to average position. Available range is 0.0 to 100000000.0.")]
     [JsonProperty("avg_min_quote_v")]
     public decimal MinQuoteVolumeForAverage { get; set; }
+    
+    [Description("Defining is POC must be only in wich of candles.")]
+    [JsonProperty("avg_poc_in_wick")]
+    public bool IsPocMustBeInWickForAverage { get; set; }
     
     // Trailing stop
     [Description("Enables trailing stop feature. Bot will automatically close position by parameter for trailing stop.")]
