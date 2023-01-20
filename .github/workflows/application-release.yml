@@ -51,7 +51,7 @@ jobs:
         
       - name: Publish APP win-x86
         working-directory: ${{ env.APP_PROJECT_PATH }}
-        run: dotnet publish -r win-x64 --output ./publish/win-x86 --self-contained true -p:PublishTrimmed=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=false
+        run: dotnet publish -r win-x64 --output ./publish/win-x86 --self-contained true -p:PublishTrimmed=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishReadyToRun=true
      
       - name: Upload APP win-x86
         uses: actions/upload-artifact@v1
@@ -61,7 +61,7 @@ jobs:
       
       - name: Publish APP linux-x64
         working-directory: ${{ env.APP_PROJECT_PATH }}
-        run: dotnet publish -r linux-x64 --output ./publish/linux-x64 --self-contained true -p:PublishTrimmed=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=false
+        run: dotnet publish -r linux-x64 --output ./publish/linux-x64 --self-contained true -p:PublishTrimmed=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishReadyToRun=true
      
       - name: Upload APP linux-x64
         uses: actions/upload-artifact@v1
@@ -71,7 +71,7 @@ jobs:
           
       - name: Publish APP osx-x64
         working-directory: ${{ env.APP_PROJECT_PATH }}
-        run: dotnet publish -r osx-x64 --output ./publish/osx-x64 --self-contained true -p:PublishTrimmed=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=false
+        run: dotnet publish -r osx-x64 --output ./publish/osx-x64 --self-contained true -p:PublishTrimmed=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishReadyToRun=true
      
       - name: Upload APP osx-x64
         uses: actions/upload-artifact@v1
@@ -89,7 +89,7 @@ jobs:
       
       - name: Publish LAUNCHER win-x86
         working-directory: ${{ env.LAUNCHER_PROJECT_PATH }}
-        run: dotnet publish -r win-x64 --output ./publish/win-x86 --self-contained true -p:PublishTrimmed=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=false
+        run: dotnet publish -r win-x64 --output ./publish/win-x86 --self-contained true -p:PublishTrimmed=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
       
       - name: Upload LAUNCHER win-x86
         uses: actions/upload-artifact@v1
@@ -99,7 +99,7 @@ jobs:
       
       - name: Publish application linux-x64
         working-directory: ${{ env.LAUNCHER_PROJECT_PATH }}
-        run: dotnet publish -r linux-x64 --output ./publish/linux-x64 --self-contained true -p:PublishTrimmed=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=false
+        run: dotnet publish -r linux-x64 --output ./publish/linux-x64 --self-contained true -p:PublishTrimmed=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
       
       - name: Upload LAUNCHER linux-x64
         uses: actions/upload-artifact@v1
@@ -109,7 +109,7 @@ jobs:
           
       - name: Publish application osx-x64
         working-directory: ${{ env.LAUNCHER_PROJECT_PATH }}
-        run: dotnet publish -r osx-x64 --output ./publish/osx-x64 --self-contained true -p:PublishTrimmed=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=false
+        run: dotnet publish -r osx-x64 --output ./publish/osx-x64 --self-contained true -p:PublishTrimmed=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
       
       - name: Upload LAUNCHER osx-x64
         uses: actions/upload-artifact@v1
