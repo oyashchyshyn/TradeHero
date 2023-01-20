@@ -11,7 +11,7 @@ using TradeHero.Core.Types.Services;
 
 namespace TradeHero.Launcher.Services;
 
-internal class LauncherStartupService : IDisposable
+internal class LauncherStartupService
 {
     private readonly ILogger<LauncherStartupService> _logger;
     private readonly IEnvironmentService _environmentService;
@@ -21,16 +21,17 @@ internal class LauncherStartupService : IDisposable
 
     private Process? _runningProcess;
     private bool _isNeedToUpdateApp;
-
-    private readonly ManualResetEvent _shutdownBlock = new(false);
+    private readonly ManualResetEvent _waitAppClosed = new(false);
     
+    public readonly ManualResetEvent AppWaiting = new(false);
+
     public LauncherStartupService(
         ILogger<LauncherStartupService> logger,
         IEnvironmentService environmentService,
         ITerminalService terminalService,
         IGithubService githubService,
         IUserRepository userRepository
-            )
+        )
     {
         _logger = logger;
         _environmentService = environmentService;
@@ -324,20 +325,20 @@ internal class LauncherStartupService : IDisposable
                 _runningProcess?.Dispose();
                 _runningProcess = null;
 
+                _waitAppClosed.Set();
+
                 break;
             }
         });
     }
     
-    public void Dispose()
+    public void Finish()
     {
         AppDomain.CurrentDomain.UnhandledException -= UnhandledException;
         AppDomain.CurrentDomain.ProcessExit -= OnProcessExit;
         Console.CancelKeyPress -= OnCancelKeyPress;
-        
-        _shutdownBlock.Set();
-        
-        _logger.LogInformation("Finish disposing. In {Method}", nameof(Dispose));
+
+        _logger.LogInformation("Finish disposing. In {Method}", nameof(Finish));
     }
     
     #region Private methods
@@ -348,18 +349,24 @@ internal class LauncherStartupService : IDisposable
         
         e.Cancel = true;
 
-        _shutdownBlock.WaitOne();
+        _waitAppClosed.WaitOne();
         
         Environment.ExitCode = (int)AppExitCode.Success;
+        
+        AppWaiting.Set();
     }
 
     private void OnProcessExit(object? sender, EventArgs e)
     {
         _logger.LogInformation("Exit button is pressed. In {Method}", nameof(OnCancelKeyPress));
 
-        _shutdownBlock.WaitOne();
+        _runningProcess?.Close();
+        
+        _waitAppClosed.WaitOne();
         
         Environment.ExitCode = (int)AppExitCode.Success;
+        
+        AppWaiting.Set();
     }
 
     private void UnhandledException(object sender, UnhandledExceptionEventArgs e)

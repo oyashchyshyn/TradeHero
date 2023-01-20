@@ -1,7 +1,6 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Types.Services;
@@ -11,7 +10,6 @@ namespace TradeHero.Services.Services;
 
 internal class EnvironmentService : IEnvironmentService
 {
-    private readonly ILogger<EnvironmentService> _logger;
     private readonly IConfiguration _configuration;
 
     private readonly CancellationTokenSource _cancellationTokenSource;
@@ -19,12 +17,10 @@ internal class EnvironmentService : IEnvironmentService
     private Action? _actionsBeforeStopApplication;
 
     public EnvironmentService(
-        ILogger<EnvironmentService> logger,
         IConfiguration configuration,
         CancellationTokenSource cancellationTokenSource
         )
     {
-        _logger = logger;
         _configuration = configuration;
         _cancellationTokenSource = cancellationTokenSource;
     }
@@ -121,12 +117,7 @@ internal class EnvironmentService : IEnvironmentService
     
     public void StopApplication(AppExitCode? appExitCode = null)
     {
-        if (_actionsBeforeStopApplication != null)
-        {
-            _actionsBeforeStopApplication.Invoke();
-            
-            _logger.LogInformation("Clear resources. In {Method}", nameof(StopApplication));
-        }
+        _actionsBeforeStopApplication?.Invoke();
 
         if (appExitCode.HasValue)
         {

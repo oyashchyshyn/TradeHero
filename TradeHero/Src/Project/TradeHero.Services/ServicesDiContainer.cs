@@ -27,10 +27,8 @@ public static class ServicesDiContainer
         serviceCollection.AddSingleton<IEnvironmentService>(sp =>
         {
             var configuration = sp.GetRequiredService<IConfiguration>();
-            var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
 
-            return new EnvironmentService(loggerFactory.CreateLogger<EnvironmentService>(), configuration,
-                cancellationTokenSource);
+            return new EnvironmentService(configuration, cancellationTokenSource);
         });
         
         // Telegram

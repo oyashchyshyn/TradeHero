@@ -9,7 +9,7 @@ namespace TradeHero.Launcher;
 
 internal static class Program
 {
-    private static async Task Main(string[] args)
+    public static async Task Main(string[] args)
     {
         var environmentType = ArgsHelper.GetEnvironmentType(args);
         var appSettings = ConfigurationHelper.ConvertConfigurationToAppSettings(
@@ -45,6 +45,10 @@ internal static class Program
                 }
         
                 launcherService.RunApp();
+
+                launcherService.AppWaiting.WaitOne();
+                
+                launcherService.Finish();
             }
         
             Environment.ExitCode = (int)AppExitCode.Success;
