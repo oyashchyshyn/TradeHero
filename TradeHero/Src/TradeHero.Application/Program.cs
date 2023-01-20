@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using TradeHero.Application.Di;
 using TradeHero.Application.Host;
 using TradeHero.Client;
 using TradeHero.Core.Constants;
@@ -35,14 +36,11 @@ internal static class Program
                 .UseContentRoot(AppDomain.CurrentDomain.BaseDirectory)
                 .ConfigureServices((_, serviceCollection) =>
                 {
-                    serviceCollection.AddServices(appSettings, cancellationTokenSource);
+                    serviceCollection.AddServices(appSettings);
                     serviceCollection.AddClient();
                     serviceCollection.AddDatabase();
                     serviceCollection.AddTrading();
-                    serviceCollection.AddHost();
-                    
-                    serviceCollection.AddSingleton<IHostLifetime, AppHostLifeTime>();
-                    serviceCollection.AddHostedService<AppHostedService>();
+                    serviceCollection.AddHost(cancellationTokenSource);
                 })
                 .ConfigureLogging(loggingBuilder =>
                 {

@@ -14,12 +14,12 @@
         <ProjectReference Include="..\Project\TradeHero.Client\TradeHero.Client.csproj" />
         <ProjectReference Include="..\Project\TradeHero.Core\TradeHero.Core.csproj" />
         <ProjectReference Include="..\Project\TradeHero.Database\TradeHero.Database.csproj" />
-        <ProjectReference Include="..\Project\TradeHero.Main\TradeHero.Main.csproj" />
         <ProjectReference Include="..\Project\TradeHero.Services\TradeHero.Services.csproj" />
         <ProjectReference Include="..\Project\TradeHero.Trading\TradeHero.Trading.csproj" />
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="FluentValidation" Version="11.4.0" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.0" />
     </ItemGroup>
 

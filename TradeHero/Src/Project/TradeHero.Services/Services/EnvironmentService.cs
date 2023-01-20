@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
-using Newtonsoft.Json;
 using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Types.Services;
@@ -11,17 +10,10 @@ namespace TradeHero.Services.Services;
 internal class EnvironmentService : IEnvironmentService
 {
     private readonly AppSettings _appSettings;
-    private readonly CancellationTokenSource _cancellationTokenSource;
 
-    private Action? _actionsBeforeStopApplication;
-
-    public EnvironmentService(
-        AppSettings appSettings, 
-        CancellationTokenSource cancellationTokenSource
-        )
+    public EnvironmentService(AppSettings appSettings)
     {
         _appSettings = appSettings;
-        _cancellationTokenSource = cancellationTokenSource;
     }
 
     public string[] GetEnvironmentArgs()
@@ -107,22 +99,5 @@ internal class EnvironmentService : IEnvironmentService
         };
 
         return applicationName;
-    }
-
-    public void SetActionsBeforeStop(Action actionsBeforeStopApplication)
-    {
-        _actionsBeforeStopApplication = actionsBeforeStopApplication;
-    }
-    
-    public void StopApplication(AppExitCode? appExitCode = null)
-    {
-        _actionsBeforeStopApplication?.Invoke();
-
-        if (appExitCode.HasValue)
-        {
-            Environment.ExitCode = (int)appExitCode.Value;
-        }
-        
-        _cancellationTokenSource.Cancel();
     }
 }

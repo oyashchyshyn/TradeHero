@@ -17,6 +17,8 @@ internal class AppHostedService : IHostedService
     private readonly IStoreService _storeService;
     private readonly IMenuFactory _menuFactory;
 
+    private readonly ApplicationShutdown _applicationShutdown;
+
     private CancellationTokenSource _cancellationTokenSource = new();
     
     public AppHostedService(
@@ -26,8 +28,9 @@ internal class AppHostedService : IHostedService
         IFileService fileService,
         IEnvironmentService environmentService,
         IStoreService storeService,
-        IMenuFactory menuFactory
-    )
+        IMenuFactory menuFactory, 
+        ApplicationShutdown applicationShutdown
+        )
     {
         _logger = logger;
         _jobService = jobService;
@@ -36,6 +39,7 @@ internal class AppHostedService : IHostedService
         _environmentService = environmentService;
         _storeService = storeService;
         _menuFactory = menuFactory;
+        _applicationShutdown = applicationShutdown;
     }
     
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -48,7 +52,7 @@ internal class AppHostedService : IHostedService
             _logger.LogInformation("Base path: {GetBasePath}", _environmentService.GetBasePath());
             _logger.LogInformation("Runner type: {RunnerType}", _environmentService.GetRunnerType());
             
-            _environmentService.SetActionsBeforeStop(StopServices);
+            _applicationShutdown.SetActionsBeforeStop(StopServices);
             
             if (_environmentService.GetEnvironmentType() == EnvironmentType.Development)
             {

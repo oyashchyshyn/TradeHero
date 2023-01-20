@@ -10,14 +10,14 @@ namespace TradeHero.Launcher.Providers;
 
 public static class LauncherServiceProvider
 {
-    public static ServiceProvider Build(AppSettings appSettings, CancellationTokenSource cancellationTokenSource)
+    public static ServiceProvider Build(AppSettings appSettings)
     {
         var serviceCollection = new ServiceCollection();
 
         serviceCollection.AddSingleton<LauncherStartupService>();
 
         serviceCollection.AddDatabase();
-        serviceCollection.AddServices(appSettings, cancellationTokenSource);
+        serviceCollection.AddServices(appSettings);
         
         serviceCollection.AddLogging(loggingBuilder =>
         {

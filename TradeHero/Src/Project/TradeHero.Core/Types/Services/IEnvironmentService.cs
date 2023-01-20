@@ -15,6 +15,4 @@ public interface IEnvironmentService
     OperationSystem GetCurrentOperationSystem();
     string GetRunningApplicationName();
     string GetReleaseApplicationName();
-    void SetActionsBeforeStop(Action actionsBeforeStopApplication);
-    void StopApplication(AppExitCode? appExitCode = null);
 }

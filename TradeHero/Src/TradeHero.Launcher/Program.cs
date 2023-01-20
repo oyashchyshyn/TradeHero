@@ -31,7 +31,7 @@ internal static class Program
             
             var appSettings = AppSettingsHelper.GenerateAppSettings(baseDirectory, environmentType, RunnerType.Launcher);
             
-            await using (var serviceProvider = LauncherServiceProvider.Build(appSettings, new CancellationTokenSource()))
+            await using (var serviceProvider = LauncherServiceProvider.Build(appSettings))
             {
                 var launcherService = serviceProvider.GetRequiredService<LauncherStartupService>();
                 

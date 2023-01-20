@@ -10,16 +10,20 @@ internal class AppHostLifeTime : IHostLifetime, IDisposable
 {
     private readonly ILogger<AppHostLifeTime> _logger;
     private readonly IEnvironmentService _environmentService;
+    
+    private readonly ApplicationShutdown _applicationShutdown;
 
     private readonly ManualResetEvent _shutdownBlock = new(false);
     
     public AppHostLifeTime(
         ILogger<AppHostLifeTime> logger,
-        IEnvironmentService environmentService
+        IEnvironmentService environmentService, 
+        ApplicationShutdown applicationShutdown
         )
     {
         _logger = logger;
         _environmentService = environmentService;
+        _applicationShutdown = applicationShutdown;
     }
 
     public Task WaitForStartAsync(CancellationToken cancellationToken)
@@ -74,7 +78,7 @@ internal class AppHostLifeTime : IHostLifetime, IDisposable
     {
         _logger.LogInformation("Exit button is pressed. In {Method}", nameof(OnProcessExit));
         
-        _environmentService.StopApplication(AppExitCode.Success);
+        _applicationShutdown.Shutdown(AppExitCode.Success);
 
         _shutdownBlock.WaitOne();
     }
@@ -85,7 +89,7 @@ internal class AppHostLifeTime : IHostLifetime, IDisposable
         
         e.Cancel = true;
         
-        _environmentService.StopApplication(AppExitCode.Success);
+        _applicationShutdown.Shutdown(AppExitCode.Success);
     }
 
     #endregion

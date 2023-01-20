@@ -10,8 +10,7 @@ namespace TradeHero.Services;
 
 public static class ServicesDiContainer
 {
-    public static void AddServices(this IServiceCollection serviceCollection, AppSettings appSettings, 
-        CancellationTokenSource cancellationTokenSource)
+    public static void AddServices(this IServiceCollection serviceCollection, AppSettings appSettings)
     {
         // Services
         serviceCollection.AddSingleton<IJsonService, JsonService>();
@@ -25,8 +24,8 @@ public static class ServicesDiContainer
         serviceCollection.AddSingleton<IStoreService, StoreService>();
         
         // Environment
-        serviceCollection.AddSingleton<IEnvironmentService>(_ => new EnvironmentService(appSettings, cancellationTokenSource));
-        
+        serviceCollection.AddSingleton<IEnvironmentService>(_ => new EnvironmentService(appSettings));
+
         // Telegram
         serviceCollection.AddSingleton<ITelegramService, TelegramService>();
         serviceCollection.AddHttpClient("TelegramBotClient")
