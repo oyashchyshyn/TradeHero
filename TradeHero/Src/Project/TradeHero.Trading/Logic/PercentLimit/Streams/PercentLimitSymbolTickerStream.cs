@@ -32,7 +32,7 @@ internal class PercentLimitSymbolTickerStream : BaseFuturesUsdSymbolTickerStream
     {
         try
         {
-            if (!_percentLimitStore.TradeLogicLogicOptions.EnableTrailingStops && !_percentLimitStore.TradeLogicLogicOptions.EnableMarketStopToExit)
+            if (_percentLimitStore.TradeLogicLogicOptions is { EnableTrailingStops: false, EnableMarketStopToExit: false })
             {
                 return Task.CompletedTask;
             }
@@ -42,7 +42,7 @@ internal class PercentLimitSymbolTickerStream : BaseFuturesUsdSymbolTickerStream
             
             var balance = _percentLimitStore.FuturesUsd.AccountData.Balances.Single(x => x.Asset == symbolInfo.QuoteAsset);
             
-            foreach (var position in _percentLimitStore.Positions.Where(x => x.Name == ticker.Symbol))
+            foreach (var position in _percentLimitStore.Positions.Where(x => x.Name == ticker.Symbol).ToArray())
             {
                 Task.Run(async () =>
                 {
@@ -54,7 +54,7 @@ internal class PercentLimitSymbolTickerStream : BaseFuturesUsdSymbolTickerStream
                     
                         return;
                     }
-
+                    
                     var positionInfo = _percentLimitStore.PositionsInfo[key];
                     
                     if (!positionInfo.IsNeedToCheckPosition)
@@ -70,7 +70,7 @@ internal class PercentLimitSymbolTickerStream : BaseFuturesUsdSymbolTickerStream
                     var orderToPlace = _percentLimitFilters.IsNeedToActivateOrders(
                         position, 
                         ticker.LastPrice,
-                        _percentLimitStore.PositionsInfo[key],
+                        positionInfo,
                         balance,
                         _percentLimitStore.TradeLogicLogicOptions
                     );
