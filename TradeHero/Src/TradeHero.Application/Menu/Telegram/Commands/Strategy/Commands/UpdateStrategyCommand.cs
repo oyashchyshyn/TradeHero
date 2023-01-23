@@ -218,10 +218,10 @@ internal class UpdateStrategyCommand : ITelegramMenuCommand
                     break;
             }
 
-            if (jObject == null || type == null)
+            if (jObject == null || type == null || _telegramMenuStore.StrategyData.StrategyObjectToUpdate == StrategyObject.None)
             {
-                _logger.LogError("JObject is null: {JObjectIsNull}. Type is null: {TypeIsNull}. In {Method}",
-                    jObject == null, type == null, nameof(HandleIncomeDataAsync));
+                _logger.LogError("JObject is null: {JObjectIsNull}. Type is null: {TypeIsNull}. StrategyObject is {StrategyObject}. In {Method}",
+                    jObject == null, type == null, _telegramMenuStore.StrategyData.StrategyObjectToUpdate, nameof(HandleIncomeDataAsync));
                 
                 await _telegramService.SendTextMessageToUserAsync(
                     "Error during data validation, please try again.",
