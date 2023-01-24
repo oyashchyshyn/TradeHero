@@ -1,6 +1,6 @@
 namespace TradeHero.Core.Enums;
 
-public enum MarketMood
+public enum Mood
 {
     Balanced,
     Short,

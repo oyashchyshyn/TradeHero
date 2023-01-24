@@ -59,7 +59,7 @@ internal class PercentMoveSymbolTickerStream : BaseFuturesUsdSymbolTickerStream
 
                 var balance = _percentMoveStore.FuturesUsd.AccountData.Balances.Single(x => x.Asset == symbolInfo.QuoteAsset);
                 
-                foreach (var openedPosition in _percentMoveStore.Positions.Where(x => x.Name == ticker.Symbol))
+                foreach (var openedPosition in _percentMoveStore.Positions.Where(x => x.Name == ticker.Symbol).ToArray())
                 {
                     await _percentMoveEndpoints.CreateBuyMarketOrderAsync(openedPosition, symbolInfo, balance, cancellationToken: cancellationToken);
                 }
