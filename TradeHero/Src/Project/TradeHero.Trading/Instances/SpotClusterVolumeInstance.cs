@@ -108,7 +108,7 @@ internal class SpotClusterVolumeInstance : IInstance
                 Side = localInstanceOptions.Side,
                 LongsMarketMoodPercent = longMoodPercent,
                 ShortMarketMoodPercent = shortMoodPercent,
-                MarketMood = shortMoodPercent >= 60 ? MarketMood.Short : longMoodPercent >= 60 ? MarketMood.Long : MarketMood.Balanced
+                MarketMood = shortMoodPercent >= 60 ? Mood.Short : longMoodPercent >= 60 ? Mood.Long : Mood.Balanced
             };
 
             var filteredSymbolNameContainers = symbolNameContainers
@@ -191,7 +191,17 @@ internal class SpotClusterVolumeInstance : IInstance
                     }   
                 }
             });
+            
+            instanceResult.LongsSignalMoodPercent = Math.Round(
+                instanceResult.LongSignalsCount / (instanceResult.LongSignalsCount + instanceResult.ShortSignalsCount) * 100m, 
+                2);
+            
+            instanceResult.ShortSignalMoodPercent = Math.Round(100m - longMoodPercent, 2);
 
+            instanceResult.SignalsMood = instanceResult.ShortSignalMoodPercent >= 70 
+                ? Mood.Short 
+                : instanceResult.LongsSignalMoodPercent >= 70 ? Mood.Long : Mood.Balanced;
+            
             return new GenericBaseResult<InstanceResult>(instanceResult);
         }
         catch (TaskCanceledException taskCanceledException)

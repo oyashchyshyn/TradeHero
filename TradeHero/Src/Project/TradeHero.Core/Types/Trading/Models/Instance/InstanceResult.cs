@@ -10,9 +10,14 @@ public class InstanceResult
     public DateTime EndTo { get; set; }
     public Market Market { get; set; }
     public PositionSide Side { get; set; }
-    public MarketMood MarketMood { get; set; }
+    public Mood MarketMood { get; set; }
     public decimal ShortMarketMoodPercent { get; set; }
     public decimal LongsMarketMoodPercent { get; set; }
+    public Mood SignalsMood { get; set; }
+    public decimal ShortSignalMoodPercent { get; set; }
+    public decimal LongsSignalMoodPercent { get; set; }
+    public decimal ShortSignalsCount => ShortSignals.Count;
+    public decimal LongSignalsCount => LongSignals.Count;
     public List<SymbolMarketInfo> ShortSignals { get; } = new();
     public List<SymbolMarketInfo> LongSignals { get; } = new();
 }
