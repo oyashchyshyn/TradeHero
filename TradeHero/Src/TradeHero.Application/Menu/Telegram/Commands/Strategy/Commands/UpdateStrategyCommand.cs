@@ -341,7 +341,7 @@ internal class UpdateStrategyCommand : ITelegramMenuCommand
                     }
 
                     tradingLogicJObject.Data.Remove(nameof(BaseStrategyDto.Name));
-                    strategy.TradeLogicJson = tradingLogicJObject.Data.ToString();
+                    strategy.TradeLogicJson = tradingLogicJObject.Data.ToString().Replace("\n ", string.Empty);
                 }
                 break;
                 case StrategyObject.Instance:
