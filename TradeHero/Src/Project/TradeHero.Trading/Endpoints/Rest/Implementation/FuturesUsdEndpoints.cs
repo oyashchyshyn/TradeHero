@@ -571,8 +571,8 @@ internal class FuturesUsdEndpoints : IFuturesUsdEndpoints
             }
             
             var openedOrders = listBinanceFuturesOrders
-                .Where(x => x.Status == OrderStatus.New)
-                .Where(x => x.PositionSide == side);
+                .Where(x => x.PositionSide == side)
+                .Where(x => x.Status == OrderStatus.New);
                 
             foreach (var openedOrder in openedOrders)
             {
