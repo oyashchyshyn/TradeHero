@@ -207,7 +207,7 @@ internal class PercentLimitPositionWorker : BasePositionWorker
             plsStore.Positions.Remove(openedPosition);
             plsStore.PositionsInfo.Remove($"{openedPosition.Name}_{openedPosition.PositionSide}");
             
-            if (plsStore.Positions.Count(x => x.Name == openedPosition.Name) == 1 
+            if (plsStore.Positions.Count(x => x.Name == openedPosition.Name) + 1 == 1 
                 && plsStore.UsdFuturesTickerStreams.ContainsKey(openedPosition.Name))
             {
                 var stream = plsStore.UsdFuturesTickerStreams[openedPosition.Name];
