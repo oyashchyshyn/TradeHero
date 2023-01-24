@@ -36,8 +36,9 @@ internal class PercentLimitFilters
         _environmentService = environmentService;
     }
 
-    public async Task<IEnumerable<SymbolMarketInfo>> GetFilteredOrdersForOpenPositionAsync(InstanceResult instanceResult, 
-        PercentLimitTradeLogicLogicOptions tradeLogicLogicOptions, List<Position> openedPositions, List<BinancePositionDetailsUsdt> positionsInfo)
+    public async Task<List<SymbolMarketInfo>> GetFilteredOrdersForOpenPositionAsync(InstanceResult instanceResult, 
+        PercentLimitTradeLogicLogicOptions tradeLogicLogicOptions, IReadOnlyCollection<Position> openedPositions, 
+        IReadOnlyCollection<BinancePositionDetailsUsdt> positionsInfo)
     {
         try
         {
@@ -89,38 +90,73 @@ internal class PercentLimitFilters
             var shortsPositionsToOpen = 0;
             var longsPositionsToOpen = 0;
 
-            if (instanceResult.ShortSignals.Count == instanceResult.LongSignals.Count)
+
+            var positionsForOpenLeft = tradeLogicLogicOptions.MaximumPositions - openedPositions.Count;
+            
+            var availablePositionsToOpen = positionsForOpenLeft >= tradeLogicLogicOptions.MaximumPositionsPerIteration
+                ? tradeLogicLogicOptions.MaximumPositionsPerIteration 
+                : tradeLogicLogicOptions.MaximumPositionsPerIteration - positionsForOpenLeft;
+
+            if (availablePositionsToOpen < 0)
             {
-                longsPositionsToOpen = tradeLogicLogicOptions.MaximumPositionsPerIteration / 2;
-                shortsPositionsToOpen = tradeLogicLogicOptions.MaximumPositionsPerIteration / 2;
+                _logger.LogInformation("There is no ability to open new positions. Opened positions count is: {OpenedPositionsCount}. In {Method}",
+                    openedPositions.Count, nameof(GetFilteredOrdersForOpenPositionAsync));
+
+                return new List<SymbolMarketInfo>();
             }
-            else if (instanceResult.ShortSignals.Count > instanceResult.LongSignals.Count)
+            
+            switch (instanceResult.MarketMood)
             {
-                var ration = (instanceResult.ShortSignals.Count == 0 ? 1 : instanceResult.ShortSignals.Count) 
-                             / (instanceResult.LongSignals.Count == 0 ? 1 : instanceResult.LongSignals.Count);
-                if (ration >= tradeLogicLogicOptions.MaximumPositionsPerIteration)
-                {
+                case Mood.Short:
                     shortsPositionsToOpen = tradeLogicLogicOptions.MaximumPositionsPerIteration;
-                }
-                else
-                {
-                    shortsPositionsToOpen = ration;
-                    longsPositionsToOpen = tradeLogicLogicOptions.MaximumPositionsPerIteration - ration;
-                }
-            }
-            else
-            {
-                var ration = (instanceResult.LongSignals.Count == 0 ? 1 : instanceResult.LongSignals.Count) 
-                             / (instanceResult.ShortSignals.Count == 0 ? 1 : instanceResult.ShortSignals.Count);
-                if (ration >= tradeLogicLogicOptions.MaximumPositionsPerIteration)
-                {
+                    break;
+                case Mood.Long:
                     longsPositionsToOpen = tradeLogicLogicOptions.MaximumPositionsPerIteration;
-                }
-                else
-                {
-                    longsPositionsToOpen = ration;
-                    shortsPositionsToOpen = tradeLogicLogicOptions.MaximumPositionsPerIteration - ration;
-                }
+                    break;
+                case Mood.Balanced:
+                    switch (instanceResult.SignalsMood)
+                    {
+                        case Mood.Short:
+                            shortsPositionsToOpen = tradeLogicLogicOptions.MaximumPositionsPerIteration;
+                            break;
+                        case Mood.Long:
+                            longsPositionsToOpen = tradeLogicLogicOptions.MaximumPositionsPerIteration;
+                            break;
+                        case Mood.Balanced:
+                        {
+                            if (tradeLogicLogicOptions.MaximumPositionsPerIteration % 2 == 0)
+                            {
+                                shortsPositionsToOpen = tradeLogicLogicOptions.MaximumPositionsPerIteration / 2;
+                                longsPositionsToOpen = tradeLogicLogicOptions.MaximumPositionsPerIteration / 2;
+                            }
+                            else
+                            {
+                                var dividedPerIteration =
+                                    (int)Math.Round((decimal)tradeLogicLogicOptions.MaximumPositionsPerIteration / 2, 0);
+
+                                if (instanceResult.ShortSignalsCount > instanceResult.LongSignalsCount)
+                                {
+                                    shortsPositionsToOpen = dividedPerIteration;
+                                    longsPositionsToOpen = tradeLogicLogicOptions.MaximumPositionsPerIteration - dividedPerIteration;
+                                }
+                                else
+                                {
+                                    shortsPositionsToOpen = tradeLogicLogicOptions.MaximumPositionsPerIteration - dividedPerIteration;
+                                    longsPositionsToOpen = dividedPerIteration;
+                                }
+                            }
+                        }
+                        break;
+                        default:
+                            _logger.LogWarning("There is no signal mood. In {Method}",
+                                nameof(GetFilteredOrdersForOpenPositionAsync));
+                            return new List<SymbolMarketInfo>();
+                    }
+                    break;
+                default:
+                    _logger.LogWarning("There is no market mood. In {Method}",
+                        nameof(GetFilteredOrdersForOpenPositionAsync));
+                    return new List<SymbolMarketInfo>();
             }
 
             _logger.LogInformation("Maximum positions per iteration {IterCount}. Longs to check: {LongsCount}. Shorts to check: {ShortsCount}. In {Method}",
@@ -132,7 +168,9 @@ internal class PercentLimitFilters
             _logger.LogInformation("Longs to open: {LongsCount}. Shorts to open: {ShortsCount}. In {Method}",
                 longsToOpen.Count, shortsToOpen.Count, nameof(GetFilteredOrdersForOpenPositionAsync));
 
-            return shortsToOpen.Concat(longsToOpen);
+            shortsToOpen.AddRange(longsToOpen);
+            
+            return shortsToOpen;
         }
         catch (Exception exception)
         {
@@ -240,9 +278,9 @@ internal class PercentLimitFilters
 
             switch (instanceResult.MarketMood)
             {
-                case MarketMood.Short when openedPosition.PositionSide == PositionSide.Long:
-                case MarketMood.Long when openedPosition.PositionSide == PositionSide.Short:
-                case MarketMood.Balanced:
+                case Mood.Short when openedPosition.PositionSide == PositionSide.Long:
+                case Mood.Long when openedPosition.PositionSide == PositionSide.Short:
+                case Mood.Balanced:
                     _logger.LogInformation("{Position}. Wrong market mood. Current market mood is {MarketMood}. In {Method}", 
                         openedPosition.ToString(), instanceResult.MarketMood, nameof(IsNeedToPlaceMarketAverageOrderAsync));
                     return Task.FromResult(false);

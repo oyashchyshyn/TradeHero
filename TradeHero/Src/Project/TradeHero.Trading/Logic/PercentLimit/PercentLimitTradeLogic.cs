@@ -263,15 +263,11 @@ internal class PercentLimitTradeLogic : BaseFuturesUsdTradeLogic
                 return;
             }
             
-            //TODO: Swap this variable with if after testing
             var filteredPositions = await _percentLimitFilters.GetFilteredOrdersForOpenPositionAsync(instanceResult, _percentLimitStore.TradeLogicLogicOptions, 
                 _percentLimitStore.Positions, _percentLimitStore.FuturesUsd.AccountData.Positions.ToList());
             
-            if (_percentLimitStore.Positions.Count >= _percentLimitStore.TradeLogicLogicOptions.MaximumPositions)
+            if (!filteredPositions.Any())
             {
-                Logger.LogInformation("Cannot open new positions. Opened positions: {OpenedPositions}, available: {AvailablePositions}. In {Method}",
-                    _percentLimitStore.Positions.Count, _percentLimitStore.TradeLogicLogicOptions.MaximumPositions, nameof(ManageMarketBuyOrdersAsync));
-                
                 return;
             }
         

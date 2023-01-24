@@ -108,6 +108,8 @@ internal class PercentLimitEndpoints
             
             foreach (var futureOrderQuantity in _calculatorService.SplitPositionQuantity(orderQuantity, symbolInfo.LotSizeFilter.MaxQuantity))
             {
+                var currentOrderQuantity = futureOrderQuantity;
+                
                 for (var i = 0; i < maxRetries; i++)
                 { 
                     if (cancellationToken.IsCancellationRequested)
@@ -122,7 +124,7 @@ internal class PercentLimitEndpoints
                         symbol: symbolMarketInfo.FuturesUsdName,
                         side: symbolMarketInfo.PositionSide == PositionSide.Short ? OrderSide.Sell : OrderSide.Buy,
                         type: FuturesOrderType.Market,
-                        quantity: futureOrderQuantity,
+                        quantity: currentOrderQuantity,
                         positionSide: symbolMarketInfo.PositionSide,
                         ct: cancellationToken
                     );
@@ -131,7 +133,7 @@ internal class PercentLimitEndpoints
                     {
                         _logger.LogInformation("{Symbol} | {Side}. Open position market order with id {OrderId} and quantity {Quantity} placed successfully. In {Method}",
                             symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, placeOrderRequest.Data.Id, 
-                            futureOrderQuantity, nameof(CreateBuyMarketOrderAsync)); 
+                            currentOrderQuantity, nameof(CreateBuyMarketOrderAsync)); 
                         
                         break;
                     }
@@ -139,14 +141,40 @@ internal class PercentLimitEndpoints
                     _logger.LogWarning(new ThException(placeOrderRequest.Error),"{Symbol} | {Side}. In {Method}",
                         symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, nameof(CreateBuyMarketOrderAsync));
 
-                    if (placeOrderRequest.Error?.Code == (int)ApiErrorCodes.MaximumExceededAtCurrentLeverage)
+                    switch (placeOrderRequest.Error?.Code)
                     {
-                        _logger.LogInformation("{Symbol} | {Side}. Order won't be placed due to last warning. In {Method}",
-                            symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, nameof(CreateBuyMarketOrderAsync));
+                        case (int)ApiErrorCodes.MinNotionalError:
+                        {
+                            var lastPriceRequest = await _restBinanceClient.UsdFuturesApi.ExchangeData.GetPriceAsync(
+                                symbolMarketInfo.FuturesUsdName,
+                                ct: cancellationToken
+                            );
+
+                            if (!lastPriceRequest.Success)
+                            {
+                                _logger.LogWarning(new ThException(lastPriceRequest.Error),"{Symbol} | {Side}. In {Method}",
+                                    symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, nameof(CreateBuyMarketOrderAsync));
+                            
+                                continue;
+                            }
                         
-                        return ActionResult.ClientError;
+                            currentOrderQuantity = _calculatorService.GetOrderQuantity(
+                                lastPriceRequest.Data.Price,
+                                initialMargin,
+                                symbolInfo.LotSizeFilter.MinQuantity
+                            );
+                        
+                            continue;
+                        }
+                        case (int)ApiErrorCodes.MaximumExceededAtCurrentLeverage:
+                        {
+                            _logger.LogError("{Symbol} | {Side}. Order won't be placed due to last warning. In {Method}",
+                                symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, nameof(CreateBuyMarketOrderAsync));
+                        
+                            return ActionResult.ClientError;
+                        }
                     }
-                    
+
                     if (i != maxRetries - 1)
                     {
                         continue;
