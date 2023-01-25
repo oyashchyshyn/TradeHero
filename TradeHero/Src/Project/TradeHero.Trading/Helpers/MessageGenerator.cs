@@ -10,12 +10,15 @@ internal static class MessageGenerator
         var message =
             $"----------------------------------{Environment.NewLine}" +
             $"Interval: {instanceResult.Interval}{Environment.NewLine}" +
-            $"Market: {instanceResult.Market}{Environment.NewLine}" +
+            $"Market mood: {instanceResult.Market}{Environment.NewLine}" +
             $"Side: {instanceResult.Side}{Environment.NewLine}" +
+            $"Signals mood: {instanceResult.SignalsMood}{Environment.NewLine}" +
             $"Shorts market mood: {instanceResult.ShortMarketMoodPercent}%{Environment.NewLine}" +
             $"Longs market mood: {instanceResult.LongsMarketMoodPercent}%{Environment.NewLine}" +
-            $"Total shorts: {instanceResult.ShortSignals.Count}{Environment.NewLine}" +
-            $"Total longs: {instanceResult.LongSignals.Count}{Environment.NewLine}";
+            $"Short signals mood: {instanceResult.ShortSignalMoodPercent}{Environment.NewLine}" +
+            $"Long signals mood: {instanceResult.LongsSignalMoodPercent}{Environment.NewLine}" +
+            $"Total short signals: {instanceResult.ShortSignalsCount}{Environment.NewLine}" +
+            $"Total long signals: {instanceResult.LongSignalsCount}{Environment.NewLine}";
 
         return message;
     }
