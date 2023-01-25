@@ -42,8 +42,8 @@ internal class PercentLimitPositionWorker : BasePositionWorker
         _percentMoveSymbolTickerStreamFactory = percentMoveSymbolTickerStreamFactory;
     }
 
-    public override async Task<ActionResult> CreatePositionAsync(ITradeLogicStore tradeLogicStore, string symbol, PositionSide side, decimal entryPrice, DateTime lastUpdateTime,
-        decimal quantity, bool isPositionExist, CancellationToken cancellationToken)
+    public override async Task<ActionResult> CreatePositionAsync(ITradeLogicStore tradeLogicStore, string symbol, PositionSide side, decimal entryPrice, 
+        DateTime lastUpdateTime, decimal quantity, bool isPositionExist, CancellationToken cancellationToken)
     {
         try
         {
@@ -177,7 +177,8 @@ internal class PercentLimitPositionWorker : BasePositionWorker
         }
     }
     
-    public override ActionResult UpdatePositionDetails(ITradeLogicStore tradeLogicStore, Position openedPosition, BinancePositionDetailsUsdt positionDetails)
+    public override ActionResult UpdatePositionDetails(ITradeLogicStore tradeLogicStore, Position openedPosition, 
+        BinancePositionDetailsUsdt positionDetails)
     {
         try
         {
