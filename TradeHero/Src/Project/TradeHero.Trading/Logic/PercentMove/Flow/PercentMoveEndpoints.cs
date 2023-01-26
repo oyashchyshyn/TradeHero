@@ -69,7 +69,7 @@ internal class PercentMoveEndpoints
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    _logger.LogWarning("{Position}. CancellationToken is requested. In {Method}",
+                    _logger.LogInformation("{Position}. CancellationToken is requested. In {Method}",
                         positionString, nameof(CreateBuyMarketOrderAsync));
 
                     return ActionResult.CancellationTokenRequested;
@@ -141,7 +141,7 @@ internal class PercentMoveEndpoints
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            _logger.LogWarning("{Message}. In {Method}",
+            _logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(CreateBuyMarketOrderAsync));
             
             return ActionResult.CancellationTokenRequested;

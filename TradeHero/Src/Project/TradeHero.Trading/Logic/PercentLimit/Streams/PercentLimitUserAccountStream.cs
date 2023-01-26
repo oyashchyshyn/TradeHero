@@ -91,7 +91,7 @@ internal class PercentLimitUserAccountStream : BaseFuturesUsdUserAccountStream
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            Logger.LogWarning("{Message}. In {Method}",
+            Logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(OnOrderUpdateAsync));
         }
         catch (Exception exception)

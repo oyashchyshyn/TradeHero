@@ -49,7 +49,7 @@ internal class PercentLimitPositionWorker : BasePositionWorker
         {
             if (cancellationToken.IsCancellationRequested)
             {
-                _logger.LogWarning("Cancellation token is requested. In {Method}", 
+                _logger.LogInformation("Cancellation token is requested. In {Method}", 
                     nameof(CreatePositionAsync));
 
                 return ActionResult.CancellationTokenRequested;
@@ -133,7 +133,7 @@ internal class PercentLimitPositionWorker : BasePositionWorker
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            _logger.LogWarning("{Message}. In {Method}",
+            _logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(CreatePositionAsync));
 
             return ActionResult.CancellationTokenRequested;
@@ -233,7 +233,7 @@ internal class PercentLimitPositionWorker : BasePositionWorker
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            _logger.LogWarning("{Message}. In {Method}",
+            _logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(CreatePositionAsync));
 
             return ActionResult.CancellationTokenRequested;

@@ -114,7 +114,7 @@ internal class PercentLimitEndpoints
                 { 
                     if (cancellationToken.IsCancellationRequested)
                     {
-                        _logger.LogWarning("Cancellation token is requested. In {Method}", 
+                        _logger.LogInformation("Cancellation token is requested. In {Method}", 
                             nameof(CreateBuyMarketOrderAsync));
 
                         return ActionResult.CancellationTokenRequested;
@@ -191,7 +191,7 @@ internal class PercentLimitEndpoints
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            _logger.LogWarning("{Message}. In {Method}",
+            _logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(CreateBuyMarketOrderAsync));
 
             return ActionResult.CancellationTokenRequested;
@@ -287,7 +287,7 @@ internal class PercentLimitEndpoints
                 {
                     if (cancellationToken.IsCancellationRequested)
                     {
-                        _logger.LogWarning("Cancellation token is requested. In {Method}", 
+                        _logger.LogInformation("Cancellation token is requested. In {Method}", 
                             nameof(CreateMarketAverageBuyOrderAsync));
 
                         return ActionResult.CancellationTokenRequested;
@@ -334,7 +334,7 @@ internal class PercentLimitEndpoints
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            _logger.LogWarning("{Message}. In {Method}",
+            _logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(CreateMarketAverageBuyOrderAsync));
 
             return ActionResult.CancellationTokenRequested;
@@ -408,7 +408,7 @@ internal class PercentLimitEndpoints
                 {
                     if (cancellationToken.IsCancellationRequested)
                     {
-                        _logger.LogWarning("Cancellation token is requested. In {Method}", 
+                        _logger.LogInformation("Cancellation token is requested. In {Method}", 
                             nameof(CreateMarketStopOrderAsync));
 
                         return ActionResult.CancellationTokenRequested;
@@ -518,7 +518,7 @@ internal class PercentLimitEndpoints
         {
             if (cancellationToken.IsCancellationRequested)
             {
-                _logger.LogWarning("Cancellation token is requested. In {Method}", 
+                _logger.LogInformation("Cancellation token is requested. In {Method}", 
                     nameof(CreateMarketClosePositionOrderAsync));
 
                 return ActionResult.CancellationTokenRequested;
@@ -543,7 +543,7 @@ internal class PercentLimitEndpoints
                 
                     if (cancellationToken.IsCancellationRequested)
                     {
-                        _logger.LogWarning("Cancellation token is requested. In {Method}", 
+                        _logger.LogInformation("Cancellation token is requested. In {Method}", 
                             nameof(CreateMarketClosePositionOrderAsync));
 
                         return ActionResult.CancellationTokenRequested;

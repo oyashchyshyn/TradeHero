@@ -70,7 +70,7 @@ internal abstract class BaseFuturesUsdTradeLogic : ITradeLogic
         {
             if (CancellationTokenSource.Token.IsCancellationRequested)
             {
-                Logger.LogWarning("CancellationToken is requested. In {Method}",
+                Logger.LogInformation("CancellationToken is requested. In {Method}",
                     nameof(InitAsync));
                 
                 return ActionResult.CancellationTokenRequested;
@@ -160,7 +160,7 @@ internal abstract class BaseFuturesUsdTradeLogic : ITradeLogic
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            Logger.LogWarning("{Message}. In {Method}",
+            Logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(InitAsync));
             
             return ActionResult.CancellationTokenRequested;
@@ -212,7 +212,7 @@ internal abstract class BaseFuturesUsdTradeLogic : ITradeLogic
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            Logger.LogWarning("{Message}. In {Method}",
+            Logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(UpdateTradeSettingsAsync));
             
             return ActionResult.CancellationTokenRequested;
@@ -252,7 +252,7 @@ internal abstract class BaseFuturesUsdTradeLogic : ITradeLogic
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            Logger.LogWarning("{Message}. In {Method}",
+            Logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(FinishAsync));
             
             return ActionResult.CancellationTokenRequested;
@@ -362,7 +362,7 @@ internal abstract class BaseFuturesUsdTradeLogic : ITradeLogic
                 }
                 catch (TaskCanceledException taskCanceledException)
                 {
-                    Logger.LogWarning("{Message}. In {Method}",
+                    Logger.LogInformation("{Message}. In {Method}",
                         taskCanceledException.Message, nameof(UpdatePositionsInfoInStoreJob));
                 }
                 catch (Exception exception)
