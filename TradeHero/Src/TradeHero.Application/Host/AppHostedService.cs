@@ -1,8 +1,8 @@
-using Binance.Net.Interfaces.Clients;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
+using TradeHero.Core.Types.Client;
 using TradeHero.Core.Types.Menu;
 using TradeHero.Core.Types.Services;
 
@@ -17,7 +17,7 @@ internal class AppHostedService : IHostedService
     private readonly IEnvironmentService _environmentService;
     private readonly IStoreService _storeService;
     private readonly IMenuFactory _menuFactory;
-    private readonly IBinanceSocketClient _binanceSocketClient;
+    private readonly IThSocketBinanceClient _binanceSocketClient;
 
     private readonly ApplicationShutdown _applicationShutdown;
 
@@ -31,7 +31,7 @@ internal class AppHostedService : IHostedService
         IEnvironmentService environmentService,
         IStoreService storeService,
         IMenuFactory menuFactory, 
-        IBinanceSocketClient binanceSocketClient,
+        IThSocketBinanceClient binanceSocketClient,
         ApplicationShutdown applicationShutdown
         )
     {

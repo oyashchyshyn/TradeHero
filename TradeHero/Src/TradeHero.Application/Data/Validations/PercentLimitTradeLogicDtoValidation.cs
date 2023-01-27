@@ -463,15 +463,15 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
         {
             switch (trailingStopRoe)
             {
-                case < -10000.0m:
+                case < -10000.00m:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.TrailingStopRoe)], 
-                        "Cannot be lower then -10000.0."));
+                        "Cannot be lower then -10000.00."));
                     return Task.CompletedTask;
-                case > 10000.0m:
+                case > 10000.00m:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.TrailingStopRoe)], 
-                        "Cannot be higher then 10000.0."));
+                        "Cannot be higher then 10000.00."));
                     return Task.CompletedTask;
             }
 
@@ -595,15 +595,15 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
         {
             switch (marketStopExitRoeActivation)
             {
-                case < 0.0m:
+                case < 0.00m:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.MarketStopExitPriceFromLastPricePercent)], 
-                        "Cannot be lower then 0.0."));
+                        "Cannot be lower then 0.00."));
                     return Task.CompletedTask;
-                case > 100.0m:
+                case > 100.00m:
                     propertyContext.AddFailure(new ValidationFailure(
                         _propertyNames[nameof(PercentLimitTradeLogicDto.MarketStopExitPriceFromLastPricePercent)], 
-                        "Cannot be higher then 100.0."));
+                        "Cannot be higher then 100.00."));
                     return Task.CompletedTask;
             }
 
