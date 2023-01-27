@@ -81,7 +81,7 @@ internal class TelegramService : ITelegramService
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            _logger.LogWarning("{Message}. In {Method}",
+            _logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(InitAsync));
             
             return ActionResult.CancellationTokenRequested;
@@ -108,7 +108,7 @@ internal class TelegramService : ITelegramService
             
             if (cancellationToken.IsCancellationRequested)
             {
-                _logger.LogWarning("Cancellation token is requested. In {Method}", 
+                _logger.LogInformation("Cancellation token is requested. In {Method}", 
                     nameof(TestBotConnectionAsync));
                 
                 return ActionResult.CancellationTokenRequested;
@@ -119,7 +119,7 @@ internal class TelegramService : ITelegramService
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            _logger.LogWarning("{Message}. In {Method}",
+            _logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(TestBotConnectionAsync));
             
             return ActionResult.CancellationTokenRequested;
@@ -155,7 +155,7 @@ internal class TelegramService : ITelegramService
         
             if (cancellationToken.IsCancellationRequested)
             {
-                _logger.LogWarning("Cancellation token is requested. In {Method}", 
+                _logger.LogInformation("Cancellation token is requested. In {Method}", 
                     nameof(ChangeChannelTitleAsync));
                 
                 return new GenericBaseResult<Chat>(ActionResult.CancellationTokenRequested);
@@ -170,7 +170,7 @@ internal class TelegramService : ITelegramService
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            _logger.LogWarning("{Message}. In {Method}",
+            _logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(ChangeChannelTitleAsync));
             
             return new GenericBaseResult<Chat>(ActionResult.CancellationTokenRequested);
@@ -222,7 +222,7 @@ internal class TelegramService : ITelegramService
 
             if (cancellationToken.IsCancellationRequested)
             {
-                _logger.LogWarning("Cancellation token is requested. In {Method}", 
+                _logger.LogInformation("Cancellation token is requested. In {Method}", 
                     nameof(ChangeChannelTitleAsync));
                 
                 return ActionResult.CancellationTokenRequested;
@@ -243,7 +243,7 @@ internal class TelegramService : ITelegramService
             
             if (cancellationToken.IsCancellationRequested)
             {
-                _logger.LogWarning("Cancellation token is requested. In {Method}", 
+                _logger.LogInformation("Cancellation token is requested. In {Method}", 
                     nameof(ChangeChannelTitleAsync));
                 
                 return ActionResult.CancellationTokenRequested;
@@ -258,7 +258,7 @@ internal class TelegramService : ITelegramService
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            _logger.LogWarning("{Message}. In {Method}",
+            _logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(ChangeChannelTitleAsync));
             
             return ActionResult.CancellationTokenRequested;
@@ -310,7 +310,7 @@ internal class TelegramService : ITelegramService
             
             if (cancellationToken.IsCancellationRequested)
             {
-                _logger.LogWarning("Cancellation token is requested. In {Method}", 
+                _logger.LogInformation("Cancellation token is requested. In {Method}", 
                     nameof(SendTextMessageToChannelAsync));
                 
                 return new GenericBaseResult<Message>(ActionResult.CancellationTokenRequested);
@@ -328,7 +328,7 @@ internal class TelegramService : ITelegramService
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            _logger.LogWarning("{Message}. In {Method}",
+            _logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(SendTextMessageToChannelAsync));
             
             return new GenericBaseResult<Message>(ActionResult.CancellationTokenRequested);
@@ -372,7 +372,7 @@ internal class TelegramService : ITelegramService
             
             if (cancellationToken.IsCancellationRequested)
             {
-                _logger.LogWarning("Cancellation token is requested. In {Method}", 
+                _logger.LogInformation("Cancellation token is requested. In {Method}", 
                     nameof(SendTextMessageToUserAsync));
                 
                 return new GenericBaseResult<Message>(ActionResult.CancellationTokenRequested);
@@ -435,7 +435,7 @@ internal class TelegramService : ITelegramService
             
             if (cancellationToken.IsCancellationRequested)
             {
-                _logger.LogWarning("Cancellation token is requested. In {Method}", 
+                _logger.LogInformation("Cancellation token is requested. In {Method}", 
                     nameof(SendTextMessageToUserAsync));
                 
                 return new GenericBaseResult<Message>(ActionResult.CancellationTokenRequested);
@@ -498,7 +498,7 @@ internal class TelegramService : ITelegramService
             
             if (cancellationToken.IsCancellationRequested)
             {
-                _logger.LogWarning("Cancellation token is requested. In {Method}", 
+                _logger.LogInformation("Cancellation token is requested. In {Method}", 
                     nameof(SendTextMessageToUserAsync));
                 
                 return new GenericBaseResult<Message>(ActionResult.CancellationTokenRequested);
@@ -559,7 +559,7 @@ internal class TelegramService : ITelegramService
             
             if (cancellationToken.IsCancellationRequested)
             {
-                _logger.LogWarning("Cancellation token is requested. In {Method}", 
+                _logger.LogInformation("Cancellation token is requested. In {Method}", 
                     nameof(EditTextMessageForUserAsync));
                 
                 return new GenericBaseResult<Message>(ActionResult.CancellationTokenRequested);
@@ -628,7 +628,7 @@ internal class TelegramService : ITelegramService
         {
             if (cancellationToken.IsCancellationRequested)
             {
-                _logger.LogWarning("Cancellation token is requested. In {Method}", 
+                _logger.LogInformation("Cancellation token is requested. In {Method}", 
                     nameof(HandleUpdateAsync));
                 
                 return Task.CompletedTask;

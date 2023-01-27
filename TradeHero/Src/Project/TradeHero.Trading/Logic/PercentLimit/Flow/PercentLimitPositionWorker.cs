@@ -42,14 +42,14 @@ internal class PercentLimitPositionWorker : BasePositionWorker
         _percentMoveSymbolTickerStreamFactory = percentMoveSymbolTickerStreamFactory;
     }
 
-    public override async Task<ActionResult> CreatePositionAsync(ITradeLogicStore tradeLogicStore, string symbol, PositionSide side, decimal entryPrice, DateTime lastUpdateTime,
-        decimal quantity, bool isPositionExist, CancellationToken cancellationToken)
+    public override async Task<ActionResult> CreatePositionAsync(ITradeLogicStore tradeLogicStore, string symbol, PositionSide side, decimal entryPrice, 
+        DateTime lastUpdateTime, decimal quantity, bool isPositionExist, CancellationToken cancellationToken)
     {
         try
         {
             if (cancellationToken.IsCancellationRequested)
             {
-                _logger.LogWarning("Cancellation token is requested. In {Method}", 
+                _logger.LogInformation("Cancellation token is requested. In {Method}", 
                     nameof(CreatePositionAsync));
 
                 return ActionResult.CancellationTokenRequested;
@@ -133,7 +133,7 @@ internal class PercentLimitPositionWorker : BasePositionWorker
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            _logger.LogWarning("{Message}. In {Method}",
+            _logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(CreatePositionAsync));
 
             return ActionResult.CancellationTokenRequested;
@@ -177,7 +177,8 @@ internal class PercentLimitPositionWorker : BasePositionWorker
         }
     }
     
-    public override ActionResult UpdatePositionDetails(ITradeLogicStore tradeLogicStore, Position openedPosition, BinancePositionDetailsUsdt positionDetails)
+    public override ActionResult UpdatePositionDetails(ITradeLogicStore tradeLogicStore, Position openedPosition, 
+        BinancePositionDetailsUsdt positionDetails)
     {
         try
         {
@@ -232,7 +233,7 @@ internal class PercentLimitPositionWorker : BasePositionWorker
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            _logger.LogWarning("{Message}. In {Method}",
+            _logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(CreatePositionAsync));
 
             return ActionResult.CancellationTokenRequested;

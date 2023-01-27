@@ -47,7 +47,7 @@ internal abstract class BaseFuturesUsdUserAccountStream
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    Logger.LogWarning("CancellationToken is requested. In {Method}",
+                    Logger.LogInformation("CancellationToken is requested. In {Method}",
                         nameof(StartUserUpdateDataStreamAsync));
 
                     return ActionResult.CancellationTokenRequested;
@@ -104,7 +104,7 @@ internal abstract class BaseFuturesUsdUserAccountStream
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            Logger.LogWarning("{Message}. In {Method}",
+            Logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(StartUserUpdateDataStreamAsync));
             
             return ActionResult.CancellationTokenRequested;

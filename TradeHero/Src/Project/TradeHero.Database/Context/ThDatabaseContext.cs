@@ -51,7 +51,7 @@ internal class ThDatabaseContext : DbContext
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            _logger.LogWarning("{Message}. In {Method}",
+            _logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(SaveChangesAsync));
             
             return -1;
@@ -80,7 +80,7 @@ internal class ThDatabaseContext : DbContext
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            _logger.LogWarning("{Message}. In {Method}",
+            _logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(SaveChanges));
             
             return -1;

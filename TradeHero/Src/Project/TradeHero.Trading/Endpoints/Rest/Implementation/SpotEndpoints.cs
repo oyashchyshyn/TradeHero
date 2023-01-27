@@ -66,7 +66,7 @@ internal class SpotEndpoints : ISpotEndpoints
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            _logger.LogWarning("{Message}. In {Method}",
+            _logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(SetSpotExchangeInfoAsync));
             
             return ActionResult.CancellationTokenRequested;

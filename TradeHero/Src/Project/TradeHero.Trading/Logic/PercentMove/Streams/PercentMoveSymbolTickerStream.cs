@@ -42,8 +42,13 @@ internal class PercentMoveSymbolTickerStream : BaseFuturesUsdSymbolTickerStream
             {
                 _percentMoveStore.SymbolStatus[ticker.Symbol] = false;
 
-                var symbolInfo =
-                    _percentMoveStore.FuturesUsd.ExchangerData.ExchangeInfo.Symbols.Single(x => x.Name == ticker.Symbol);
+                var symbolInfo = _percentMoveStore.FuturesUsd.ExchangerData.ExchangeInfo.Symbols.SingleOrDefault(x => x.Name == ticker.Symbol);
+                if (symbolInfo == null)
+                {
+                    Logger.LogWarning("{Symbol}. {PropertyName} is null. In {Method}", ticker.Symbol, nameof(symbolInfo), nameof(ManageTickerAsync));
+
+                    return;
+                }
                 
                 var lastOrderPrice = _percentMoveStore.SymbolLastOrderPrice[ticker.Symbol];
                 
@@ -57,7 +62,14 @@ internal class PercentMoveSymbolTickerStream : BaseFuturesUsdSymbolTickerStream
                     return;
                 }
 
-                var balance = _percentMoveStore.FuturesUsd.AccountData.Balances.Single(x => x.Asset == symbolInfo.QuoteAsset);
+                var balance = _percentMoveStore.FuturesUsd.AccountData.Balances.SingleOrDefault(x => x.Asset == symbolInfo.QuoteAsset);
+                if (balance == null)
+                {
+                    Logger.LogWarning("{Symbol}. {PropertyName} by quote ({QuoteName}) is null. In {Method}", 
+                        ticker.Symbol, nameof(balance), symbolInfo.QuoteAsset, nameof(ManageTickerAsync));
+                
+                    return;
+                }
                 
                 foreach (var openedPosition in _percentMoveStore.Positions.Where(x => x.Name == ticker.Symbol).ToArray())
                 {
@@ -72,7 +84,7 @@ internal class PercentMoveSymbolTickerStream : BaseFuturesUsdSymbolTickerStream
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            Logger.LogWarning("{Symbol}. {Message}. In {Method}",
+            Logger.LogInformation("{Symbol}. {Message}. In {Method}",
                 ticker.Symbol, taskCanceledException.Message, nameof(ManageTickerAsync));
 
             return Task.CompletedTask;

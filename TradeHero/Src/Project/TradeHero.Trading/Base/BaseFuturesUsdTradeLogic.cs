@@ -70,7 +70,7 @@ internal abstract class BaseFuturesUsdTradeLogic : ITradeLogic
         {
             if (CancellationTokenSource.Token.IsCancellationRequested)
             {
-                Logger.LogWarning("CancellationToken is requested. In {Method}",
+                Logger.LogInformation("CancellationToken is requested. In {Method}",
                     nameof(InitAsync));
                 
                 return ActionResult.CancellationTokenRequested;
@@ -160,7 +160,7 @@ internal abstract class BaseFuturesUsdTradeLogic : ITradeLogic
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            Logger.LogWarning("{Message}. In {Method}",
+            Logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(InitAsync));
             
             return ActionResult.CancellationTokenRequested;
@@ -212,7 +212,7 @@ internal abstract class BaseFuturesUsdTradeLogic : ITradeLogic
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            Logger.LogWarning("{Message}. In {Method}",
+            Logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(UpdateTradeSettingsAsync));
             
             return ActionResult.CancellationTokenRequested;
@@ -240,8 +240,30 @@ internal abstract class BaseFuturesUsdTradeLogic : ITradeLogic
             _jobService.FinishJobByKey(JobKey.UpdateBalancesInfoInStore);
             _jobService.FinishJobByKey(JobKey.UpdatePositionsInfoInStore);
 
-            await _binanceSocketClient.UnsubscribeAllAsync();
+            foreach (var tickerStreamKeyValue in ((BaseTradeLogicStore)Store).UsdFuturesTickerStreams)
+            {
+                if (tickerStreamKeyValue.Value == null)
+                {
+                    Logger.LogWarning("{Symbol}. Ticker stream is null. In {Method}",
+                        tickerStreamKeyValue.Key, nameof(FinishAsync));
+                    
+                    continue;
+                }
 
+                await _binanceSocketClient.UnsubscribeAsync(tickerStreamKeyValue.Value.SocketSubscription);
+                
+                Logger.LogInformation("{Symbol}. Socket ticker unsubscribed. In {Method}", 
+                    tickerStreamKeyValue.Key, nameof(FinishAsync));
+            }
+
+            await _binanceSocketClient.UnsubscribeAsync(_futuresUsdMarketTickerStream.SocketSubscription);
+            
+            Logger.LogInformation("Unsubscribe from Market Ticker Stream. In {Method}", nameof(FinishAsync));
+            
+            await _binanceSocketClient.UnsubscribeAsync(_userAccountStreamStream.SocketSubscription);
+            
+            Logger.LogInformation("Unsubscribe from Account Stream. In {Method}", nameof(FinishAsync));
+            
             await FuturesUsdEndpoints.DestroyStreamListerKeyAsync(Store, cancellationToken: CancellationTokenSource.Token);
 
             await ((BaseTradeLogicStore)Store).ClearDataAsync();
@@ -252,7 +274,7 @@ internal abstract class BaseFuturesUsdTradeLogic : ITradeLogic
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            Logger.LogWarning("{Message}. In {Method}",
+            Logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(FinishAsync));
             
             return ActionResult.CancellationTokenRequested;
@@ -362,7 +384,7 @@ internal abstract class BaseFuturesUsdTradeLogic : ITradeLogic
                 }
                 catch (TaskCanceledException taskCanceledException)
                 {
-                    Logger.LogWarning("{Message}. In {Method}",
+                    Logger.LogInformation("{Message}. In {Method}",
                         taskCanceledException.Message, nameof(UpdatePositionsInfoInStoreJob));
                 }
                 catch (Exception exception)

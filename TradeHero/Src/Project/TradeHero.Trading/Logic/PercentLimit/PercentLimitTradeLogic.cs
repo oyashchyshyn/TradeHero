@@ -60,7 +60,7 @@ internal class PercentLimitTradeLogic : BaseFuturesUsdTradeLogic
             
             if (cancellationToken.IsCancellationRequested)
             {
-                Logger.LogWarning("CancellationToken is requested. In {Method}",
+                Logger.LogInformation("CancellationToken is requested. In {Method}",
                     nameof(RunInstanceAsync));
                 
                 return;
@@ -110,7 +110,7 @@ internal class PercentLimitTradeLogic : BaseFuturesUsdTradeLogic
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            Logger.LogWarning("{Message}. In {Method}",
+            Logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(RunInstanceAsync));
         }
         catch (Exception exception)
@@ -199,7 +199,7 @@ internal class PercentLimitTradeLogic : BaseFuturesUsdTradeLogic
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    Logger.LogWarning("CancellationToken is requested. In {Method}",
+                    Logger.LogInformation("CancellationToken is requested. In {Method}",
                         nameof(ManageAverageOrdersAsync));
                 
                     return;
@@ -257,7 +257,7 @@ internal class PercentLimitTradeLogic : BaseFuturesUsdTradeLogic
         {
             if (cancellationToken.IsCancellationRequested)
             {
-                Logger.LogWarning("CancellationToken is requested. In {Method}",
+                Logger.LogInformation("CancellationToken is requested. In {Method}",
                     nameof(ManageMarketBuyOrdersAsync));
                 
                 return;
@@ -311,7 +311,7 @@ internal class PercentLimitTradeLogic : BaseFuturesUsdTradeLogic
         {
             if (cancellationToken.IsCancellationRequested)
             {
-                Logger.LogWarning("CancellationToken is requested. In {Method}",
+                Logger.LogInformation("CancellationToken is requested. In {Method}",
                     nameof(SendMessageAsync));
                 
                 return;

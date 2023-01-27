@@ -37,10 +37,22 @@ internal class PercentLimitSymbolTickerStream : BaseFuturesUsdSymbolTickerStream
                 return Task.CompletedTask;
             }
             
-            var symbolInfo =
-                _percentLimitStore.FuturesUsd.ExchangerData.ExchangeInfo.Symbols.Single(x => x.Name == ticker.Symbol);
+            var symbolInfo = _percentLimitStore.FuturesUsd.ExchangerData.ExchangeInfo.Symbols.SingleOrDefault(x => x.Name == ticker.Symbol);
+            if (symbolInfo == null)
+            {
+                Logger.LogWarning("{Symbol}. {PropertyName} is null. In {Method}", ticker.Symbol, nameof(symbolInfo), nameof(ManageTickerAsync));
+
+                return Task.CompletedTask;
+            }
             
-            var balance = _percentLimitStore.FuturesUsd.AccountData.Balances.Single(x => x.Asset == symbolInfo.QuoteAsset);
+            var balance = _percentLimitStore.FuturesUsd.AccountData.Balances.SingleOrDefault(x => x.Asset == symbolInfo.QuoteAsset);
+            if (balance == null)
+            {
+                Logger.LogWarning("{Symbol}. {PropertyName} by quote ({QuoteName}) is null. In {Method}", 
+                    ticker.Symbol, nameof(balance), symbolInfo.QuoteAsset, nameof(ManageTickerAsync));
+                
+                return Task.CompletedTask;
+            }
             
             foreach (var position in _percentLimitStore.Positions.Where(x => x.Name == ticker.Symbol).ToArray())
             {
@@ -128,7 +140,7 @@ internal class PercentLimitSymbolTickerStream : BaseFuturesUsdSymbolTickerStream
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            Logger.LogWarning("{Message}. In {Method}",
+            Logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(ManageTickerAsync));
 
             return Task.CompletedTask;

@@ -17,7 +17,6 @@ internal class PercentLimitTradeLogicLogicOptions : BaseTradeLogicOptions
     public KlineActionSignal KlineActionForOpen { get; set; }
     public KlinePowerSignal KlinePowerForOpen { get; set; }
     public decimal PercentFromDepositForOpen { get; set; }
-    public int MinTradesForOpen { get; set; }
     public decimal MinQuoteVolumeForOpen { get; set; }
     public bool IsPocMustBeInWickForOpen { get; set; }
 
@@ -27,7 +26,6 @@ internal class PercentLimitTradeLogicLogicOptions : BaseTradeLogicOptions
     public KlinePowerSignal KlinePowerForAverage { get; set; }
     public decimal AverageFromRoe { get; set; }
     public decimal AverageToRoe { get; set; }
-    public int MinTradesForAverage { get; set; }
     public decimal MinQuoteVolumeForAverage { get; set; }
     public bool IsPocMustBeInWickForAverage { get; set; }
 
