@@ -66,10 +66,6 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
             .CustomAsync(ValidatePercentFromDepositForOpenAsync)
             .When(x => x.EnableOpenPositions);
 
-        RuleFor(x => x.MinTradesForOpen)
-            .CustomAsync(ValidateMinTradesForOpenAsync)
-            .When(x => x.EnableOpenPositions);
-        
         RuleFor(x => x.MinQuoteVolumeForOpen)
             .CustomAsync(ValidateMinQuoteVolumeForOpenAsync)
             .When(x => x.EnableOpenPositions);
@@ -81,11 +77,7 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
         RuleFor(x => x.AverageFromRoe)
             .CustomAsync(ValidateAverageFromRoeAsync)
             .When(x => x.EnableAveraging);
-        
-        RuleFor(x => x.MinTradesForAverage)
-            .CustomAsync(ValidateMinTradesForAverageAsync)
-            .When(x => x.EnableAveraging);
-        
+
         RuleFor(x => x.MinQuoteVolumeForAverage)
             .CustomAsync(ValidateMinQuoteVolumeForAverageAsync)
             .When(x => x.EnableAveraging);
@@ -331,40 +323,7 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
             return Task.CompletedTask;
         }
     }
-    
-    private Task ValidateMinTradesForOpenAsync(int minTradesForOpen, ValidationContext<PercentLimitTradeLogicDto> propertyContext, 
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            switch (minTradesForOpen)
-            {
-                case < 0:
-                    propertyContext.AddFailure(new ValidationFailure(
-                        _propertyNames[nameof(PercentLimitTradeLogicDto.MinTradesForOpen)], 
-                        "Cannot be lower then 0."));
-                    return Task.CompletedTask;
-                case > 1000000:
-                    propertyContext.AddFailure(new ValidationFailure(
-                        _propertyNames[nameof(PercentLimitTradeLogicDto.MinTradesForOpen)], 
-                        "Cannot be higher then 1000000."));
-                    return Task.CompletedTask;
-            }
 
-            return Task.CompletedTask;
-        }
-        catch (Exception exception)
-        {
-            _logger.LogCritical(exception, "In {Method}", nameof(ValidateMinTradesForOpenAsync));
-            
-            propertyContext.AddFailure(new ValidationFailure(
-                $"{_propertyNames[nameof(PercentLimitTradeLogicDto.MinTradesForOpen)]}", 
-                "Validation failed."));
-            
-            return Task.CompletedTask;
-        }
-    }
-    
     private Task ValidateMinQuoteVolumeForOpenAsync(decimal minQuoteVolumeForOpen, 
         ValidationContext<PercentLimitTradeLogicDto> propertyContext, CancellationToken cancellationToken)
     {
@@ -463,40 +422,7 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
             return Task.CompletedTask;
         }
     }
-    
-    private Task ValidateMinTradesForAverageAsync(int minTradesForOpen, ValidationContext<PercentLimitTradeLogicDto> propertyContext, 
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            switch (minTradesForOpen)
-            {
-                case < 0:
-                    propertyContext.AddFailure(new ValidationFailure(
-                        _propertyNames[nameof(PercentLimitTradeLogicDto.MinTradesForAverage)], 
-                        "Cannot be lower then 0."));
-                    return Task.CompletedTask;
-                case > 1000000:
-                    propertyContext.AddFailure(new ValidationFailure(
-                        _propertyNames[nameof(PercentLimitTradeLogicDto.MinTradesForAverage)], 
-                        "Cannot be higher then 1000000."));
-                    return Task.CompletedTask;
-            }
 
-            return Task.CompletedTask;
-        }
-        catch (Exception exception)
-        {
-            _logger.LogCritical(exception, "In {Method}", nameof(ValidateMinTradesForAverageAsync));
-            
-            propertyContext.AddFailure(new ValidationFailure(
-                $"{_propertyNames[nameof(PercentLimitTradeLogicDto.MinTradesForAverage)]}", 
-                "Validation failed."));
-            
-            return Task.CompletedTask;
-        }
-    }
-    
     private Task ValidateMinQuoteVolumeForAverageAsync(decimal minQuoteVolumeForAverage, ValidationContext<PercentLimitTradeLogicDto> propertyContext, 
         CancellationToken cancellationToken)
     {
