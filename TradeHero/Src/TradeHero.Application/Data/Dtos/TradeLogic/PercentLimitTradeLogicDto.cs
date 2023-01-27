@@ -72,15 +72,15 @@ internal class PercentLimitTradeLogicDto : BaseStrategyDto
     [JsonProperty("avg_power_signal")]
     public KlinePowerSignal KlinePowerForAverage { get; set; }
     
-    [Description("From what percent of roe of position need to search for average. Available range is -10000.0 to 10000.0.")]
+    [Description("From what percent of roe of position need to search for average. Available range is -10000.00 to 10000.00.")]
     [JsonProperty("avg_from_roe")]
     public decimal AverageFromRoe { get; set; }
     
-    [Description("To what percent of roe of position need to make average. Available range is -10000.0 to 0.0.")]
+    [Description("To what percent of roe of position need to make average. Available range is -10000.00 to 0.00.")]
     [JsonProperty("avg_to_roe")]
     public decimal AverageToRoe { get; set; }
 
-    [Description("Average quote volume for candle to average position. Available range is 0.0 to 100000000.0.")]
+    [Description("Average quote volume for candle to average position. Available range is 0.00 to 100000000.00.")]
     [JsonProperty("avg_min_quote_v")]
     public decimal MinQuoteVolumeForAverage { get; set; }
     
@@ -93,7 +93,7 @@ internal class PercentLimitTradeLogicDto : BaseStrategyDto
     [JsonProperty("ts_enable")]
     public bool EnableTrailingStops { get; set; }
     
-    [Description("Roe of position when to place trailing stop order. Available range is -10000.0 to 10000.0.")]
+    [Description("Roe of position when to place trailing stop order. Available range is -10000.00 to 10000.00.")]
     [JsonProperty("ts_from_roe")]
     public decimal TrailingStopRoe { get; set; }
     
@@ -110,15 +110,15 @@ internal class PercentLimitTradeLogicDto : BaseStrategyDto
     [JsonProperty("ms_enable")]
     public bool EnableMarketStopToExit { get; set; }
     
-    [Description("Roe of position when to place stop limit order. Available range is -10000.0 to 10000.0.")]
+    [Description("Roe of position when to place stop limit order. Available range is -10000.00 to 10000.00.")]
     [JsonProperty("ms_from_roe")]
     public decimal MarketStopExitRoeActivation { get; set; }
     
-    [Description("Defines how much percent need for price to go in order to fill stop limit order. Available range is 0.0 to 100.0.")]
+    [Description("Defines how much percent need for price to go in order to fill stop limit order. Available range is 0.00 to 100.00.")]
     [JsonProperty("ms_from_price_p")]
     public decimal MarketStopExitPriceFromLastPricePercent { get; set; }
     
-    [Description("Defines how much margin from blance percent need to have in margin to activate market stop feature. Available range is 0.0 to 100.0. This parameter is optional, skip it if do not want to use it.")]
+    [Description("Defines how much margin from blance percent need to have in margin to activate market stop feature. Available range is 0.00 to 100.00. This parameter is optional, skip it if do not want to use it.")]
     [JsonProperty("ms_from_balance_p")]
     public decimal? MarketStopExitActivationFromAvailableBalancePercent { get; set; }
     
