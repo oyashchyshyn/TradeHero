@@ -50,7 +50,7 @@ internal class PercentLimitUserAccountStream : BaseFuturesUsdUserAccountStream
                 
                 _percentLimitPositionWorker.UpdatePositionQuantity(openedPosition, data.Data, true);
 
-                if (data.Data.UpdateData.Status != OrderStatus.Filled || openedPosition.TotalQuantity > 0)
+                if (data.Data.UpdateData.Status != OrderStatus.Filled || openedPosition.TotalQuantity is > 0 or < 0)
                 {
                     return;
                 }

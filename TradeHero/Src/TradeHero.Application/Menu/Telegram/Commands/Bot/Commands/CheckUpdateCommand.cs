@@ -199,7 +199,7 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
 
                 _storeService.Application.Update.IsNeedToUpdateApplication = true;
                 
-                _applicationShutdown.Shutdown(AppExitCode.Update);
+                await _applicationShutdown.ShutdownAsync(AppExitCode.Update);
                 
                 return;
             }
