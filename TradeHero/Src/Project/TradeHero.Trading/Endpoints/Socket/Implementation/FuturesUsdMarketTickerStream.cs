@@ -33,7 +33,7 @@ internal class FuturesUsdMarketTickerStream : IFuturesUsdMarketTickerStream
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    _logger.LogWarning("CancellationToken is requested. In {Method}",
+                    _logger.LogInformation("CancellationToken is requested. In {Method}",
                         nameof(StartStreamMarketTickerAsync));
 
                     return ActionResult.CancellationTokenRequested;
@@ -95,7 +95,7 @@ internal class FuturesUsdMarketTickerStream : IFuturesUsdMarketTickerStream
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            _logger.LogWarning("{Message}. In {Method}",
+            _logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(StartStreamMarketTickerAsync));
             
             return ActionResult.CancellationTokenRequested;

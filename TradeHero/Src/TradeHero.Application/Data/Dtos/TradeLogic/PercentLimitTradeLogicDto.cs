@@ -50,11 +50,7 @@ internal class PercentLimitTradeLogicDto : BaseStrategyDto
     [Description("Defining amount of margin for openning position. Available range is 0.1 to 100.0.")]
     [JsonProperty("open_pos_initial_margin_p")]
     public decimal PercentFromDepositForOpen { get; set; }
-    
-    [Description("Defining amount of minimum trades for candle to open position. Available range is 0 to 100000.")]
-    [JsonProperty("open_pos_min_trades")]
-    public int MinTradesForOpen { get; set; }
-    
+
     [Description("Average quote volume for candle to open position. Available range is 0.00 to 100000000.00.")]
     [JsonProperty("open_pos_min_quote_v")]
     public decimal MinQuoteVolumeForOpen { get; set; }
@@ -83,11 +79,7 @@ internal class PercentLimitTradeLogicDto : BaseStrategyDto
     [Description("To what percent of roe of position need to make average. Available range is -10000.0 to 0.0.")]
     [JsonProperty("avg_to_roe")]
     public decimal AverageToRoe { get; set; }
-    
-    [Description("Defining amount of minimum trades for candle to average position. Available range is 0 to 100000.")]
-    [JsonProperty("avg_min_trades")]
-    public int MinTradesForAverage { get; set; }
-    
+
     [Description("Average quote volume for candle to average position. Available range is 0.0 to 100000000.0.")]
     [JsonProperty("avg_min_quote_v")]
     public decimal MinQuoteVolumeForAverage { get; set; }

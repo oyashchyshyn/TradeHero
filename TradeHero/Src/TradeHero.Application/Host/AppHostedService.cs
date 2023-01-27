@@ -1,3 +1,4 @@
+using Binance.Net.Interfaces.Clients;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TradeHero.Core.Constants;
@@ -16,6 +17,7 @@ internal class AppHostedService : IHostedService
     private readonly IEnvironmentService _environmentService;
     private readonly IStoreService _storeService;
     private readonly IMenuFactory _menuFactory;
+    private readonly IBinanceSocketClient _binanceSocketClient;
 
     private readonly ApplicationShutdown _applicationShutdown;
 
@@ -29,6 +31,7 @@ internal class AppHostedService : IHostedService
         IEnvironmentService environmentService,
         IStoreService storeService,
         IMenuFactory menuFactory, 
+        IBinanceSocketClient binanceSocketClient,
         ApplicationShutdown applicationShutdown
         )
     {
@@ -39,6 +42,7 @@ internal class AppHostedService : IHostedService
         _environmentService = environmentService;
         _storeService = storeService;
         _menuFactory = menuFactory;
+        _binanceSocketClient = binanceSocketClient;
         _applicationShutdown = applicationShutdown;
     }
     
@@ -52,7 +56,7 @@ internal class AppHostedService : IHostedService
             _logger.LogInformation("Base path: {GetBasePath}", _environmentService.GetBasePath());
             _logger.LogInformation("Runner type: {RunnerType}", _environmentService.GetRunnerType());
             
-            _applicationShutdown.SetActionsBeforeStop(StopServices);
+            _applicationShutdown.SetActionsBeforeStop(StopServicesAsync);
             
             if (_environmentService.GetEnvironmentType() == EnvironmentType.Development)
             {
@@ -93,17 +97,19 @@ internal class AppHostedService : IHostedService
 
     #region Private methods
 
-    private void StopServices()
+    private async Task StopServicesAsync()
     {
         try
         {
             foreach (var menu in _menuFactory.GetMenus())
             {
-                menu.FinishAsync(_cancellationTokenSource.Token).GetAwaiter().GetResult();
+                await menu.FinishAsync(_cancellationTokenSource.Token);
             }
         
             _jobService.FinishAllJobs();
 
+            await _binanceSocketClient.UnsubscribeAllAsync();
+            
             _internetConnectionService.OnInternetConnected -= InternetConnectionServiceOnOnInternetConnected;
             _internetConnectionService.OnInternetDisconnected -= InternetConnectionServiceOnOnInternetDisconnected;
         
@@ -111,7 +117,7 @@ internal class AppHostedService : IHostedService
         }
         catch (Exception exception)
         {
-            _logger.LogCritical(exception, "In {Method}", nameof(StopServices));
+            _logger.LogCritical(exception, "In {Method}", nameof(StopServicesAsync));
             
             throw;
         }

@@ -136,7 +136,7 @@ internal class SpotClusterVolumeInstance : IInstance
 
             if (cancellationToken.IsCancellationRequested)
             {
-                _logger.LogWarning("CancellationToken is requested. In {Method}",
+                _logger.LogInformation("CancellationToken is requested. In {Method}",
                     nameof(GenerateInstanceResultAsync));
 
                 return new GenericBaseResult<InstanceResult>(ActionResult.CancellationTokenRequested);
@@ -155,7 +155,7 @@ internal class SpotClusterVolumeInstance : IInstance
                 {
                     if (cancellationToken.IsCancellationRequested)
                     {
-                        _logger.LogWarning("CancellationToken is requested. In {Method}",
+                        _logger.LogInformation("CancellationToken is requested. In {Method}",
                             nameof(Parallel.ForEachAsync));
 
                         return;
@@ -206,7 +206,7 @@ internal class SpotClusterVolumeInstance : IInstance
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            _logger.LogWarning("{Message}. In {Method}",
+            _logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(GenerateInstanceResultAsync));
             
             return new GenericBaseResult<InstanceResult>(ActionResult.CancellationTokenRequested);
@@ -232,7 +232,7 @@ internal class SpotClusterVolumeInstance : IInstance
             
             if (cancellationToken.IsCancellationRequested)
             {
-                _logger.LogWarning("CancellationToken is requested. In {Method}",
+                _logger.LogInformation("CancellationToken is requested. In {Method}",
                     nameof(SetKlineDetailInfoAsync));
 
                 return null;
@@ -393,7 +393,7 @@ internal class SpotClusterVolumeInstance : IInstance
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            _logger.LogWarning("{Symbol}. {Message}. In {Method}",
+            _logger.LogInformation("{Symbol}. {Message}. In {Method}",
                 symbolNameContainer.FuturesUsdName, taskCanceledException.Message, nameof(SetKlineDetailInfoAsync));
 
             return null;

@@ -30,7 +30,7 @@ internal class FuturesUsdEndpoints : IFuturesUsdEndpoints
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    _logger.LogWarning("CancellationToken is requested. In {Method}",
+                    _logger.LogInformation("CancellationToken is requested. In {Method}",
                         nameof(SetFuturesUsdWalletBalancesAsync));
 
                     return ActionResult.CancellationTokenRequested;
@@ -68,7 +68,7 @@ internal class FuturesUsdEndpoints : IFuturesUsdEndpoints
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            _logger.LogWarning("{Message}. In {Method}",
+            _logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(SetFuturesUsdWalletBalancesAsync));
             
             return ActionResult.CancellationTokenRequested;
@@ -89,7 +89,7 @@ internal class FuturesUsdEndpoints : IFuturesUsdEndpoints
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    _logger.LogWarning("CancellationToken is requested. In {Method}",
+                    _logger.LogInformation("CancellationToken is requested. In {Method}",
                         nameof(SetFuturesUsdExchangeInfoAsync));
 
                     return ActionResult.CancellationTokenRequested;
@@ -130,7 +130,7 @@ internal class FuturesUsdEndpoints : IFuturesUsdEndpoints
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            _logger.LogWarning("{Message}. In {Method}",
+            _logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(SetFuturesUsdExchangeInfoAsync));
             
             return ActionResult.CancellationTokenRequested;
@@ -151,7 +151,7 @@ internal class FuturesUsdEndpoints : IFuturesUsdEndpoints
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    _logger.LogWarning("CancellationToken is requested. In {Method}",
+                    _logger.LogInformation("CancellationToken is requested. In {Method}",
                         nameof(SetFuturesUsdPositionInfoAsync));
 
                     return ActionResult.CancellationTokenRequested;
@@ -189,7 +189,7 @@ internal class FuturesUsdEndpoints : IFuturesUsdEndpoints
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            _logger.LogWarning("{Message}. In {Method}",
+            _logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(SetFuturesUsdPositionInfoAsync));
             
             return ActionResult.CancellationTokenRequested;
@@ -210,7 +210,7 @@ internal class FuturesUsdEndpoints : IFuturesUsdEndpoints
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    _logger.LogWarning("CancellationToken is requested. In {Method}",
+                    _logger.LogInformation("CancellationToken is requested. In {Method}",
                         nameof(SetFuturesUsdStreamListenKeyAsync));
 
                     return ActionResult.CancellationTokenRequested;
@@ -248,7 +248,7 @@ internal class FuturesUsdEndpoints : IFuturesUsdEndpoints
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            _logger.LogWarning("{Message}. In {Method}",
+            _logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(SetFuturesUsdStreamListenKeyAsync));
             
             return ActionResult.CancellationTokenRequested;
@@ -277,7 +277,7 @@ internal class FuturesUsdEndpoints : IFuturesUsdEndpoints
                 {
                     if (cancellationToken.IsCancellationRequested)
                     {
-                        _logger.LogWarning("Cancellation token is requested. In {Method}", 
+                        _logger.LogInformation("Cancellation token is requested. In {Method}", 
                             nameof(ChangeMarginTypeToAllPositionsAsync));
 
                         return ActionResult.CancellationTokenRequested;
@@ -315,7 +315,7 @@ internal class FuturesUsdEndpoints : IFuturesUsdEndpoints
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            _logger.LogWarning("{Message}. In {Method}",
+            _logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(ChangeMarginTypeToAllPositionsAsync));
             
             return ActionResult.CancellationTokenRequested;
@@ -337,7 +337,7 @@ internal class FuturesUsdEndpoints : IFuturesUsdEndpoints
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    _logger.LogWarning("Cancellation token is requested. In {Method}", 
+                    _logger.LogInformation("Cancellation token is requested. In {Method}", 
                         nameof(ChangeLeverageToAllPositionsAsync));
 
                     return ActionResult.CancellationTokenRequested;
@@ -394,7 +394,7 @@ internal class FuturesUsdEndpoints : IFuturesUsdEndpoints
                 {
                     if (cancellationToken.IsCancellationRequested)
                     {
-                        _logger.LogWarning("Cancellation token is requested. In {Method}", 
+                        _logger.LogInformation("Cancellation token is requested. In {Method}", 
                             nameof(ChangeLeverageToAllPositionsAsync));
 
                         return ActionResult.CancellationTokenRequested;
@@ -452,7 +452,7 @@ internal class FuturesUsdEndpoints : IFuturesUsdEndpoints
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    _logger.LogWarning("Cancellation token is requested. In {Method}", 
+                    _logger.LogInformation("Cancellation token is requested. In {Method}", 
                         nameof(ChangeLeverageToAllPositionsAsync));
 
                     return ActionResult.CancellationTokenRequested;
@@ -524,7 +524,7 @@ internal class FuturesUsdEndpoints : IFuturesUsdEndpoints
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    _logger.LogWarning("Cancellation token is requested. In {Method}", 
+                    _logger.LogInformation("Cancellation token is requested. In {Method}", 
                         nameof(CancelOpenedOrdersAsync));
 
                     return ActionResult.CancellationTokenRequested;
@@ -581,7 +581,7 @@ internal class FuturesUsdEndpoints : IFuturesUsdEndpoints
                 {
                     if (cancellationToken.IsCancellationRequested)
                     {
-                        _logger.LogWarning("Cancellation token is requested. In {Method}", 
+                        _logger.LogInformation("Cancellation token is requested. In {Method}", 
                             nameof(CancelOpenedOrdersAsync));
 
                         return ActionResult.CancellationTokenRequested;
@@ -647,7 +647,7 @@ internal class FuturesUsdEndpoints : IFuturesUsdEndpoints
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    _logger.LogWarning("CancellationToken is requested. In {Method}",
+                    _logger.LogInformation("CancellationToken is requested. In {Method}",
                         nameof(UpdateStreamListerKeyAsync));
 
                     return ActionResult.CancellationTokenRequested;
@@ -705,7 +705,7 @@ internal class FuturesUsdEndpoints : IFuturesUsdEndpoints
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    _logger.LogWarning("CancellationToken is requested. In {Method}",
+                    _logger.LogInformation("CancellationToken is requested. In {Method}",
                         nameof(DestroyStreamListerKeyAsync));
 
                     return ActionResult.CancellationTokenRequested;

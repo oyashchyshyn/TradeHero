@@ -46,7 +46,6 @@ internal class PercentLimitFilters
                 .WhereIf(tradeLogicLogicOptions.IsPocMustBeInWickForOpen, x => x.IsPocInWick)
                 .Where(x => GetKlineActionsFromKlineActionSignal(tradeLogicLogicOptions.KlineActionForOpen, x.PositionSide).Contains(x.KlineAction))
                 .Where(x => GetKlinePowersFromKlinePowerSignal(tradeLogicLogicOptions.KlinePowerForOpen, x.PositionSide).Contains(x.Power))
-                .Where(x => x.TotalTrades >= tradeLogicLogicOptions.MinTradesForOpen)
                 .Where(x => x.KlineAverageTradeQuoteVolume >= tradeLogicLogicOptions.MinQuoteVolumeForOpen)
                 .Where(x => x.TotalAsks > x.TotalBids)
                 .OrderByDescending(x => x.AsksBidsCoefficient)
@@ -57,7 +56,6 @@ internal class PercentLimitFilters
                 .WhereIf(tradeLogicLogicOptions.IsPocMustBeInWickForOpen, x => x.IsPocInWick)
                 .Where(x => GetKlineActionsFromKlineActionSignal(tradeLogicLogicOptions.KlineActionForOpen, x.PositionSide).Contains(x.KlineAction))
                 .Where(x => GetKlinePowersFromKlinePowerSignal(tradeLogicLogicOptions.KlinePowerForOpen, x.PositionSide).Contains(x.Power))
-                .Where(x => x.TotalTrades >= tradeLogicLogicOptions.MinTradesForOpen)
                 .Where(x => x.KlineAverageTradeQuoteVolume >= tradeLogicLogicOptions.MinQuoteVolumeForOpen)
                 .Where(x => x.TotalBids > x.TotalAsks)
                 .OrderByDescending(x => x.AsksBidsCoefficient)
@@ -217,14 +215,6 @@ internal class PercentLimitFilters
                 return Task.FromResult(false);
             }
 
-            if (tradeLogicLogicOptions.MinTradesForAverage > symbolMarketInfo.TotalTrades)
-            {
-                _logger.LogInformation("{Position}. Not valid total trades. Kline trades is {KlineTrades}. Accepted trades in options. {TradesInOptions}. In {Method}", 
-                    openedPosition.ToString(), symbolMarketInfo.TotalTrades, tradeLogicLogicOptions.MinTradesForAverage, nameof(IsNeedToPlaceMarketAverageOrderAsync));
-                    
-                return Task.FromResult(false);
-            }
-            
             if (tradeLogicLogicOptions.MinQuoteVolumeForAverage > symbolMarketInfo.KlineAverageTradeQuoteVolume)
             {
                 _logger.LogInformation("{Position}. Not valid trade quote volume. Kline trade asset volume is {TradeQuoteVolumeKline}. " +

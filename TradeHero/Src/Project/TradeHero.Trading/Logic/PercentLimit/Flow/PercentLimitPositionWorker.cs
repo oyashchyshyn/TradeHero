@@ -42,14 +42,14 @@ internal class PercentLimitPositionWorker : BasePositionWorker
         _percentMoveSymbolTickerStreamFactory = percentMoveSymbolTickerStreamFactory;
     }
 
-    public override async Task<ActionResult> CreatePositionAsync(ITradeLogicStore tradeLogicStore, string symbol, PositionSide side, decimal entryPrice, DateTime lastUpdateTime,
-        decimal quantity, bool isPositionExist, CancellationToken cancellationToken)
+    public override async Task<ActionResult> CreatePositionAsync(ITradeLogicStore tradeLogicStore, string symbol, PositionSide side, decimal entryPrice, 
+        DateTime lastUpdateTime, decimal quantity, bool isPositionExist, CancellationToken cancellationToken)
     {
         try
         {
             if (cancellationToken.IsCancellationRequested)
             {
-                _logger.LogWarning("Cancellation token is requested. In {Method}", 
+                _logger.LogInformation("Cancellation token is requested. In {Method}", 
                     nameof(CreatePositionAsync));
 
                 return ActionResult.CancellationTokenRequested;
@@ -133,7 +133,7 @@ internal class PercentLimitPositionWorker : BasePositionWorker
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            _logger.LogWarning("{Message}. In {Method}",
+            _logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(CreatePositionAsync));
 
             return ActionResult.CancellationTokenRequested;
@@ -177,7 +177,8 @@ internal class PercentLimitPositionWorker : BasePositionWorker
         }
     }
     
-    public override ActionResult UpdatePositionDetails(ITradeLogicStore tradeLogicStore, Position openedPosition, BinancePositionDetailsUsdt positionDetails)
+    public override ActionResult UpdatePositionDetails(ITradeLogicStore tradeLogicStore, Position openedPosition, 
+        BinancePositionDetailsUsdt positionDetails)
     {
         try
         {
@@ -196,7 +197,8 @@ internal class PercentLimitPositionWorker : BasePositionWorker
         }
     }
     
-    public override async Task<ActionResult> DeletePositionAsync(ITradeLogicStore tradeLogicStore, Position openedPosition, CancellationToken cancellationToken)
+    public override async Task<ActionResult> DeletePositionAsync(ITradeLogicStore tradeLogicStore, Position openedPosition, 
+        CancellationToken cancellationToken)
     {
         var openedPositionString = openedPosition.ToString();
         
@@ -207,11 +209,11 @@ internal class PercentLimitPositionWorker : BasePositionWorker
             plsStore.Positions.Remove(openedPosition);
             plsStore.PositionsInfo.Remove($"{openedPosition.Name}_{openedPosition.PositionSide}");
             
-            if (plsStore.Positions.Count(x => x.Name == openedPosition.Name) + 1 == 1 
-                && plsStore.UsdFuturesTickerStreams.ContainsKey(openedPosition.Name))
+            if (plsStore.Positions.All(x => x.Name != openedPosition.Name) 
+                && plsStore.UsdFuturesTickerStreams.TryGetValue(openedPosition.Name, out var subscription) 
+                && subscription != null)
             {
-                var stream = plsStore.UsdFuturesTickerStreams[openedPosition.Name];
-                await _socketBinanceClient.UnsubscribeAsync(stream.SocketSubscription);
+                await _socketBinanceClient.UnsubscribeAsync(subscription.SocketSubscription);
                 plsStore.UsdFuturesTickerStreams.Remove(openedPosition.Name);    
                     
                 _logger.LogInformation("{Position}. Unsubscribed from socket. In {Method}", 
@@ -231,7 +233,7 @@ internal class PercentLimitPositionWorker : BasePositionWorker
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            _logger.LogWarning("{Message}. In {Method}",
+            _logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(CreatePositionAsync));
 
             return ActionResult.CancellationTokenRequested;

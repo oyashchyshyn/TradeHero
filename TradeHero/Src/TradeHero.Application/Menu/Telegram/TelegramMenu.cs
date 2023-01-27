@@ -88,7 +88,7 @@ internal class TelegramMenu : IMenuService
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            _logger.LogWarning("{Message}. In {Method}",
+            _logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(InitAsync));
             
             return ActionResult.CancellationTokenRequested;
@@ -116,6 +116,9 @@ internal class TelegramMenu : IMenuService
 
             if (cancellationToken.IsCancellationRequested)
             {
+                _logger.LogInformation("Cancellation token is requested. In {Method}", 
+                    nameof(FinishAsync));
+                
                 return ActionResult.Success;
             }
 

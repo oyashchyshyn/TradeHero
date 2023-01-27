@@ -20,7 +20,7 @@ internal abstract class BaseTradeLogicStore : ITradeLogicStore
     public FuturesUsdMarket FuturesUsd { get; private set; } = new();
     public BaseInstanceOptions? InstanceOptions { get; private set; }
     public List<Position> Positions { get; } = new();
-    public Dictionary<string, BaseFuturesUsdSymbolTickerStream> UsdFuturesTickerStreams { get; } = new();
+    public Dictionary<string, BaseFuturesUsdSymbolTickerStream?> UsdFuturesTickerStreams { get; } = new();
     public Dictionary<string, decimal> MarketLastPrices { get; } = new();
 
     protected BaseTradeLogicStore(

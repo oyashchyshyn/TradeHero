@@ -2,27 +2,22 @@ using System.Reflection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TradeHero.Core.Enums;
-using TradeHero.Core.Types.Services;
 
 namespace TradeHero.Application.Host;
 
 internal class AppHostLifeTime : IHostLifetime, IDisposable
 {
     private readonly ILogger<AppHostLifeTime> _logger;
-    private readonly IEnvironmentService _environmentService;
-    
     private readonly ApplicationShutdown _applicationShutdown;
 
     private readonly ManualResetEvent _shutdownBlock = new(false);
     
     public AppHostLifeTime(
         ILogger<AppHostLifeTime> logger,
-        IEnvironmentService environmentService, 
         ApplicationShutdown applicationShutdown
         )
     {
         _logger = logger;
-        _environmentService = environmentService;
         _applicationShutdown = applicationShutdown;
     }
 
@@ -74,22 +69,22 @@ internal class AppHostLifeTime : IHostLifetime, IDisposable
         }
     }
     
-    private void OnProcessExit(object? sender, EventArgs e)
+    private async void OnProcessExit(object? sender, EventArgs e)
     {
         _logger.LogInformation("Exit button is pressed. In {Method}", nameof(OnProcessExit));
         
-        _applicationShutdown.Shutdown(AppExitCode.Success);
+        await _applicationShutdown.ShutdownAsync(AppExitCode.Success);
 
         _shutdownBlock.WaitOne();
     }
     
-    private void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
+    private async void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
     {
         _logger.LogInformation("Ctrl + C is pressed. In {Method}", nameof(OnCancelKeyPress));
         
         e.Cancel = true;
         
-        _applicationShutdown.Shutdown(AppExitCode.Success);
+        await _applicationShutdown.ShutdownAsync(AppExitCode.Success);
     }
 
     #endregion

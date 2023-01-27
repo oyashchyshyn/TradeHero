@@ -6,21 +6,24 @@ internal class ApplicationShutdown
 {
     private readonly CancellationTokenSource _cancellationTokenSource;
     
-    private Action? _actionsBeforeStopApplication;
+    private Func<Task>? _actionsBeforeStopApplication;
 
     public ApplicationShutdown(CancellationTokenSource cancellationTokenSource)
     {
         _cancellationTokenSource = cancellationTokenSource;
     }
     
-    public void SetActionsBeforeStop(Action actionsBeforeStopApplication)
+    public void SetActionsBeforeStop(Func<Task> actionsBeforeStopApplication)
     {
         _actionsBeforeStopApplication = actionsBeforeStopApplication;
     }
     
-    public void Shutdown(AppExitCode? appExitCode = null)
+    public async Task ShutdownAsync(AppExitCode? appExitCode = null)
     {
-        _actionsBeforeStopApplication?.Invoke();
+        if (_actionsBeforeStopApplication != null)
+        {
+            await _actionsBeforeStopApplication.Invoke();   
+        }
 
         if (appExitCode.HasValue)
         {

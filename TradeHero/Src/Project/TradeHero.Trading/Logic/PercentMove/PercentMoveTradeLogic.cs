@@ -49,7 +49,7 @@ internal class PercentMoveTradeLogic : BaseFuturesUsdTradeLogic
         {
             if (cancellationToken.IsCancellationRequested)
             {
-                Logger.LogWarning("Cancellation token is requested. In {Method}", 
+                Logger.LogInformation("Cancellation token is requested. In {Method}", 
                     nameof(CheckCurrentPositionsAsync));
 
                 return ActionResult.CancellationTokenRequested;
@@ -86,7 +86,7 @@ internal class PercentMoveTradeLogic : BaseFuturesUsdTradeLogic
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            Logger.LogWarning("{Message}. In {Method}",
+            Logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(CheckCurrentPositionsAsync));
             
             return ActionResult.SystemError;
@@ -110,7 +110,7 @@ internal class PercentMoveTradeLogic : BaseFuturesUsdTradeLogic
             
             if (cancellationToken.IsCancellationRequested)
             {
-                Logger.LogWarning("CancellationToken is requested. In {Method}",
+                Logger.LogInformation("CancellationToken is requested. In {Method}",
                     nameof(RunInstanceAsync));
                 
                 return;
@@ -143,7 +143,7 @@ internal class PercentMoveTradeLogic : BaseFuturesUsdTradeLogic
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            Logger.LogWarning("{Message}. In {Method}",
+            Logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(RunInstanceAsync));
         }
         catch (Exception exception)
@@ -160,7 +160,7 @@ internal class PercentMoveTradeLogic : BaseFuturesUsdTradeLogic
         {
             if (cancellationToken.IsCancellationRequested)
             {
-                Logger.LogWarning("Cancellation token is requested. In {Method}", 
+                Logger.LogInformation("Cancellation token is requested. In {Method}", 
                     nameof(SendMessageAsync));
                 
                 return;
@@ -236,7 +236,7 @@ internal class PercentMoveTradeLogic : BaseFuturesUsdTradeLogic
         }
         catch (TaskCanceledException taskCanceledException)
         {
-            Logger.LogWarning("{Message}. In {Method}",
+            Logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(SendMessageAsync));
         }
         catch (Exception exception)
