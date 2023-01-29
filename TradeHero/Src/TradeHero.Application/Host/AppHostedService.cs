@@ -4,7 +4,9 @@ using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Types.Client;
 using TradeHero.Core.Types.Menu;
+using TradeHero.Core.Types.Repositories;
 using TradeHero.Core.Types.Services;
+using TradeHero.Core.Types.Trading;
 
 namespace TradeHero.Application.Host;
 
@@ -18,6 +20,10 @@ internal class AppHostedService : IHostedService
     private readonly IStoreService _storeService;
     private readonly IMenuFactory _menuFactory;
     private readonly IThSocketBinanceClient _binanceSocketClient;
+    private readonly ITelegramService _telegramService;
+    private readonly IConnectionRepository _connectionRepository;
+    private readonly IStrategyRepository _strategyRepository;
+    private readonly ITradeLogicFactory _tradeLogicFactory;
 
     private readonly ApplicationShutdown _applicationShutdown;
 
@@ -32,6 +38,10 @@ internal class AppHostedService : IHostedService
         IStoreService storeService,
         IMenuFactory menuFactory, 
         IThSocketBinanceClient binanceSocketClient,
+        ITelegramService telegramService,
+        IConnectionRepository connectionRepository,
+        IStrategyRepository strategyRepository,
+        ITradeLogicFactory tradeLogicFactory,
         ApplicationShutdown applicationShutdown
         )
     {
@@ -43,6 +53,10 @@ internal class AppHostedService : IHostedService
         _storeService = storeService;
         _menuFactory = menuFactory;
         _binanceSocketClient = binanceSocketClient;
+        _telegramService = telegramService;
+        _connectionRepository = connectionRepository;
+        _strategyRepository = strategyRepository;
+        _tradeLogicFactory = tradeLogicFactory;
         _applicationShutdown = applicationShutdown;
     }
     
@@ -70,14 +84,28 @@ internal class AppHostedService : IHostedService
 
             RegisterBackgroundJobs();
 
-            if (_environmentService.GetEnvironmentArgs().Contains(ArgumentKeyConstants.Update))
-            {
-                _storeService.Application.Update.IsApplicationAfterUpdate = true;
-            }
-            
             foreach (var menu in _menuFactory.GetMenus())
             {
                 await menu.InitAsync(_cancellationTokenSource.Token);   
+            }
+            
+            if (_environmentService.GetEnvironmentArgs().Contains(ArgumentKeyConstants.Update))
+            {
+                foreach (var menu in _menuFactory.GetMenus())
+                {
+                    await menu.SendMessageAsync(
+                        $"Application updated to version: {_environmentService.GetCurrentApplicationVersion().ToString(3)}",
+                        true,
+                        cancellationToken
+                    );
+                }
+            }
+            else
+            {
+                foreach (var menu in _menuFactory.GetMenus())
+                {
+                    await menu.SendMessageAsync("Bot is launched!", true, cancellationToken);
+                }
             }
         }
         catch (Exception exception)
@@ -101,6 +129,21 @@ internal class AppHostedService : IHostedService
     {
         try
         {
+            if (_storeService.Bot.TradeLogic != null)
+            {
+                await _storeService.Bot.TradeLogic.FinishAsync(false);
+                _storeService.Bot.SetTradeLogic(null, TradeLogicStatus.Idle);
+            }
+
+            if (!_storeService.Application.Update.IsNeedToUpdateApplication)
+            {
+                foreach (var menu in _menuFactory.GetMenus())
+                {
+                    await menu.SendMessageAsync("Bot is finished!", false, 
+                        _cancellationTokenSource.Token);
+                }
+            }
+            
             foreach (var menu in _menuFactory.GetMenus())
             {
                 await menu.FinishAsync(_cancellationTokenSource.Token);
@@ -140,21 +183,168 @@ internal class AppHostedService : IHostedService
     
     private async void InternetConnectionServiceOnOnInternetConnected(object? sender, EventArgs e)
     {
-        _cancellationTokenSource = new CancellationTokenSource();
-
-        foreach (var menu in _menuFactory.GetMenus())
+        try
         {
-            await menu.OnReconnectToInternetAsync(_cancellationTokenSource.Token);
+            _cancellationTokenSource = new CancellationTokenSource();
+            
+            var showMessage = false;
+
+            foreach (var menu in _menuFactory.GetMenus())
+            {
+                await menu.InitAsync(_cancellationTokenSource.Token);
+            }
+
+            while (true)
+            {
+                if (showMessage)
+                {
+                    foreach (var menu in _menuFactory.GetMenus())
+                    {
+                        await menu.SendMessageAsync("Will try repeat connection in a minute...", 
+                            false, _cancellationTokenSource.Token);
+                    }
+                    
+                    await Task.Delay(TimeSpan.FromMinutes(1), _cancellationTokenSource.Token);
+                }
+                else
+                {
+                    foreach (var menu in _menuFactory.GetMenus())
+                    {
+                        await menu.SendMessageAsync("Launched after internet disconnection.", 
+                            false, _cancellationTokenSource.Token);
+                    }
+                }
+
+                if (_storeService.Bot.TradeLogic != null)
+                {
+                    foreach (var menu in _menuFactory.GetMenus())
+                    {
+                        await menu.SendMessageAsync("Waiting for closing previous strategy...", 
+                            false, _cancellationTokenSource.Token);
+                    }
+                
+                    while (_storeService.Bot.TradeLogic != null) { }
+
+                    foreach (var menu in _menuFactory.GetMenus())
+                    {
+                        await menu.SendMessageAsync("Previous strategy closed.", 
+                            false, _cancellationTokenSource.Token);
+                    }
+                }
+
+                if (_storeService.Bot.TradeLogicStatus == TradeLogicStatus.Running)
+                {
+                    var connection = await _connectionRepository.GetActiveConnectionAsync();
+                    if (connection == null)
+                    {
+                        foreach (var menu in _menuFactory.GetMenus())
+                        {
+                            await menu.SendMessageAsync("There is no active connection to exchanger.", 
+                                false, _cancellationTokenSource.Token);
+                        }
+                        
+                        break;
+                    }
+                
+                    var activeStrategy = await _strategyRepository.GetActiveStrategyAsync();
+                    if (activeStrategy == null)
+                    {
+                        foreach (var menu in _menuFactory.GetMenus())
+                        {
+                            await menu.SendMessageAsync("There is no active strategy.", 
+                                false, _cancellationTokenSource.Token);
+                        }
+                        
+                        break;
+                    }
+                
+                    var strategy = _tradeLogicFactory.GetTradeLogicRunner(activeStrategy.TradeLogicType);
+                    if (strategy == null)
+                    {
+                        foreach (var menu in _menuFactory.GetMenus())
+                        {
+                            await menu.SendMessageAsync("Strategy does not exist", 
+                                false, _cancellationTokenSource.Token);
+                        }
+
+                        break;
+                    }
+                    
+                    foreach (var menu in _menuFactory.GetMenus())
+                    {
+                        await menu.SendMessageAsync("In starting process...", 
+                            false, _cancellationTokenSource.Token);
+                    }
+                
+                    var strategyResult = await strategy.InitAsync(activeStrategy);
+                    if (strategyResult != ActionResult.Success)
+                    {
+                        await strategy.FinishAsync(true);
+                    
+                        foreach (var menu in _menuFactory.GetMenus())
+                        {
+                            await menu.SendMessageAsync($"Cannot start '{activeStrategy.Name}' strategy. Error code: {strategyResult}", 
+                                false, _cancellationTokenSource.Token);
+                        }
+
+                        showMessage = true;
+                    
+                        continue;
+                    }
+                
+                    _storeService.Bot.SetTradeLogic(strategy, TradeLogicStatus.Running);
+                
+                    foreach (var menu in _menuFactory.GetMenus())
+                    {
+                        await menu.SendMessageAsync("Strategy started! Enjoy lazy pidor", 
+                            true, _cancellationTokenSource.Token);
+                    }
+
+                    break;
+                }
+            
+                foreach (var menu in _menuFactory.GetMenus())
+                {
+                    if (menu.MenuType == MenuType.Telegram)
+                    {
+                        await menu.SendMessageAsync("Choose action:", 
+                            true, _cancellationTokenSource.Token);
+                    }
+                }
+
+                break;
+            }
+        }
+        catch (Exception exception)
+        {
+            _logger.LogCritical(exception, "In {Method}", 
+                nameof(InternetConnectionServiceOnOnInternetConnected));
         }
     }
     
     private async void InternetConnectionServiceOnOnInternetDisconnected(object? sender, EventArgs e)
     {
-        _cancellationTokenSource.Cancel();
-
-        foreach (var menu in _menuFactory.GetMenus())
+        try
         {
-            await menu.OnDisconnectFromInternetAsync(_cancellationTokenSource.Token);
+            _cancellationTokenSource.Cancel();
+
+            if (_storeService.Bot.TradeLogic != null)
+            {
+                _internetConnectionService.SetPauseInternetConnectionChecking(true);
+            
+                await _storeService.Bot.TradeLogic.FinishAsync(true);
+            
+                _storeService.Bot.SetTradeLogic(null, TradeLogicStatus.Running);
+            
+                _internetConnectionService.SetPauseInternetConnectionChecking(false);
+            }
+        
+            await _telegramService.CloseConnectionAsync();
+        }
+        catch (Exception exception)
+        {
+            _logger.LogCritical(exception, "In {Method}", 
+                nameof(InternetConnectionServiceOnOnInternetDisconnected));
         }
     }
 
