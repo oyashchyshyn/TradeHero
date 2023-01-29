@@ -93,6 +93,7 @@ internal abstract class BaseTradeLogicStore : ITradeLogicStore
             
             Positions.Clear();
             MarketLastPrices.Clear();
+            UsdFuturesTickerStreams.Clear();
             
             Spot = new SpotMarket();
             FuturesUsd = new FuturesUsdMarket();

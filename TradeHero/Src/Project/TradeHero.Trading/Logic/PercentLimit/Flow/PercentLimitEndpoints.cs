@@ -13,7 +13,7 @@ using TradeHero.Trading.Logic.PercentLimit.Options;
 
 namespace TradeHero.Trading.Logic.PercentLimit.Flow;
 
-internal class PercentLimitEndpoints
+internal class  PercentLimitEndpoints
 {
     private readonly ILogger<PercentLimitEndpoints> _logger;
     private readonly IThRestBinanceClient _restBinanceClient;
@@ -105,6 +105,8 @@ internal class PercentLimitEndpoints
                 
                 return ActionResult.Error;
             }
+
+            var isNeedToUpdatePrice = false;
             
             foreach (var futureOrderQuantity in _calculatorService.SplitPositionQuantity(orderQuantity, symbolInfo.LotSizeFilter.MaxQuantity))
             {
@@ -120,6 +122,30 @@ internal class PercentLimitEndpoints
                         return ActionResult.CancellationTokenRequested;
                     }
 
+                    if (isNeedToUpdatePrice)
+                    {
+                        var lastPriceRequest = await _restBinanceClient.UsdFuturesApi.ExchangeData.GetPriceAsync(
+                            symbolMarketInfo.FuturesUsdName,
+                            ct: cancellationToken
+                        );
+
+                        if (!lastPriceRequest.Success)
+                        {
+                            _logger.LogWarning(new ThException(lastPriceRequest.Error),"{Symbol} | {Side}. In {Method}",
+                                symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, nameof(CreateBuyMarketOrderAsync));
+                            
+                            continue;
+                        }
+                        
+                        currentOrderQuantity = _calculatorService.GetOrderQuantity(
+                            lastPriceRequest.Data.Price,
+                            initialMargin,
+                            symbolInfo.LotSizeFilter.MinQuantity
+                        );
+
+                        isNeedToUpdatePrice = false;
+                    }
+                    
                     var placeOrderRequest = await _restBinanceClient.UsdFuturesApi.Trading.PlaceOrderAsync(
                         symbol: symbolMarketInfo.FuturesUsdName,
                         side: symbolMarketInfo.PositionSide == PositionSide.Short ? OrderSide.Sell : OrderSide.Buy,
@@ -145,25 +171,8 @@ internal class PercentLimitEndpoints
                     {
                         case (int)ApiErrorCodes.MinNotionalError:
                         {
-                            var lastPriceRequest = await _restBinanceClient.UsdFuturesApi.ExchangeData.GetPriceAsync(
-                                symbolMarketInfo.FuturesUsdName,
-                                ct: cancellationToken
-                            );
-
-                            if (!lastPriceRequest.Success)
-                            {
-                                _logger.LogWarning(new ThException(lastPriceRequest.Error),"{Symbol} | {Side}. In {Method}",
-                                    symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, nameof(CreateBuyMarketOrderAsync));
+                            isNeedToUpdatePrice = true;
                             
-                                continue;
-                            }
-                        
-                            currentOrderQuantity = _calculatorService.GetOrderQuantity(
-                                lastPriceRequest.Data.Price,
-                                initialMargin,
-                                symbolInfo.LotSizeFilter.MinQuantity
-                            );
-                        
                             continue;
                         }
                         case (int)ApiErrorCodes.MaximumExceededAtCurrentLeverage:
