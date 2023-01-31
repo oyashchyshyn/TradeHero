@@ -31,6 +31,7 @@ internal class CheckCodeStatusCommand : ITelegramMenuCommand
     {
         try
         {
+            _telegramMenuStore.PreviousCommandId = _telegramMenuStore.TelegramButtons.Bot;
             _telegramMenuStore.LastCommandId = Id; 
         
             var message = string.Format("Critical: {0}{1}Errors {2}{3}Warnings: {4}{5}",

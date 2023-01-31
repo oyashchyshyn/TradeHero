@@ -43,6 +43,7 @@ internal class CheckUpdateCommand : ITelegramMenuCommand
     {
         try
         {
+            _telegramMenuStore.PreviousCommandId = _telegramMenuStore.TelegramButtons.Bot;
             _telegramMenuStore.LastCommandId = Id;
 
             var latestReleaseResult = await _githubService.GetLatestReleaseAsync();

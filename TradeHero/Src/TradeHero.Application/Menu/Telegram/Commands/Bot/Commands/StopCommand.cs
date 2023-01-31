@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
+using TradeHero.Application.Bot;
 using TradeHero.Application.Menu.Telegram.Store;
 using TradeHero.Core.Contracts.Menu;
 using TradeHero.Core.Contracts.Services;
-using TradeHero.Core.Enums;
 
 namespace TradeHero.Application.Menu.Telegram.Commands.Bot.Commands;
 
@@ -10,19 +10,19 @@ internal class StopCommand : ITelegramMenuCommand
 {
     private readonly ILogger<StopCommand> _logger;
     private readonly ITelegramService _telegramService;
-    private readonly IStoreService _storeService;
+    private readonly BotWorker _botWorker;
     private readonly TelegramMenuStore _telegramMenuStore;
 
     public StopCommand(
         ILogger<StopCommand> logger,
         ITelegramService telegramService, 
-        IStoreService storeService, 
+        BotWorker botWorker, 
         TelegramMenuStore telegramMenuStore
         )
     {
         _logger = logger;
         _telegramService = telegramService;
-        _storeService = storeService;
+        _botWorker = botWorker;
         _telegramMenuStore = telegramMenuStore;
     }
     
@@ -32,36 +32,10 @@ internal class StopCommand : ITelegramMenuCommand
     {
         try
         {
+            _telegramMenuStore.PreviousCommandId = _telegramMenuStore.TelegramButtons.Bot;
             _telegramMenuStore.LastCommandId = Id;
-        
-            if (_storeService.Bot.TradeLogic == null)
-            {
-                await ErrorMessageAsync("Cannot stop strategy because it does not running.", cancellationToken);
 
-                return;
-            }
-        
-            await _telegramService.SendTextMessageToUserAsync(
-                "Stopping...", 
-                _telegramMenuStore.GetRemoveKeyboard(),
-                cancellationToken: cancellationToken
-            );
-
-            var stopResult = await _storeService.Bot.TradeLogic.FinishAsync(true);
-            if (stopResult != ActionResult.Success)
-            {
-                await ErrorMessageAsync("Error during stopping strategy.", cancellationToken);
-                
-                return;
-            }
-            
-            _storeService.Bot.SetTradeLogic(null, TradeLogicStatus.Idle);
-
-            await _telegramService.SendTextMessageToUserAsync(
-                "Strategy stopped.", 
-                _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.Bot),
-                cancellationToken: cancellationToken
-            );
+            await _botWorker.StopTradeLogicAsync();
         }
         catch (Exception exception)
         {

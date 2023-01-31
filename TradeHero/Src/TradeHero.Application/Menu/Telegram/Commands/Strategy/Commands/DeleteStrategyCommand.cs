@@ -33,6 +33,7 @@ internal class DeleteStrategyCommand : ITelegramMenuCommand
     {
         try
         {
+            _telegramMenuStore.PreviousCommandId = _telegramMenuStore.TelegramButtons.Strategies;
             _telegramMenuStore.LastCommandId = Id;
             
             var strategies = await _strategyRepository.GetStrategiesAsync();

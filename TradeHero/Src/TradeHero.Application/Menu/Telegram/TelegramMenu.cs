@@ -111,21 +111,31 @@ internal class TelegramMenu : IMenuService
     {
         try
         {
-            if (sendMessageOptions.MenuAction == MenuAction.MainMenu)
+            switch (sendMessageOptions.MenuAction)
             {
-                await _telegramService.SendTextMessageToUserAsync(
-                    message, 
-                    _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.MainMenu),
-                    cancellationToken: cancellationToken
-                );
-            }
-            else
-            {
-                await _telegramService.SendTextMessageToUserAsync(
-                    message, 
-                    _telegramMenuStore.GetRemoveKeyboard(),
-                    cancellationToken: cancellationToken
-                );
+                case MenuAction.WithoutMenu:
+                    await _telegramService.SendTextMessageToUserAsync(
+                        message, 
+                        _telegramMenuStore.GetRemoveKeyboard(),
+                        cancellationToken: cancellationToken
+                    );
+                    break;
+                case MenuAction.MainMenu:
+                    await _telegramService.SendTextMessageToUserAsync(
+                        message, 
+                        _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.MainMenu),
+                        cancellationToken: cancellationToken
+                    );
+                    break;
+                case MenuAction.PreviousMenu:
+                    await _telegramService.SendTextMessageToUserAsync(
+                        message, 
+                        _telegramMenuStore.GetKeyboard(_telegramMenuStore.PreviousCommandId),
+                        cancellationToken: cancellationToken
+                    );
+                    break;
+                default:
+                    return ActionResult.Null;
             }
 
             return ActionResult.Success;

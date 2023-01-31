@@ -38,6 +38,7 @@ internal class ShowStrategiesPropertiesCommand : ITelegramMenuCommand
     {
         try
         {
+            _telegramMenuStore.PreviousCommandId = _telegramMenuStore.TelegramButtons.Strategies;
             _telegramMenuStore.LastCommandId = Id;
 
             var listStrategyInlineKeyboard = 

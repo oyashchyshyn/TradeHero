@@ -46,6 +46,7 @@ internal class AddConnectionCommand : ITelegramMenuCommand
     {
         try
         {
+            _telegramMenuStore.PreviousCommandId = _telegramMenuStore.TelegramButtons.Connections;
             _telegramMenuStore.LastCommandId = Id;
         
             await _telegramService.SendTextMessageToUserAsync(

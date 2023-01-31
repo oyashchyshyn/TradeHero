@@ -3,5 +3,6 @@
 public enum MenuAction
 {
     WithoutMenu,
-    MainMenu
+    MainMenu,
+    PreviousMenu
 }

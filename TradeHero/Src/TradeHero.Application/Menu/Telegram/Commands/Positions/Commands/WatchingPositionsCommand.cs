@@ -33,6 +33,7 @@ internal class WatchingPositionsCommand : ITelegramMenuCommand
     {
         try
         {
+            _telegramMenuStore.PreviousCommandId = _telegramMenuStore.TelegramButtons.Positions;
             _telegramMenuStore.LastCommandId = Id;
         
             var positions = _storeService.Bot.TradeLogic?.Store.Positions;

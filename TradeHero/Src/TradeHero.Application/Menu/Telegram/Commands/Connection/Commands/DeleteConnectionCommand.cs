@@ -33,6 +33,7 @@ internal class DeleteConnectionCommand : ITelegramMenuCommand
     {
         try
         {
+            _telegramMenuStore.PreviousCommandId = _telegramMenuStore.TelegramButtons.Connections;
             _telegramMenuStore.LastCommandId = Id;
             
             var connections = await _connectionRepository.GetConnectionsAsync();

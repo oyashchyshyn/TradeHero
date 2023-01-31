@@ -28,6 +28,7 @@ internal class MainTelegramMenuCommand : ITelegramMenuCommand
     {
         try
         {
+            _telegramMenuStore.PreviousCommandId = _telegramMenuStore.TelegramButtons.MainMenu;
             _telegramMenuStore.LastCommandId = Id;
         
             await _telegramService.SendTextMessageToUserAsync(

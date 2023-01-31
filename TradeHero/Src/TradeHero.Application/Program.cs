@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using TradeHero.Application.Di;
 using TradeHero.Client;
 using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;

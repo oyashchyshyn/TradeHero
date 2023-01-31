@@ -31,6 +31,7 @@ internal class AboutCommand : ITelegramMenuCommand
     {
         try
         {
+            _telegramMenuStore.PreviousCommandId = _telegramMenuStore.TelegramButtons.Bot;
             _telegramMenuStore.LastCommandId = Id;
 
             await _telegramService.SendTextMessageToUserAsync(
