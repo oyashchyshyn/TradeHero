@@ -1,15 +1,12 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TradeHero.Application.Di;
-using TradeHero.Application.Host;
 using TradeHero.Client;
 using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Extensions;
 using TradeHero.Core.Helpers;
 using TradeHero.Database;
-using TradeHero.Main;
 using TradeHero.Services;
 using TradeHero.Trading;
 using HostApp = Microsoft.Extensions.Hosting.Host;

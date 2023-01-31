@@ -3,7 +3,6 @@ using Telegram.Bot;
 using TradeHero.Core.Contracts.Repositories;
 using TradeHero.Core.Contracts.Services;
 using TradeHero.Core.Contracts.Settings;
-using TradeHero.Main.Telegram;
 using TradeHero.Services.Services;
 
 namespace TradeHero.Services;

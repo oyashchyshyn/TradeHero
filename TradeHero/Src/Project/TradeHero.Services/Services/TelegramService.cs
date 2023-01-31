@@ -12,7 +12,7 @@ using TradeHero.Core.Contracts.Services;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Models;
 
-namespace TradeHero.Main.Telegram;
+namespace TradeHero.Services.Services;
 
 internal class TelegramService : ITelegramService
 {

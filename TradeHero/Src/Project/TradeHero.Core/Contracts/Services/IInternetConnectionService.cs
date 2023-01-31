@@ -7,5 +7,4 @@ public interface IInternetConnectionService
 
     Task StartInternetConnectionCheckAsync();
     void StopInternetConnectionChecking();
-    void SetPauseInternetConnectionChecking(bool isNeedPause);
 }

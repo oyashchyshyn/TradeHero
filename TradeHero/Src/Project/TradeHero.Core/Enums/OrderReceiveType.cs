@@ -4,5 +4,6 @@ public enum OrderReceiveType
 {
     Open,
     Average,
-    Close
+    PartialClosed,
+    FullyClosed
 }

@@ -13,7 +13,7 @@ internal class InternetConnectionService : IInternetConnectionService
     private bool _isNeedToStopInternetConnectionChecking;
     private int _currentInternetConnectionAttempts;
     private bool _isInternetConnectionExist;
-    private readonly ManualResetEventSlim _manualResetEventSlim = new(true);
+    
 
     public event EventHandler? OnInternetConnected;
     public event EventHandler? OnInternetDisconnected;
@@ -54,8 +54,6 @@ internal class InternetConnectionService : IInternetConnectionService
     {
         try
         {
-            _manualResetEventSlim.Dispose();
-            
             _isNeedToStopInternetConnectionChecking = true;
 
             _logger.LogInformation("Finish internet connection check. In {Method}", 
@@ -68,19 +66,6 @@ internal class InternetConnectionService : IInternetConnectionService
         }
     }
 
-    public void SetPauseInternetConnectionChecking(bool isNeedPause)
-    {
-        switch (isNeedPause)
-        {
-            case true when _manualResetEventSlim.IsSet:
-                _manualResetEventSlim.Reset();
-                break;
-            case false when !_manualResetEventSlim.IsSet:
-                _manualResetEventSlim.Set();
-                break;
-        }
-    }
-    
     #region Private methods
 
     private async Task TestConnectionAsync()
@@ -108,11 +93,6 @@ internal class InternetConnectionService : IInternetConnectionService
             {
                 try
                 {
-                    if (!_manualResetEventSlim.IsSet)
-                    {
-                        _manualResetEventSlim.Wait();
-                    }
-                    
                     if (_isNeedToStopInternetConnectionChecking)
                     {
                         break;

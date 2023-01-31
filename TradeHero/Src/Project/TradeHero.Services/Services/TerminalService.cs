@@ -6,37 +6,42 @@ namespace TradeHero.Services.Services;
 internal class TerminalService : ITerminalService
 {
     private readonly IEnvironmentService _environmentService;
-    private readonly IDateTimeService _dateTimeService;
 
-    public TerminalService(
-        IEnvironmentService environmentService, 
-        IDateTimeService dateTimeService
-        )
+    public TerminalService(IEnvironmentService environmentService)
     {
         _environmentService = environmentService;
-        _dateTimeService = dateTimeService;
     }
     
-    public void Write(string message, bool needSendWithTime, ConsoleColor? consoleColor = null)
+    public void Write(string message, ConsoleColor? consoleColor = null, ConsoleColor? backgroundColor = null)
     {
         if (consoleColor.HasValue)
         {
             Console.ForegroundColor = consoleColor.Value;    
         }
 
-        Console.Write(needSendWithTime ? $"[{_dateTimeService.GetLocalDateTime():HH:mm:ss}] {message}" : message);
+        if (backgroundColor.HasValue)
+        {
+            Console.BackgroundColor = backgroundColor.Value;
+        }
+        
+        Console.Write(message);
 
         Console.ResetColor();
     }
     
-    public void WriteLine(string message, bool needSendWithTime, ConsoleColor? consoleColor = null)
+    public void WriteLine(string message, ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null)
     {
-        if (consoleColor.HasValue)
+        if (foregroundColor.HasValue)
         {
-            Console.ForegroundColor = consoleColor.Value;    
+            Console.ForegroundColor = foregroundColor.Value;
         }
 
-        Console.WriteLine(needSendWithTime ? $"[{_dateTimeService.GetLocalDateTime():HH:mm:ss}] {message}" : message);
+        if (backgroundColor.HasValue)
+        {
+            Console.BackgroundColor = backgroundColor.Value;
+        }
+
+        Console.WriteLine(message);
         
         Console.ResetColor();
     }

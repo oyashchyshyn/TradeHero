@@ -44,17 +44,19 @@ internal class PercentMoveUserAccountStream : BaseFuturesUsdUserAccountStream
                 {
                     return;
                 }
-
-                orderReceiveEvent?.Invoke(this, new FuturesUsdOrderReceiveArgs(data.Data.UpdateData, OrderReceiveType.Close));
                 
                 _percentMovePositionWorker.UpdatePositionQuantity(Store, openedPosition, data.Data, true);
 
                 if (data.Data.UpdateData.Status != OrderStatus.Filled || openedPosition.TotalQuantity is > 0 or < 0)
                 {
+                    orderReceiveEvent?.Invoke(this, new FuturesUsdOrderReceiveArgs(data.Data.UpdateData, OrderReceiveType.PartialClosed));
+                    
                     return;
                 }
 
                 await _percentMovePositionWorker.DeletePositionAsync(Store, openedPosition, cancellationToken);
+                
+                orderReceiveEvent?.Invoke(this, new FuturesUsdOrderReceiveArgs(data.Data.UpdateData, OrderReceiveType.FullyClosed));
             }
             else
             {
@@ -67,14 +69,12 @@ internal class PercentMoveUserAccountStream : BaseFuturesUsdUserAccountStream
                     
                     if (openedPosition != null)
                     {
-                        orderReceiveEvent?.Invoke(this, new FuturesUsdOrderReceiveArgs(data.Data.UpdateData, OrderReceiveType.Average));
-                        
                         _percentMovePositionWorker.UpdatePositionQuantity(Store, openedPosition, data.Data, false);
+                        
+                        orderReceiveEvent?.Invoke(this, new FuturesUsdOrderReceiveArgs(data.Data.UpdateData, OrderReceiveType.Average));
                     }
                     else
                     {
-                        orderReceiveEvent?.Invoke(this, new FuturesUsdOrderReceiveArgs(data.Data.UpdateData, OrderReceiveType.Open));
-                        
                         await _percentMovePositionWorker.CreatePositionAsync(
                             Store,
                             data.Data.UpdateData.Symbol,
@@ -85,6 +85,8 @@ internal class PercentMoveUserAccountStream : BaseFuturesUsdUserAccountStream
                             false,
                             cancellationToken
                         );
+                        
+                        orderReceiveEvent?.Invoke(this, new FuturesUsdOrderReceiveArgs(data.Data.UpdateData, OrderReceiveType.Open));
                     }
                 }
             }

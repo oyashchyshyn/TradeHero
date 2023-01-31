@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using TradeHero.Core.Args;
 using TradeHero.Core.Constants;
 using TradeHero.Core.Contracts.Client;
 using TradeHero.Core.Contracts.Menu;
@@ -25,9 +26,13 @@ internal class AppHostedService : IHostedService
     private readonly IConnectionRepository _connectionRepository;
     private readonly IStrategyRepository _strategyRepository;
     private readonly ITradeLogicFactory _tradeLogicFactory;
-
+    private readonly ITerminalService _terminalService;
+    private readonly IDateTimeService _dateTimeService;
     private readonly ApplicationShutdown _applicationShutdown;
 
+    private readonly ManualResetEventSlim _internetConnectionResetEvent = new(true);
+    private readonly Mutex _positionConsoleNotificationMutex = new();
+    
     private CancellationTokenSource _cancellationTokenSource = new();
     
     public AppHostedService(
@@ -43,6 +48,8 @@ internal class AppHostedService : IHostedService
         IConnectionRepository connectionRepository,
         IStrategyRepository strategyRepository,
         ITradeLogicFactory tradeLogicFactory,
+        ITerminalService terminalService,
+        IDateTimeService dateTimeService,
         ApplicationShutdown applicationShutdown
         )
     {
@@ -58,6 +65,8 @@ internal class AppHostedService : IHostedService
         _connectionRepository = connectionRepository;
         _strategyRepository = strategyRepository;
         _tradeLogicFactory = tradeLogicFactory;
+        _terminalService = terminalService;
+        _dateTimeService = dateTimeService;
         _applicationShutdown = applicationShutdown;
     }
     
@@ -109,6 +118,8 @@ internal class AppHostedService : IHostedService
                         new SendMessageOptions { MenuAction = MenuAction.MainMenu }, cancellationToken);
                 }
             }
+            
+            _storeService.Bot.OnTradeLogicUpdate += BotOnOnTradeLogicUpdate;
         }
         catch (Exception exception)
         {
@@ -160,6 +171,9 @@ internal class AppHostedService : IHostedService
             _internetConnectionService.OnInternetDisconnected -= InternetConnectionServiceOnOnInternetDisconnected;
         
             _internetConnectionService.StopInternetConnectionChecking();
+            
+            _internetConnectionResetEvent.Dispose();
+            _positionConsoleNotificationMutex.Dispose();
         }
         catch (Exception exception)
         {
@@ -173,7 +187,7 @@ internal class AppHostedService : IHostedService
     {
         var appSettings = _environmentService.GetAppSettings();
         
-        async Task DeleteOldFilesFunction()
+        async Task DeleteOldLogFilesFunction()
         {
             await _fileService.DeleteFilesInFolderAsync(
                 Path.Combine(_environmentService.GetBasePath(), appSettings.Folder.LogsFolderName), 
@@ -181,13 +195,25 @@ internal class AppHostedService : IHostedService
             );
         }
         
-        _jobService.StartJob("DeleteOldLogFiles", DeleteOldFilesFunction, TimeSpan.FromDays(1), true);
+        _jobService.StartJob("DeleteOldLogFilesFunction", DeleteOldLogFilesFunction, TimeSpan.FromDays(1), true);
+        
+        async Task DeleteOldClusterResultFilesFunction()
+        {
+            await _fileService.DeleteFilesInFolderAsync(
+                Path.Combine(_environmentService.GetBasePath(), FolderConstants.ClusterResultsFolder), 
+                TimeSpan.FromDays(10).TotalMilliseconds
+            );
+        }
+        
+        _jobService.StartJob("DeleteOldClusterResultFilesFunction", DeleteOldClusterResultFilesFunction, TimeSpan.FromDays(1), true);
     }
     
     private async void InternetConnectionServiceOnOnInternetConnected(object? sender, EventArgs e)
     {
         try
         {
+            _internetConnectionResetEvent.Wait();
+            
             _cancellationTokenSource = new CancellationTokenSource();
             
             var showMessage = false;
@@ -341,25 +367,120 @@ internal class AppHostedService : IHostedService
     {
         try
         {
+            foreach (var menu in _menuFactory.GetMenus())
+            {
+                if (menu.MenuType == MenuType.Console)
+                {
+                    await menu.SendMessageAsync("Internet connection disconnected", 
+                        new SendMessageOptions { MenuAction = MenuAction.WithoutMenu },
+                        _cancellationTokenSource.Token);   
+                }
+            }
+            
+            _internetConnectionResetEvent.Reset();
+
             _cancellationTokenSource.Cancel();
 
             if (_storeService.Bot.TradeLogic != null)
             {
-                _internetConnectionService.SetPauseInternetConnectionChecking(true);
-            
                 await _storeService.Bot.TradeLogic.FinishAsync(true);
-            
+
                 _storeService.Bot.SetTradeLogic(null, TradeLogicStatus.Running);
-            
-                _internetConnectionService.SetPauseInternetConnectionChecking(false);
             }
-        
+
             await _telegramService.CloseConnectionAsync();
         }
         catch (Exception exception)
         {
-            _logger.LogCritical(exception, "In {Method}", 
+            _logger.LogCritical(exception, "In {Method}",
                 nameof(InternetConnectionServiceOnOnInternetDisconnected));
+        }
+        finally
+        {
+            _internetConnectionResetEvent.Set();
+        }
+    }
+    
+    private void BotOnOnTradeLogicUpdate(object? sender, EventArgs e)
+    {
+        try
+        {
+            if (_storeService.Bot.TradeLogic != null)
+            {
+                _storeService.Bot.TradeLogic.OnOrderReceive += TradeLogicOnOnOrderReceive;
+            }
+        }
+        catch (Exception exception)
+        {
+            _logger.LogCritical(exception, "In {Method}",
+                nameof(BotOnOnTradeLogicUpdate));
+        }
+    }
+
+    private void TradeLogicOnOnOrderReceive(object? sender, FuturesUsdOrderReceiveArgs eventArgs)
+    {
+        try
+        {
+            _positionConsoleNotificationMutex.WaitOne();
+            
+            if (_storeService.Bot.TradeLogic == null)
+            {
+                return;
+            }
+
+            var symbolInfo = _storeService.Bot.TradeLogic.Store.FuturesUsd.ExchangerData.ExchangeInfo.Symbols
+                .FirstOrDefault(x => x.Name == eventArgs.OrderUpdate.Symbol);
+
+            if (symbolInfo == null)
+            {
+                return;
+            }
+
+            string orderType;
+            ConsoleColor orderTyreForegroundColor;
+
+            switch (eventArgs.OrderReceiveType)
+            {
+                case OrderReceiveType.Open:
+                    orderType = "POSITION OPEN";
+                    orderTyreForegroundColor = ConsoleColor.Green;
+                    break;
+                case OrderReceiveType.Average:
+                    orderType = "POSITION AVERAGE";
+                    orderTyreForegroundColor = ConsoleColor.Yellow;
+                    break;
+                case OrderReceiveType.PartialClosed:
+                    orderType = "POSITION PARTIAL CLOSE";
+                    orderTyreForegroundColor = ConsoleColor.Red;
+                    break;
+                case OrderReceiveType.FullyClosed:
+                    orderType = "POSITION FULL CLOSE";
+                    orderTyreForegroundColor = ConsoleColor.Red;
+                    break;
+                default:
+                    return;
+            }
+
+            _terminalService.Write($"[{_dateTimeService.GetLocalDateTime():HH:mm:ss}]", ConsoleColor.Gray);
+            _terminalService.Write(" ");
+            _terminalService.Write(orderType, orderTyreForegroundColor);
+            _terminalService.Write(" ");
+            _terminalService.Write(eventArgs.OrderUpdate.Symbol);
+            _terminalService.Write(" ");
+            _terminalService.Write($"QUANTITY: {eventArgs.OrderUpdate.Quantity}");
+            _terminalService.Write(" ");
+            _terminalService.Write(
+                $"QUOTE: {Math.Round(eventArgs.OrderUpdate.Price * eventArgs.OrderUpdate.Quantity, 2)} {symbolInfo.QuoteAsset}");
+            _terminalService.Write(Environment.NewLine);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogCritical(exception, "In {Method}",
+                nameof(InternetConnectionServiceOnOnInternetDisconnected));
+        }
+        finally
+        {
+            _positionConsoleNotificationMutex.ReleaseMutex();
         }
     }
 
