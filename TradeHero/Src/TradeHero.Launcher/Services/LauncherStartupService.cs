@@ -74,11 +74,11 @@ internal class LauncherStartupService
                 {
                     if (!string.IsNullOrEmpty(errorMessage))
                     {
-                        _terminalService.WriteLine(errorMessage, ConsoleColor.Red);
-                        _terminalService.WriteLine(string.Empty);
+                        _terminalService.WriteLine(errorMessage, false, ConsoleColor.Red);
+                        _terminalService.WriteLine(string.Empty, false);
                     }
                 
-                    _terminalService.WriteLine("Write down your telegram id:");
+                    _terminalService.WriteLine("Write down your telegram id:", false);
                     var telegramIdString = _terminalService.ReadLine();
                 
                     if (string.IsNullOrWhiteSpace(telegramIdString))
@@ -114,11 +114,11 @@ internal class LauncherStartupService
                 {
                     if (!string.IsNullOrEmpty(errorMessage))
                     {
-                        _terminalService.WriteLine(errorMessage, ConsoleColor.Red);
-                        _terminalService.WriteLine(string.Empty);
+                        _terminalService.WriteLine(errorMessage, false, ConsoleColor.Red);
+                        _terminalService.WriteLine(string.Empty, false);
                     }
                 
-                    _terminalService.WriteLine("Write down bot telegram api key:");
+                    _terminalService.WriteLine("Write down bot telegram api key:", false);
                     botTelegramApiKey = _terminalService.ReadLine();
             
                     if (string.IsNullOrWhiteSpace(botTelegramApiKey))
@@ -181,11 +181,12 @@ internal class LauncherStartupService
                 {
                     if (!string.IsNullOrEmpty(errorMessage))
                     {
-                        _terminalService.WriteLine(errorMessage, ConsoleColor.Red);
-                        _terminalService.WriteLine(string.Empty);
+                        _terminalService.WriteLine(errorMessage, false, ConsoleColor.Red);
+                        _terminalService.WriteLine(string.Empty, false);
                     }
                 
-                    _terminalService.WriteLine("Write down name for current data (Minimum length 3 symbols, Maximum length 40 symbols, Do not contain spaces):");
+                    const string message = "Write down name for current data (Minimum length 3 symbols, Maximum length 40 symbols, Do not contain spaces):";
+                    _terminalService.WriteLine(message, false);
                     userName = _terminalService.ReadLine();
             
                     if (string.IsNullOrWhiteSpace(userName))
@@ -195,7 +196,7 @@ internal class LauncherStartupService
                         continue;
                     }
                 
-                    if (userName.Contains(" "))
+                    if (userName.Contains(' '))
                     {
                         errorMessage = "Name contains spaces.";
                         _terminalService.ClearConsole();
@@ -256,7 +257,7 @@ internal class LauncherStartupService
             {
                 if (!File.Exists(appPath))
                 {
-                    _terminalService.WriteLine("Preparing application...");
+                    _terminalService.WriteLine("Preparing application...", false);
 
                     var latestRelease = await _githubService.GetLatestReleaseAsync();
                     if (latestRelease.ActionResult != ActionResult.Success)
@@ -306,7 +307,7 @@ internal class LauncherStartupService
                     _waitAppClosed.Set();
                     AppWaiting.Set();
                     
-                    _terminalService.WriteLine("Cannot start bot, please see logs.");
+                    _terminalService.WriteLine("Cannot start bot, please see logs.", false);
                     
                     return;
                 }
@@ -315,27 +316,36 @@ internal class LauncherStartupService
 
                 await _runningProcess.WaitForExitAsync();
 
-                _logger.LogInformation("App stopped. Exit code: {ExitCode}. In {Method}", 
-                    _runningProcess.ExitCode, nameof(RunApp));
+                var exitCode = _runningProcess.ExitCode;
                 
-                if (_runningProcess.ExitCode == (int)AppExitCode.Update)
-                {
-                    _isNeedToUpdateApp = true;
-                    
-                    _runningProcess?.Dispose();
-                    _runningProcess = null;
-                    
-                    _logger.LogInformation("App is going to be updated. In {Method}", nameof(RunApp));
-                    
-                    continue;
-                }
-
+                _logger.LogInformation("App stopped. Exit code: {ExitCode}. In {Method}", 
+                    exitCode, nameof(RunApp));
+                
                 _runningProcess?.Dispose();
                 _runningProcess = null;
-
-                _waitAppClosed.Set();
-
-                break;
+                
+                switch (exitCode)
+                {
+                    case (int)AppExitCode.Update:
+                        _isNeedToUpdateApp = true;
+                        _logger.LogInformation("App finished with Update exit code. In {Method}", nameof(RunApp));
+                        continue;
+                    case (int)AppExitCode.Failure:
+                        _logger.LogInformation("App finished with Failure exit code. In {Method}", nameof(RunApp));
+                        _waitAppClosed.Set();
+                        ReleaseLauncherAndSetExitCode();
+                        return;
+                    case (int)AppExitCode.Success:
+                        _logger.LogInformation("App finished with Success exit code. In {Method}", nameof(RunApp));
+                        _waitAppClosed.Set();
+                        ReleaseLauncherAndSetExitCode();
+                        return;
+                    default: 
+                        _logger.LogInformation("App finished with unknown exit code. In {Method}", nameof(RunApp));
+                        _waitAppClosed.Set();
+                        ReleaseLauncherAndSetExitCode();
+                        return;
+                }
             }
         });
     }
@@ -351,6 +361,13 @@ internal class LauncherStartupService
     
     #region Private methods
 
+    private void ReleaseLauncherAndSetExitCode()
+    {
+        Environment.ExitCode = (int)AppExitCode.Success;
+        
+        AppWaiting.Set();
+    }
+    
     private void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
     {
         _logger.LogInformation("Ctrl + C is pressed. In {Method}", nameof(OnCancelKeyPress));
@@ -358,10 +375,6 @@ internal class LauncherStartupService
         e.Cancel = true;
 
         _waitAppClosed.WaitOne();
-        
-        Environment.ExitCode = (int)AppExitCode.Success;
-        
-        AppWaiting.Set();
     }
 
     private void OnProcessExit(object? sender, EventArgs e)
@@ -371,10 +384,6 @@ internal class LauncherStartupService
         _runningProcess?.Close();
         
         _waitAppClosed.WaitOne();
-        
-        Environment.ExitCode = (int)AppExitCode.Success;
-        
-        AppWaiting.Set();
     }
 
     private void UnhandledException(object sender, UnhandledExceptionEventArgs e)

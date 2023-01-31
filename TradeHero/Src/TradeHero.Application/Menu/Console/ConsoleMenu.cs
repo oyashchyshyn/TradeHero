@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Types.Menu;
+using TradeHero.Core.Types.Menu.Models;
 using TradeHero.Core.Types.Services;
 
 namespace TradeHero.Application.Menu.Console;
@@ -49,49 +50,18 @@ internal class ConsoleMenu : IMenuService
         }
     }
 
-    public Task<ActionResult> SendMessageAsync(string message, bool isNeedToShowMenu, CancellationToken cancellationToken = default)
+    public Task<ActionResult> SendMessageAsync(string message, SendMessageOptions sendMessageOptions,
+        CancellationToken cancellationToken = default)
     {
         try
         {
-            _terminalService.WriteLine(message);
+            _terminalService.WriteLine(message, true);
             
             return Task.FromResult(ActionResult.Success);
         }
         catch (Exception exception)
         {
             _logger.LogError(exception, "In {Method}", nameof(FinishAsync));
-
-            return Task.FromResult(ActionResult.SystemError);
-        }
-    }
-
-    public Task<ActionResult> OnDisconnectFromInternetAsync(CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            _terminalService.WriteLine("Internet disconnected.");
-            
-            return Task.FromResult(ActionResult.Success);
-        }
-        catch (Exception exception)
-        {
-            _logger.LogError(exception, "In {Method}", nameof(InitAsync));
-
-            return Task.FromResult(ActionResult.SystemError);
-        }
-    }
-
-    public Task<ActionResult> OnReconnectToInternetAsync(CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            _terminalService.WriteLine("Internet reconnected.");
-            
-            return Task.FromResult(ActionResult.Success);
-        }
-        catch (Exception exception)
-        {
-            _logger.LogError(exception, "In {Method}", nameof(OnReconnectToInternetAsync));
 
             return Task.FromResult(ActionResult.SystemError);
         }

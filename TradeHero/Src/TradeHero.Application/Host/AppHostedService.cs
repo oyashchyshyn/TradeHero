@@ -4,6 +4,7 @@ using TradeHero.Core.Constants;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Types.Client;
 using TradeHero.Core.Types.Menu;
+using TradeHero.Core.Types.Menu.Models;
 using TradeHero.Core.Types.Repositories;
 using TradeHero.Core.Types.Services;
 using TradeHero.Core.Types.Trading;
@@ -95,7 +96,7 @@ internal class AppHostedService : IHostedService
                 {
                     await menu.SendMessageAsync(
                         $"Application updated to version: {_environmentService.GetCurrentApplicationVersion().ToString(3)}",
-                        true,
+                        new SendMessageOptions { MenuAction = MenuAction.MainMenu },
                         cancellationToken
                     );
                 }
@@ -104,7 +105,8 @@ internal class AppHostedService : IHostedService
             {
                 foreach (var menu in _menuFactory.GetMenus())
                 {
-                    await menu.SendMessageAsync("Bot is launched!", true, cancellationToken);
+                    await menu.SendMessageAsync("Bot is launched!", 
+                        new SendMessageOptions { MenuAction = MenuAction.MainMenu }, cancellationToken);
                 }
             }
         }
@@ -139,7 +141,8 @@ internal class AppHostedService : IHostedService
             {
                 foreach (var menu in _menuFactory.GetMenus())
                 {
-                    await menu.SendMessageAsync("Bot is finished!", false, 
+                    await menu.SendMessageAsync("Bot is finished!", 
+                        new SendMessageOptions { MenuAction = MenuAction.WithoutMenu }, 
                         _cancellationTokenSource.Token);
                 }
             }
@@ -201,7 +204,8 @@ internal class AppHostedService : IHostedService
                     foreach (var menu in _menuFactory.GetMenus())
                     {
                         await menu.SendMessageAsync("Will try repeat connection in a minute...", 
-                            false, _cancellationTokenSource.Token);
+                            new SendMessageOptions { MenuAction = MenuAction.WithoutMenu },
+                            _cancellationTokenSource.Token);
                     }
                     
                     await Task.Delay(TimeSpan.FromMinutes(1), _cancellationTokenSource.Token);
@@ -211,7 +215,8 @@ internal class AppHostedService : IHostedService
                     foreach (var menu in _menuFactory.GetMenus())
                     {
                         await menu.SendMessageAsync("Launched after internet disconnection.", 
-                            false, _cancellationTokenSource.Token);
+                            new SendMessageOptions { MenuAction = MenuAction.WithoutMenu }, 
+                            _cancellationTokenSource.Token);
                     }
                 }
 
@@ -220,7 +225,8 @@ internal class AppHostedService : IHostedService
                     foreach (var menu in _menuFactory.GetMenus())
                     {
                         await menu.SendMessageAsync("Waiting for closing previous strategy...", 
-                            false, _cancellationTokenSource.Token);
+                            new SendMessageOptions { MenuAction = MenuAction.WithoutMenu },
+                            _cancellationTokenSource.Token);
                     }
                 
                     while (_storeService.Bot.TradeLogic != null) { }
@@ -228,7 +234,8 @@ internal class AppHostedService : IHostedService
                     foreach (var menu in _menuFactory.GetMenus())
                     {
                         await menu.SendMessageAsync("Previous strategy closed.", 
-                            false, _cancellationTokenSource.Token);
+                            new SendMessageOptions { MenuAction = MenuAction.WithoutMenu },
+                            _cancellationTokenSource.Token);
                     }
                 }
 
@@ -240,7 +247,8 @@ internal class AppHostedService : IHostedService
                         foreach (var menu in _menuFactory.GetMenus())
                         {
                             await menu.SendMessageAsync("There is no active connection to exchanger.", 
-                                false, _cancellationTokenSource.Token);
+                                new SendMessageOptions { MenuAction = MenuAction.WithoutMenu },
+                                _cancellationTokenSource.Token);
                         }
                         
                         break;
@@ -252,7 +260,8 @@ internal class AppHostedService : IHostedService
                         foreach (var menu in _menuFactory.GetMenus())
                         {
                             await menu.SendMessageAsync("There is no active strategy.", 
-                                false, _cancellationTokenSource.Token);
+                                new SendMessageOptions { MenuAction = MenuAction.WithoutMenu },
+                                _cancellationTokenSource.Token);
                         }
                         
                         break;
@@ -264,7 +273,8 @@ internal class AppHostedService : IHostedService
                         foreach (var menu in _menuFactory.GetMenus())
                         {
                             await menu.SendMessageAsync("Strategy does not exist", 
-                                false, _cancellationTokenSource.Token);
+                                new SendMessageOptions { MenuAction = MenuAction.WithoutMenu },
+                                _cancellationTokenSource.Token);
                         }
 
                         break;
@@ -273,7 +283,8 @@ internal class AppHostedService : IHostedService
                     foreach (var menu in _menuFactory.GetMenus())
                     {
                         await menu.SendMessageAsync("In starting process...", 
-                            false, _cancellationTokenSource.Token);
+                            new SendMessageOptions { MenuAction = MenuAction.WithoutMenu },
+                            _cancellationTokenSource.Token);
                     }
                 
                     var strategyResult = await strategy.InitAsync(activeStrategy);
@@ -283,8 +294,10 @@ internal class AppHostedService : IHostedService
                     
                         foreach (var menu in _menuFactory.GetMenus())
                         {
-                            await menu.SendMessageAsync($"Cannot start '{activeStrategy.Name}' strategy. Error code: {strategyResult}", 
-                                false, _cancellationTokenSource.Token);
+                            await menu.SendMessageAsync(
+                                $"Cannot start '{activeStrategy.Name}' strategy. Error code: {strategyResult}", 
+                                new SendMessageOptions { MenuAction = MenuAction.WithoutMenu },
+                                _cancellationTokenSource.Token);
                         }
 
                         showMessage = true;
@@ -297,7 +310,8 @@ internal class AppHostedService : IHostedService
                     foreach (var menu in _menuFactory.GetMenus())
                     {
                         await menu.SendMessageAsync("Strategy started! Enjoy lazy pidor", 
-                            true, _cancellationTokenSource.Token);
+                            new SendMessageOptions { MenuAction = MenuAction.WithoutMenu },
+                            _cancellationTokenSource.Token);
                     }
 
                     break;
@@ -308,7 +322,8 @@ internal class AppHostedService : IHostedService
                     if (menu.MenuType == MenuType.Telegram)
                     {
                         await menu.SendMessageAsync("Choose action:", 
-                            true, _cancellationTokenSource.Token);
+                            new SendMessageOptions { MenuAction = MenuAction.WithoutMenu },
+                            _cancellationTokenSource.Token);
                     }
                 }
 

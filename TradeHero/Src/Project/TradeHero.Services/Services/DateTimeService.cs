@@ -11,6 +11,11 @@ internal class DateTimeService : IDateTimeService
     {
         return DateTime.UtcNow;
     }
+    
+    public DateTime GetLocalDateTime()
+    {
+        return DateTime.Now;
+    }
 
     public DateTime ConvertToLocalTime(DateTime dateTime)
     {

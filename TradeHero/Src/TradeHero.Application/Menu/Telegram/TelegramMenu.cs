@@ -4,6 +4,7 @@ using TradeHero.Application.Menu.Telegram.Store;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Types.Menu;
 using TradeHero.Core.Types.Menu.Commands;
+using TradeHero.Core.Types.Menu.Models;
 using TradeHero.Core.Types.Services;
 using TradeHero.Core.Types.Services.Models.Telegram;
 
@@ -105,12 +106,13 @@ internal class TelegramMenu : IMenuService
             return ActionResult.SystemError;
         }
     }
-    
-    public async Task<ActionResult> SendMessageAsync(string message, bool isNeedToShowMenu, CancellationToken cancellationToken = default)
+
+    public async Task<ActionResult> SendMessageAsync(string message, SendMessageOptions sendMessageOptions,
+        CancellationToken cancellationToken = default)
     {
         try
         {
-            if (isNeedToShowMenu)
+            if (sendMessageOptions.MenuAction == MenuAction.MainMenu)
             {
                 await _telegramService.SendTextMessageToUserAsync(
                     message, 
