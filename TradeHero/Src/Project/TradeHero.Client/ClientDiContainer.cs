@@ -4,12 +4,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TradeHero.Client.Clients;
 using TradeHero.Client.Resolvers;
+using TradeHero.Core.Contracts.Client;
+using TradeHero.Core.Contracts.Repositories;
+using TradeHero.Core.Contracts.Services;
+using TradeHero.Core.Contracts.Settings;
 using TradeHero.Core.Enums;
-using TradeHero.Core.Types.Client;
-using TradeHero.Core.Types.Client.Resolvers;
-using TradeHero.Core.Types.Repositories;
-using TradeHero.Core.Types.Services;
-using TradeHero.Core.Types.Settings;
 
 namespace TradeHero.Client;
 

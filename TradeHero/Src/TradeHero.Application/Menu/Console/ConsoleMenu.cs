@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Logging;
+using TradeHero.Core.Contracts.Menu;
+using TradeHero.Core.Contracts.Services;
 using TradeHero.Core.Enums;
-using TradeHero.Core.Types.Menu;
-using TradeHero.Core.Types.Menu.Models;
-using TradeHero.Core.Types.Services;
+using TradeHero.Core.Models.Menu;
 
 namespace TradeHero.Application.Menu.Console;
 
@@ -10,16 +10,19 @@ internal class ConsoleMenu : IMenuService
 {
     private readonly ILogger<ConsoleMenu> _logger;
     private readonly ITerminalService _terminalService;
+    private readonly IDateTimeService _dateTimeService;
     
     public MenuType MenuType => MenuType.Console;
     
     public ConsoleMenu(
         ILogger<ConsoleMenu> logger, 
-        ITerminalService terminalService
+        ITerminalService terminalService, 
+        IDateTimeService dateTimeService
         )
     {
         _logger = logger;
         _terminalService = terminalService;
+        _dateTimeService = dateTimeService;
     }
 
     public Task<ActionResult> InitAsync(CancellationToken cancellationToken = default)
@@ -55,7 +58,13 @@ internal class ConsoleMenu : IMenuService
     {
         try
         {
-            _terminalService.WriteLine(message, true);
+            if (sendMessageOptions.IsNeedToShowTime)
+            {
+                _terminalService.Write($"[{_dateTimeService.GetLocalDateTime():HH:mm:ss}]", ConsoleColor.Gray);
+                _terminalService.Write(" ");
+            }
+            
+            _terminalService.Write(message);
             
             return Task.FromResult(ActionResult.Success);
         }

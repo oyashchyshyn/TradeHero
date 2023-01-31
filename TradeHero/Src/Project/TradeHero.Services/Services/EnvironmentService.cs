@@ -1,9 +1,9 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
 using TradeHero.Core.Constants;
+using TradeHero.Core.Contracts.Services;
+using TradeHero.Core.Contracts.Settings;
 using TradeHero.Core.Enums;
-using TradeHero.Core.Types.Services;
-using TradeHero.Core.Types.Settings;
 
 namespace TradeHero.Services.Services;
 

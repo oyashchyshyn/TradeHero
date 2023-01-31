@@ -1,8 +1,8 @@
 using Binance.Net.Enums;
 using Binance.Net.Objects.Models.Futures;
+using TradeHero.Core.Contracts.Trading;
 using TradeHero.Core.Enums;
-using TradeHero.Core.Types.Trading;
-using TradeHero.Core.Types.Trading.Models;
+using TradeHero.Core.Models.Trading;
 
 namespace TradeHero.Trading.Base;
 

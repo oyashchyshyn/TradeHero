@@ -1,5 +1,5 @@
 using Telegram.Bot.Types.ReplyMarkups;
-using TradeHero.Core.Types.Services;
+using TradeHero.Core.Contracts.Services;
 
 // ReSharper disable ConvertToConstant.Global
 
@@ -18,6 +18,7 @@ internal class TelegramMenuStore
     public readonly StrategyTempData StrategyData = new();
     public readonly CheckUpdateTempData CheckUpdateData = new();
     public string LastCommandId { get; set; } = string.Empty;
+    public string PreviousCommandId { get; set; } = string.Empty;
     public string GoBackCommandId { get; private set; } = string.Empty;
 
     public TelegramMenuStore(IStoreService storeService)

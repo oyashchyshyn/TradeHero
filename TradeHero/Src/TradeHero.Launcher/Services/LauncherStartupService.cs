@@ -3,11 +3,11 @@ using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using TradeHero.Core.Constants;
+using TradeHero.Core.Contracts.Repositories;
+using TradeHero.Core.Contracts.Services;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Helpers;
-using TradeHero.Core.Types.Repositories;
-using TradeHero.Core.Types.Repositories.Models;
-using TradeHero.Core.Types.Services;
+using TradeHero.Core.Models.Repositories;
 
 namespace TradeHero.Launcher.Services;
 
@@ -74,11 +74,11 @@ internal class LauncherStartupService
                 {
                     if (!string.IsNullOrEmpty(errorMessage))
                     {
-                        _terminalService.WriteLine(errorMessage, false, ConsoleColor.Red);
-                        _terminalService.WriteLine(string.Empty, false);
+                        _terminalService.WriteLine(errorMessage, ConsoleColor.Red);
+                        _terminalService.WriteLine(string.Empty);
                     }
                 
-                    _terminalService.WriteLine("Write down your telegram id:", false);
+                    _terminalService.WriteLine("Write down your telegram id:");
                     var telegramIdString = _terminalService.ReadLine();
                 
                     if (string.IsNullOrWhiteSpace(telegramIdString))
@@ -114,11 +114,11 @@ internal class LauncherStartupService
                 {
                     if (!string.IsNullOrEmpty(errorMessage))
                     {
-                        _terminalService.WriteLine(errorMessage, false, ConsoleColor.Red);
-                        _terminalService.WriteLine(string.Empty, false);
+                        _terminalService.WriteLine(errorMessage, ConsoleColor.Red);
+                        _terminalService.WriteLine(string.Empty);
                     }
                 
-                    _terminalService.WriteLine("Write down bot telegram api key:", false);
+                    _terminalService.WriteLine("Write down bot telegram api key:");
                     botTelegramApiKey = _terminalService.ReadLine();
             
                     if (string.IsNullOrWhiteSpace(botTelegramApiKey))
@@ -181,12 +181,12 @@ internal class LauncherStartupService
                 {
                     if (!string.IsNullOrEmpty(errorMessage))
                     {
-                        _terminalService.WriteLine(errorMessage, false, ConsoleColor.Red);
-                        _terminalService.WriteLine(string.Empty, false);
+                        _terminalService.WriteLine(errorMessage, ConsoleColor.Red);
+                        _terminalService.WriteLine(string.Empty);
                     }
                 
                     const string message = "Write down name for current data (Minimum length 3 symbols, Maximum length 40 symbols, Do not contain spaces):";
-                    _terminalService.WriteLine(message, false);
+                    _terminalService.WriteLine(message);
                     userName = _terminalService.ReadLine();
             
                     if (string.IsNullOrWhiteSpace(userName))
@@ -257,7 +257,7 @@ internal class LauncherStartupService
             {
                 if (!File.Exists(appPath))
                 {
-                    _terminalService.WriteLine("Preparing application...", false);
+                    _terminalService.WriteLine("Preparing application...");
 
                     var latestRelease = await _githubService.GetLatestReleaseAsync();
                     if (latestRelease.ActionResult != ActionResult.Success)
@@ -307,7 +307,7 @@ internal class LauncherStartupService
                     _waitAppClosed.Set();
                     AppWaiting.Set();
                     
-                    _terminalService.WriteLine("Cannot start bot, please see logs.", false);
+                    _terminalService.WriteLine("Cannot start bot, please see logs.");
                     
                     return;
                 }

@@ -1,13 +1,13 @@
 using Microsoft.Extensions.Logging;
 using TradeHero.Application.Data;
 using TradeHero.Application.Menu.Telegram.Store;
+using TradeHero.Core.Contracts.Client;
+using TradeHero.Core.Contracts.Menu;
+using TradeHero.Core.Contracts.Repositories;
+using TradeHero.Core.Contracts.Services;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Exceptions;
-using TradeHero.Core.Types.Client.Resolvers;
-using TradeHero.Core.Types.Menu.Commands;
-using TradeHero.Core.Types.Repositories;
-using TradeHero.Core.Types.Repositories.Models;
-using TradeHero.Core.Types.Services;
+using TradeHero.Core.Models.Repositories;
 
 namespace TradeHero.Application.Menu.Telegram.Commands.Connection.Commands;
 
@@ -46,6 +46,7 @@ internal class AddConnectionCommand : ITelegramMenuCommand
     {
         try
         {
+            _telegramMenuStore.PreviousCommandId = _telegramMenuStore.TelegramButtons.Connections;
             _telegramMenuStore.LastCommandId = Id;
         
             await _telegramService.SendTextMessageToUserAsync(

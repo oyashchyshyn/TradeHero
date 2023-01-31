@@ -2,8 +2,8 @@ using System.Text;
 using Microsoft.Extensions.Logging;
 using TradeHero.Application.Menu.Telegram.Store;
 using TradeHero.Core.Constants;
-using TradeHero.Core.Types.Menu.Commands;
-using TradeHero.Core.Types.Services;
+using TradeHero.Core.Contracts.Menu;
+using TradeHero.Core.Contracts.Services;
 
 namespace TradeHero.Application.Menu.Telegram.Commands.Positions.Commands;
 
@@ -33,6 +33,7 @@ internal class WatchingPositionsCommand : ITelegramMenuCommand
     {
         try
         {
+            _telegramMenuStore.PreviousCommandId = _telegramMenuStore.TelegramButtons.Positions;
             _telegramMenuStore.LastCommandId = Id;
         
             var positions = _storeService.Bot.TradeLogic?.Store.Positions;

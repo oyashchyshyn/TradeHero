@@ -5,11 +5,11 @@ using Newtonsoft.Json.Linq;
 using Telegram.Bot.Types.ReplyMarkups;
 using TradeHero.Application.Data;
 using TradeHero.Application.Menu.Telegram.Store;
+using TradeHero.Core.Contracts.Menu;
+using TradeHero.Core.Contracts.Repositories;
+using TradeHero.Core.Contracts.Services;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Extensions;
-using TradeHero.Core.Types.Menu.Commands;
-using TradeHero.Core.Types.Repositories;
-using TradeHero.Core.Types.Services;
 
 namespace TradeHero.Application.Menu.Telegram.Commands.Strategy.Commands;
 
@@ -45,6 +45,7 @@ internal class ShowStrategiesCommand : ITelegramMenuCommand
     {
         try
         {
+            _telegramMenuStore.PreviousCommandId = _telegramMenuStore.TelegramButtons.Strategies;
             _telegramMenuStore.LastCommandId = Id;
             
             var strategies = await _strategyRepository.GetStrategiesAsync();

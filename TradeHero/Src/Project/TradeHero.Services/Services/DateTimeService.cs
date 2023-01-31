@@ -1,7 +1,7 @@
 using Binance.Net.Enums;
 using NCrontab;
+using TradeHero.Core.Contracts.Services;
 using TradeHero.Core.Exceptions;
-using TradeHero.Core.Types.Services;
 
 namespace TradeHero.Services.Services;
 

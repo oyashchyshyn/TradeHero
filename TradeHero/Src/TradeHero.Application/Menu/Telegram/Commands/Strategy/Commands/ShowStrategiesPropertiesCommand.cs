@@ -5,10 +5,10 @@ using TradeHero.Application.Data.Dtos.Instance;
 using TradeHero.Application.Data.Dtos.TradeLogic;
 using TradeHero.Application.Dictionary;
 using TradeHero.Application.Menu.Telegram.Store;
+using TradeHero.Core.Contracts.Menu;
+using TradeHero.Core.Contracts.Services;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Extensions;
-using TradeHero.Core.Types.Menu.Commands;
-using TradeHero.Core.Types.Services;
 
 namespace TradeHero.Application.Menu.Telegram.Commands.Strategy.Commands;
 
@@ -38,6 +38,7 @@ internal class ShowStrategiesPropertiesCommand : ITelegramMenuCommand
     {
         try
         {
+            _telegramMenuStore.PreviousCommandId = _telegramMenuStore.TelegramButtons.Strategies;
             _telegramMenuStore.LastCommandId = Id;
 
             var listStrategyInlineKeyboard = 

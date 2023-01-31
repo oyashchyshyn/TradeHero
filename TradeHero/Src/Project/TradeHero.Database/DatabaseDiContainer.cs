@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using TradeHero.Core.Types.Repositories;
-using TradeHero.Core.Types.Services;
+using TradeHero.Core.Contracts.Repositories;
+using TradeHero.Core.Contracts.Services;
 using TradeHero.Database.Context;
 using TradeHero.Database.Entities;
 using TradeHero.Database.Repositories;

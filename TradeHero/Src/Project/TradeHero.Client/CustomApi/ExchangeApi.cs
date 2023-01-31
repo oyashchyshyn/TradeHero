@@ -1,12 +1,10 @@
 using Binance.Net.Enums;
 using Binance.Net.Interfaces;
 using TradeHero.Core.Constants;
+using TradeHero.Core.Contracts.Client;
+using TradeHero.Core.Contracts.Services;
 using TradeHero.Core.Enums;
-using TradeHero.Core.Types.Client;
-using TradeHero.Core.Types.Client.CustomApi;
-using TradeHero.Core.Types.Client.Models;
-using TradeHero.Core.Types.Client.Models.Response;
-using TradeHero.Core.Types.Services;
+using TradeHero.Core.Models.Client;
 
 namespace TradeHero.Client.CustomApi;
 
