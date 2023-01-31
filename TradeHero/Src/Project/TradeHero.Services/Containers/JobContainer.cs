@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using Binance.Net.Enums;
 using Microsoft.Extensions.Logging;
-using TradeHero.Core.Types.Services;
+using TradeHero.Core.Contracts.Services;
 using SystemDateTime = System.DateTime;
 
 namespace TradeHero.Services.Containers;

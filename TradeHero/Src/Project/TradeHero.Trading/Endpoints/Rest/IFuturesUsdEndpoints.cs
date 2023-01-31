@@ -1,6 +1,6 @@
 using Binance.Net.Enums;
+using TradeHero.Core.Contracts.Trading;
 using TradeHero.Core.Enums;
-using TradeHero.Core.Types.Trading;
 
 namespace TradeHero.Trading.Endpoints.Rest;
 

@@ -4,9 +4,9 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
 using Serilog.Sinks.SystemConsole.Themes;
+using TradeHero.Core.Contracts.Services;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Logger;
-using TradeHero.Core.Types.Services;
 
 namespace TradeHero.Core.Extensions;
 

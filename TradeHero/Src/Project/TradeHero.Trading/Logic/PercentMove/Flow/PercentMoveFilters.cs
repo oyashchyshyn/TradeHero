@@ -1,6 +1,6 @@
 using Binance.Net.Objects.Models.Futures;
 using Microsoft.Extensions.Logging;
-using TradeHero.Core.Types.Services;
+using TradeHero.Core.Contracts.Services;
 using TradeHero.Trading.Logic.PercentMove.Options;
 
 namespace TradeHero.Trading.Logic.PercentMove.Flow;

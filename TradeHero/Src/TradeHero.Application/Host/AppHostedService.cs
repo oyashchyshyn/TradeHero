@@ -1,13 +1,13 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TradeHero.Core.Constants;
+using TradeHero.Core.Contracts.Client;
+using TradeHero.Core.Contracts.Menu;
+using TradeHero.Core.Contracts.Repositories;
+using TradeHero.Core.Contracts.Services;
+using TradeHero.Core.Contracts.Trading;
 using TradeHero.Core.Enums;
-using TradeHero.Core.Types.Client;
-using TradeHero.Core.Types.Menu;
-using TradeHero.Core.Types.Menu.Models;
-using TradeHero.Core.Types.Repositories;
-using TradeHero.Core.Types.Services;
-using TradeHero.Core.Types.Trading;
+using TradeHero.Core.Models.Menu;
 
 namespace TradeHero.Application.Host;
 

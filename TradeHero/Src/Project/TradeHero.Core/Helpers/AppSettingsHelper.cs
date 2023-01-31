@@ -1,8 +1,8 @@
 using System.Reflection;
 using Newtonsoft.Json;
 using TradeHero.Core.Constants;
+using TradeHero.Core.Contracts.Settings;
 using TradeHero.Core.Enums;
-using TradeHero.Core.Types.Settings;
 
 namespace TradeHero.Core.Helpers;
 

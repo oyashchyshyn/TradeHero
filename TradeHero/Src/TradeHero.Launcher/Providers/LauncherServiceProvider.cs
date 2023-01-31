@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using TradeHero.Core.Contracts.Settings;
 using TradeHero.Core.Extensions;
-using TradeHero.Core.Types.Settings;
 using TradeHero.Database;
 using TradeHero.Launcher.Services;
 using TradeHero.Services;

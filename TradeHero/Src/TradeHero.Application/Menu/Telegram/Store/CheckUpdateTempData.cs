@@ -1,4 +1,4 @@
-using TradeHero.Core.Types.Services.Models.Github;
+using TradeHero.Core.Models.Github;
 
 namespace TradeHero.Application.Menu.Telegram.Store;
 

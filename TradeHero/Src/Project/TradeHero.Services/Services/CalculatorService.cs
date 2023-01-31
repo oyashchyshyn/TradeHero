@@ -1,7 +1,7 @@
 using System.Globalization;
 using Binance.Net.Enums;
-using TradeHero.Core.Types.Services;
-using TradeHero.Core.Types.Services.Models.Calculator;
+using TradeHero.Core.Contracts.Services;
+using TradeHero.Core.Models.Calculator;
 
 namespace TradeHero.Services.Services;
 

@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using TradeHero.Core.Types.Menu;
+using TradeHero.Core.Contracts.Menu;
 
 namespace TradeHero.Application.Menu.Console;
 

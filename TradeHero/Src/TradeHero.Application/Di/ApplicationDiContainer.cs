@@ -10,8 +10,8 @@ using TradeHero.Application.Host;
 using TradeHero.Application.Menu;
 using TradeHero.Application.Menu.Console;
 using TradeHero.Application.Menu.Telegram;
-using TradeHero.Core.Types.Menu;
-using TradeHero.Core.Types.Repositories.Models;
+using TradeHero.Core.Contracts.Menu;
+using TradeHero.Core.Models.Repositories;
 
 namespace TradeHero.Application.Di;
 

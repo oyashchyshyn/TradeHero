@@ -1,12 +1,11 @@
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.Extensions.Logging;
+using TradeHero.Core.Contracts.Client;
+using TradeHero.Core.Contracts.Repositories;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Extensions;
-using TradeHero.Core.Types.Client;
-using TradeHero.Core.Types.Client.Resolvers;
-using TradeHero.Core.Types.Repositories;
-using TradeHero.Core.Types.Repositories.Models;
+using TradeHero.Core.Models.Repositories;
 
 namespace TradeHero.Application.Data.Validations;
 

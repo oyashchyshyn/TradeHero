@@ -1,6 +1,6 @@
 using Serilog.Core;
 using Serilog.Events;
-using TradeHero.Core.Types.Services;
+using TradeHero.Core.Contracts.Services;
 
 namespace TradeHero.Core.Logger;
 

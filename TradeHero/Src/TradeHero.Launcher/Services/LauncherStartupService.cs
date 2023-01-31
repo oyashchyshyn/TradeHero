@@ -3,11 +3,11 @@ using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using TradeHero.Core.Constants;
+using TradeHero.Core.Contracts.Repositories;
+using TradeHero.Core.Contracts.Services;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Helpers;
-using TradeHero.Core.Types.Repositories;
-using TradeHero.Core.Types.Repositories.Models;
-using TradeHero.Core.Types.Services;
+using TradeHero.Core.Models.Repositories;
 
 namespace TradeHero.Launcher.Services;
 

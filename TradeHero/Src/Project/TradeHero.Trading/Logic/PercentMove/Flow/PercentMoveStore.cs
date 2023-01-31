@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
+using TradeHero.Core.Contracts.Services;
 using TradeHero.Core.Enums;
-using TradeHero.Core.Types.Repositories.Models;
-using TradeHero.Core.Types.Services;
+using TradeHero.Core.Models.Repositories;
 using TradeHero.Trading.Base;
 using TradeHero.Trading.Logic.PercentMove.Options;
 

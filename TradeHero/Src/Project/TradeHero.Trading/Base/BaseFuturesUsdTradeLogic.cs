@@ -1,12 +1,11 @@
 using Binance.Net.Interfaces.Clients;
 using Microsoft.Extensions.Logging;
+using TradeHero.Core.Args;
+using TradeHero.Core.Contracts.Services;
+using TradeHero.Core.Contracts.Trading;
 using TradeHero.Core.Enums;
-using TradeHero.Core.Types.Repositories.Models;
-using TradeHero.Core.Types.Services;
-using TradeHero.Core.Types.Trading;
-using TradeHero.Core.Types.Trading.Models;
-using TradeHero.Core.Types.Trading.Models.Args;
-using TradeHero.Core.Types.Trading.Models.Instance;
+using TradeHero.Core.Models.Repositories;
+using TradeHero.Core.Models.Trading;
 using TradeHero.Trading.Constants;
 using TradeHero.Trading.Endpoints.Rest;
 using TradeHero.Trading.Endpoints.Socket;

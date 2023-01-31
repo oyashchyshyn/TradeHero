@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Logging;
+using TradeHero.Core.Contracts.Client;
+using TradeHero.Core.Contracts.Trading;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Exceptions;
-using TradeHero.Core.Types.Client;
-using TradeHero.Core.Types.Trading;
 
 namespace TradeHero.Trading.Endpoints.Rest.Implementation;
 

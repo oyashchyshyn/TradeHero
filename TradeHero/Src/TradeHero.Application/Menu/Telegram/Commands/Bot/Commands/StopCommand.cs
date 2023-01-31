@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using TradeHero.Application.Menu.Telegram.Store;
+using TradeHero.Core.Contracts.Menu;
+using TradeHero.Core.Contracts.Services;
 using TradeHero.Core.Enums;
-using TradeHero.Core.Types.Menu.Commands;
-using TradeHero.Core.Types.Services;
 
 namespace TradeHero.Application.Menu.Telegram.Commands.Bot.Commands;
 

@@ -1,6 +1,6 @@
 using Binance.Net.Interfaces;
 using Microsoft.Extensions.Logging;
-using TradeHero.Core.Types.Client;
+using TradeHero.Core.Contracts.Client;
 using TradeHero.Trading.Base;
 using TradeHero.Trading.Logic.PercentMove.Flow;
 

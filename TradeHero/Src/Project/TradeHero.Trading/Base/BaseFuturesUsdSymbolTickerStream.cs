@@ -1,9 +1,9 @@
 using Binance.Net.Interfaces;
 using CryptoExchange.Net.Sockets;
 using Microsoft.Extensions.Logging;
+using TradeHero.Core.Contracts.Client;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Exceptions;
-using TradeHero.Core.Types.Client;
 
 namespace TradeHero.Trading.Base;
 
