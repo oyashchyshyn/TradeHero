@@ -3,6 +3,7 @@ using TradeHero.Core.Contracts.Menu;
 using TradeHero.Core.Contracts.Services;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Models.Menu;
+using TradeHero.Core.Models.Terminal;
 
 namespace TradeHero.Application.Menu.Console;
 
@@ -58,19 +59,32 @@ internal class ConsoleMenu : IMenuService
     {
         try
         {
+            switch (sendMessageOptions.MenuAction)
+            {
+                case MenuAction.WithoutMenu:
+                    break;
+                case MenuAction.MainMenu:
+                case MenuAction.PreviousMenu:
+                default:
+                    _terminalService.ClearConsole();
+                    break;
+            }
+            
             if (sendMessageOptions.IsNeedToShowTime)
             {
-                _terminalService.Write($"[{_dateTimeService.GetLocalDateTime():HH:mm:ss}]", ConsoleColor.Gray);
+                _terminalService.Write($"[{_dateTimeService.GetLocalDateTime():HH:mm:ss}]", 
+                    new WriteMessageOptions { FontColor = ConsoleColor.Gray });
+                
                 _terminalService.Write(" ");
             }
             
-            _terminalService.Write(message);
+            _terminalService.Write(message, new WriteMessageOptions { IsMessageFinished = true });
             
             return Task.FromResult(ActionResult.Success);
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, "In {Method}", nameof(FinishAsync));
+            _logger.LogError(exception, "In {Method}", nameof(SendMessageAsync));
 
             return Task.FromResult(ActionResult.SystemError);
         }

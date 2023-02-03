@@ -7,6 +7,7 @@ using TradeHero.Core.Contracts.Services;
 using TradeHero.Core.Contracts.Trading;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Models.Menu;
+using TradeHero.Core.Models.Terminal;
 
 namespace TradeHero.Application.Bot;
 
@@ -543,16 +544,16 @@ internal class BotWorker
                     return;
             }
 
-            _terminalService.Write($"[{_dateTimeService.GetLocalDateTime():HH:mm:ss}]", ConsoleColor.Gray);
+            _terminalService.Write($"[{_dateTimeService.GetLocalDateTime():HH:mm:ss}]", new WriteMessageOptions { FontColor = ConsoleColor.Gray });
             _terminalService.Write(" ");
-            _terminalService.Write(orderType, orderTyreForegroundColor);
+            _terminalService.Write(orderType, new WriteMessageOptions { FontColor = orderTyreForegroundColor });
             _terminalService.Write(" ");
             _terminalService.Write(eventArgs.OrderUpdate.Symbol);
             _terminalService.Write(" ");
             _terminalService.Write($"QUANTITY: {eventArgs.OrderUpdate.Quantity}");
             _terminalService.Write(" ");
-            _terminalService.Write($"QUOTE: {Math.Round(eventArgs.OrderUpdate.Price * eventArgs.OrderUpdate.Quantity, 2)} {symbolInfo.QuoteAsset}");
-            _terminalService.Write(Environment.NewLine);
+            _terminalService.Write($"QUOTE: {Math.Round(eventArgs.OrderUpdate.Price * eventArgs.OrderUpdate.Quantity, 2)} {symbolInfo.QuoteAsset}", 
+                new WriteMessageOptions { IsMessageFinished = true});
         }
         catch (Exception exception)
         {

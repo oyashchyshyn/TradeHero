@@ -88,12 +88,11 @@ internal class PercentLimitFilters
             var shortsPositionsToOpen = 0;
             var longsPositionsToOpen = 0;
 
-
-            var positionsForOpenLeft = tradeLogicLogicOptions.MaximumPositions - openedPositions.Count;
-            
-            var availablePositionsToOpen = positionsForOpenLeft >= tradeLogicLogicOptions.MaximumPositionsPerIteration
-                ? tradeLogicLogicOptions.MaximumPositionsPerIteration 
-                : tradeLogicLogicOptions.MaximumPositionsPerIteration - positionsForOpenLeft;
+            var availablePositionsToOpen = (tradeLogicLogicOptions.MaximumPositions - openedPositions.Count) switch
+            {
+                > 0 => tradeLogicLogicOptions.MaximumPositions - openedPositions.Count,
+                _ => 0
+            };
 
             if (availablePositionsToOpen < 0)
             {
@@ -102,7 +101,10 @@ internal class PercentLimitFilters
 
                 return new List<SymbolMarketInfo>();
             }
-            
+
+            _logger.LogInformation("Maximum available positions for open: {AvailablePositionsForOpen}. Current opened positions: {CurrentOpenedPositions}. In {Method}",
+                tradeLogicLogicOptions.MaximumPositions, openedPositions.Count, nameof(GetFilteredOrdersForOpenPositionAsync));
+
             switch (instanceResult.MarketMood)
             {
                 case Mood.Short:

@@ -273,19 +273,17 @@ internal class PercentLimitTradeLogic : BaseFuturesUsdTradeLogic
         
             foreach (var filteredPosition in filteredPositions)
             {
-                var positionInfo =
-                    _percentLimitStore.FuturesUsd.AccountData.Positions.First(x => x.Symbol == filteredPosition.FuturesUsdName);
-
-                var lastPrice = _percentLimitStore.MarketLastPrices[filteredPosition.FuturesUsdName];
-                
                 var symbolInfo =
                     _percentLimitStore.FuturesUsd.ExchangerData.ExchangeInfo.Symbols.Single(x => x.Name == filteredPosition.FuturesUsdName);
                 
+                var positionInfo =
+                    _percentLimitStore.FuturesUsd.AccountData.Positions.First(x => x.Symbol == filteredPosition.FuturesUsdName);
+
                 var balance = _percentLimitStore.FuturesUsd.AccountData.Balances.Single(x => x.Asset == filteredPosition.QuoteAsset);
                 
                 await _percentLimitEndpoints.CreateBuyMarketOrderAsync(
                     filteredPosition, 
-                    lastPrice,
+                    _percentLimitStore.MarketLastPrices[filteredPosition.FuturesUsdName],
                     symbolInfo,
                     positionInfo,
                     balance,
