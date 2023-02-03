@@ -143,69 +143,76 @@ internal class TelegramMenu : IMenuService
         catch (TaskCanceledException taskCanceledException)
         {
             _logger.LogInformation("{Message}. In {Method}",
-                taskCanceledException.Message, nameof(InitAsync));
+                taskCanceledException.Message, nameof(SendMessageAsync));
             
             return ActionResult.CancellationTokenRequested;
         }
         catch (Exception exception)
         {
-            _logger.LogCritical(exception, "In {Method}", nameof(InitAsync));
+            _logger.LogCritical(exception, "In {Method}", nameof(SendMessageAsync));
             
             return ActionResult.SystemError;
         }
     }
 
-    #region Priuvate methods
+    #region Private methods
 
     private async void TelegramServiceOnOnTelegramBotUserChatUpdate(object? sender, OnTelegramBotUpdateEventArgs args)
     {
-        _logger.LogInformation("Message from user. Data: {Data}. In {Method}", 
-            _jsonService.SerializeObject(args).Data, nameof(TelegramServiceOnOnTelegramBotUserChatUpdate));
-        
-        if (args.CallbackQuery is { Data: { } })
+        try
         {
-            var lastCommand = _commands.SingleOrDefault(menuCommand => menuCommand.Id == _telegramMenuStore.LastCommandId);
-            if (lastCommand == null)
+            _logger.LogInformation("Message from user. Data: {Data}. In {Method}", 
+                _jsonService.SerializeObject(args).Data, nameof(TelegramServiceOnOnTelegramBotUserChatUpdate));
+        
+            if (args.CallbackQuery is { Data: { } })
+            {
+                var lastCommand = _commands.SingleOrDefault(menuCommand => menuCommand.Id == _telegramMenuStore.LastCommandId);
+                if (lastCommand == null)
+                {
+                    return;
+                }
+            
+                await lastCommand.HandleCallbackDataAsync(args.CallbackQuery.Data, args.CancellationToken);
+            
+                return;
+            }
+        
+            if (string.IsNullOrWhiteSpace(args.Message?.Text))
             {
                 return;
             }
-            
-            await lastCommand.HandleCallbackDataAsync(args.CallbackQuery.Data, args.CancellationToken);
-            
-            return;
-        }
         
-        if (string.IsNullOrWhiteSpace(args.Message?.Text))
-        {
-            return;
-        }
-        
-        if (args.Message.Text.StartsWith(_telegramMenuStore.TelegramButtons.GoBackKeyboard))
-        {
-            var commandToGo = _commands.Single(menuCommand => menuCommand.Id == _telegramMenuStore.GoBackCommandId);
+            if (args.Message.Text.StartsWith(_telegramMenuStore.TelegramButtons.GoBackKeyboard))
+            {
+                var commandToGo = _commands.Single(menuCommand => menuCommand.Id == _telegramMenuStore.GoBackCommandId);
 
-            _telegramMenuStore.StrategyData.ClearData();
+                _telegramMenuStore.StrategyData.ClearData();
             
-            await commandToGo.ExecuteAsync(args.CancellationToken);
+                await commandToGo.ExecuteAsync(args.CancellationToken);
             
-            return;
-        }
+                return;
+            }
 
-        foreach (var menuCommand in _commands.Where(menuCommand => args.Message.Text.StartsWith(menuCommand.Id)))
-        {
-            await menuCommand.ExecuteAsync(args.CancellationToken);
+            foreach (var menuCommand in _commands.Where(menuCommand => args.Message.Text.StartsWith(menuCommand.Id)))
+            {
+                await menuCommand.ExecuteAsync(args.CancellationToken);
                     
-            return;
-        }
+                return;
+            }
 
-        if (_telegramMenuStore.ButtonsForHandleIncomeData().All(x => x != _telegramMenuStore.LastCommandId))
+            if (_telegramMenuStore.ButtonsForHandleIncomeData().All(x => x != _telegramMenuStore.LastCommandId))
+            {
+                return;
+            }
+
+            var command = _commands.Single(menuCommand => menuCommand.Id == _telegramMenuStore.LastCommandId);
+
+            await command.HandleIncomeDataAsync(args.Message.Text, args.CancellationToken);
+        }
+        catch (Exception exception)
         {
-            return;
+            _logger.LogCritical(exception, "In {Method}", nameof(TelegramServiceOnOnTelegramBotUserChatUpdate));
         }
-
-        var command = _commands.Single(menuCommand => menuCommand.Id == _telegramMenuStore.LastCommandId);
-
-        await command.HandleIncomeDataAsync(args.Message.Text, args.CancellationToken);
     }
 
     #endregion

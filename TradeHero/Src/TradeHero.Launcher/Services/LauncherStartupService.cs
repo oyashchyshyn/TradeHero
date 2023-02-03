@@ -8,6 +8,7 @@ using TradeHero.Core.Contracts.Services;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Helpers;
 using TradeHero.Core.Models.Repositories;
+using TradeHero.Core.Models.Terminal;
 
 namespace TradeHero.Launcher.Services;
 
@@ -74,11 +75,11 @@ internal class LauncherStartupService
                 {
                     if (!string.IsNullOrEmpty(errorMessage))
                     {
-                        _terminalService.WriteLine(errorMessage, ConsoleColor.Red);
-                        _terminalService.WriteLine(string.Empty);
+                        _terminalService.Write(errorMessage, new WriteMessageOptions { IsMessageFinished = true, FontColor = ConsoleColor.Red });
+                        _terminalService.Write(string.Empty, new WriteMessageOptions { IsMessageFinished = true });
                     }
                 
-                    _terminalService.WriteLine("Write down your telegram id:");
+                    _terminalService.Write("Write down your telegram id:", new WriteMessageOptions { IsMessageFinished = true });
                     var telegramIdString = _terminalService.ReadLine();
                 
                     if (string.IsNullOrWhiteSpace(telegramIdString))
@@ -114,11 +115,11 @@ internal class LauncherStartupService
                 {
                     if (!string.IsNullOrEmpty(errorMessage))
                     {
-                        _terminalService.WriteLine(errorMessage, ConsoleColor.Red);
-                        _terminalService.WriteLine(string.Empty);
+                        _terminalService.Write(errorMessage, new WriteMessageOptions { IsMessageFinished = true, FontColor = ConsoleColor.Red });
+                        _terminalService.Write(string.Empty, new WriteMessageOptions { IsMessageFinished = true });
                     }
                 
-                    _terminalService.WriteLine("Write down bot telegram api key:");
+                    _terminalService.Write("Write down bot telegram api key:", new WriteMessageOptions { IsMessageFinished = true });
                     botTelegramApiKey = _terminalService.ReadLine();
             
                     if (string.IsNullOrWhiteSpace(botTelegramApiKey))
@@ -181,12 +182,12 @@ internal class LauncherStartupService
                 {
                     if (!string.IsNullOrEmpty(errorMessage))
                     {
-                        _terminalService.WriteLine(errorMessage, ConsoleColor.Red);
-                        _terminalService.WriteLine(string.Empty);
+                        _terminalService.Write(errorMessage, new WriteMessageOptions { IsMessageFinished = true, FontColor = ConsoleColor.Red });
+                        _terminalService.Write(string.Empty, new WriteMessageOptions { IsMessageFinished = true });
                     }
                 
                     const string message = "Write down name for current data (Minimum length 3 symbols, Maximum length 40 symbols, Do not contain spaces):";
-                    _terminalService.WriteLine(message);
+                    _terminalService.Write(message, new WriteMessageOptions { IsMessageFinished = true });
                     userName = _terminalService.ReadLine();
             
                     if (string.IsNullOrWhiteSpace(userName))
@@ -257,7 +258,7 @@ internal class LauncherStartupService
             {
                 if (!File.Exists(appPath))
                 {
-                    _terminalService.WriteLine("Preparing application...");
+                    _terminalService.Write("Preparing application...", new WriteMessageOptions { IsMessageFinished = true });
 
                     var latestRelease = await _githubService.GetLatestReleaseAsync();
                     if (latestRelease.ActionResult != ActionResult.Success)
@@ -307,7 +308,7 @@ internal class LauncherStartupService
                     _waitAppClosed.Set();
                     AppWaiting.Set();
                     
-                    _terminalService.WriteLine("Cannot start bot, please see logs.");
+                    _terminalService.Write("Cannot start bot, please see logs.", new WriteMessageOptions { IsMessageFinished = true });
                     
                     return;
                 }
