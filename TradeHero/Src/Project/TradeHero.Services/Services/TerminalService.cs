@@ -13,6 +13,11 @@ internal class TerminalService : ITerminalService
         _environmentService = environmentService;
     }
     
+    public void SetTerminalTitle(string title)
+    {
+        Console.Title = title;
+    }
+
     public void Write(string message, WriteMessageOptions? writeMessageOptions)
     {
         if (writeMessageOptions != null)
