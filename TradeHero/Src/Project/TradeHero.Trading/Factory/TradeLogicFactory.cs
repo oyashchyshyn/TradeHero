@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using TradeHero.Core.Contracts.Trading;
 using TradeHero.Core.Enums;
-using TradeHero.Core.Types.Trading;
 using TradeHero.Trading.Logic.PercentLimit;
 using TradeHero.Trading.Logic.PercentMove;
 

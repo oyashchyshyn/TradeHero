@@ -14,6 +14,7 @@ internal static class Program
     {
         try
         {
+            TerminalHelper.SetTerminalTitle("trade_hero");
             EnvironmentHelper.SetCulture();
             
             if (Process.GetProcesses().Count(x => x.ProcessName == Process.GetCurrentProcess().ProcessName) > 1)
@@ -56,7 +57,7 @@ internal static class Program
             var logsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FolderConstants.DataFolder, FolderConstants.LogsFolder);
             await LoggerHelper.WriteLogToFileAsync(exception, logsPath, FileConstants.LauncherFatalLogsName);
         
-            await MessageHelper.WriteMessageAsync(exception.Message);
+            TerminalHelper.WriteMessage(exception.Message);
         
             Environment.ExitCode = (int)AppExitCode.Failure;
         }

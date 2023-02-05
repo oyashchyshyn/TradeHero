@@ -1,5 +1,5 @@
 using TradeHero.Core.Enums;
-using TradeHero.Core.Types.Trading.Models.Instance;
+using TradeHero.Core.Models.Trading;
 
 namespace TradeHero.Trading.Instances.Options;
 

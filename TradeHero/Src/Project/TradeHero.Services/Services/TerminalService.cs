@@ -1,5 +1,6 @@
+using TradeHero.Core.Contracts.Services;
 using TradeHero.Core.Enums;
-using TradeHero.Core.Types.Services;
+using TradeHero.Core.Models.Terminal;
 
 namespace TradeHero.Services.Services;
 
@@ -7,32 +8,38 @@ internal class TerminalService : ITerminalService
 {
     private readonly IEnvironmentService _environmentService;
 
-    public TerminalService(
-        IEnvironmentService environmentService
-        )
+    public TerminalService(IEnvironmentService environmentService)
     {
         _environmentService = environmentService;
     }
     
-    public void Write(string message, ConsoleColor? consoleColor = null)
+    public void SetTerminalTitle(string title)
     {
-        if (consoleColor.HasValue)
-        {
-            Console.ForegroundColor = consoleColor.Value;    
-        }
-        
-        Console.Write(message);
-        Console.ResetColor();
+        Console.Title = title;
     }
-    
-    public void WriteLine(string message, ConsoleColor? consoleColor = null)
+
+    public void Write(string message, WriteMessageOptions? writeMessageOptions)
     {
-        if (consoleColor.HasValue)
+        if (writeMessageOptions != null)
         {
-            Console.ForegroundColor = consoleColor.Value;    
+            if (writeMessageOptions.FontColor.HasValue)
+            {
+                Console.ForegroundColor = writeMessageOptions.FontColor.Value;
+            }
+            
+            if (writeMessageOptions.BackgroundColor.HasValue)
+            {
+                Console.BackgroundColor = writeMessageOptions.BackgroundColor.Value;
+            }
+
+            if (writeMessageOptions.IsMessageFinished)
+            {
+                message += Environment.NewLine;
+            }
         }
-        
-        Console.WriteLine(message);
+
+        Console.Write(message);
+
         Console.ResetColor();
     }
 

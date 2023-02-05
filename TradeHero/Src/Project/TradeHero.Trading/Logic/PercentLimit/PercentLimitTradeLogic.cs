@@ -2,11 +2,11 @@ using System.Text;
 using Binance.Net.Enums;
 using Microsoft.Extensions.Logging;
 using TradeHero.Core.Constants;
+using TradeHero.Core.Contracts.Client;
+using TradeHero.Core.Contracts.Services;
+using TradeHero.Core.Contracts.Trading;
 using TradeHero.Core.Enums;
-using TradeHero.Core.Types.Client;
-using TradeHero.Core.Types.Services;
-using TradeHero.Core.Types.Trading;
-using TradeHero.Core.Types.Trading.Models.Instance;
+using TradeHero.Core.Models.Trading;
 using TradeHero.Trading.Base;
 using TradeHero.Trading.Endpoints.Rest;
 using TradeHero.Trading.Endpoints.Socket;
@@ -273,19 +273,17 @@ internal class PercentLimitTradeLogic : BaseFuturesUsdTradeLogic
         
             foreach (var filteredPosition in filteredPositions)
             {
-                var positionInfo =
-                    _percentLimitStore.FuturesUsd.AccountData.Positions.First(x => x.Symbol == filteredPosition.FuturesUsdName);
-
-                var lastPrice = _percentLimitStore.MarketLastPrices[filteredPosition.FuturesUsdName];
-                
                 var symbolInfo =
                     _percentLimitStore.FuturesUsd.ExchangerData.ExchangeInfo.Symbols.Single(x => x.Name == filteredPosition.FuturesUsdName);
                 
+                var positionInfo =
+                    _percentLimitStore.FuturesUsd.AccountData.Positions.First(x => x.Symbol == filteredPosition.FuturesUsdName);
+
                 var balance = _percentLimitStore.FuturesUsd.AccountData.Balances.Single(x => x.Asset == filteredPosition.QuoteAsset);
                 
                 await _percentLimitEndpoints.CreateBuyMarketOrderAsync(
                     filteredPosition, 
-                    lastPrice,
+                    _percentLimitStore.MarketLastPrices[filteredPosition.FuturesUsdName],
                     symbolInfo,
                     positionInfo,
                     balance,

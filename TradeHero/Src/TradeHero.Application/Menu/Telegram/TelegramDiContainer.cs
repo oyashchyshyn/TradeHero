@@ -9,8 +9,7 @@ using TradeHero.Application.Menu.Telegram.Commands.Positions.Commands;
 using TradeHero.Application.Menu.Telegram.Commands.Strategy;
 using TradeHero.Application.Menu.Telegram.Commands.Strategy.Commands;
 using TradeHero.Application.Menu.Telegram.Store;
-using TradeHero.Core.Types.Menu;
-using TradeHero.Core.Types.Menu.Commands;
+using TradeHero.Core.Contracts.Menu;
 
 namespace TradeHero.Application.Menu.Telegram;
 

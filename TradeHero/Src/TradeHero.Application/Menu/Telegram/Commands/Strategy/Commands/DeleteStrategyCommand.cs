@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types.ReplyMarkups;
 using TradeHero.Application.Menu.Telegram.Store;
-using TradeHero.Core.Types.Menu.Commands;
-using TradeHero.Core.Types.Repositories;
-using TradeHero.Core.Types.Services;
+using TradeHero.Core.Contracts.Menu;
+using TradeHero.Core.Contracts.Repositories;
+using TradeHero.Core.Contracts.Services;
 
 namespace TradeHero.Application.Menu.Telegram.Commands.Strategy.Commands;
 
@@ -33,6 +33,7 @@ internal class DeleteStrategyCommand : ITelegramMenuCommand
     {
         try
         {
+            _telegramMenuStore.PreviousCommandId = _telegramMenuStore.TelegramButtons.Strategies;
             _telegramMenuStore.LastCommandId = Id;
             
             var strategies = await _strategyRepository.GetStrategiesAsync();

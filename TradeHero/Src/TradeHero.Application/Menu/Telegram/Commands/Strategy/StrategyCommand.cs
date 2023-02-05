@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using TradeHero.Application.Menu.Telegram.Store;
-using TradeHero.Core.Types.Menu.Commands;
-using TradeHero.Core.Types.Services;
+using TradeHero.Core.Contracts.Menu;
+using TradeHero.Core.Contracts.Services;
 
 namespace TradeHero.Application.Menu.Telegram.Commands.Strategy;
 
@@ -28,6 +28,7 @@ internal class StrategyCommand : ITelegramMenuCommand
     {
         try
         {
+            _telegramMenuStore.PreviousCommandId = _telegramMenuStore.TelegramButtons.MainMenu;
             _telegramMenuStore.LastCommandId = Id;
         
             await _telegramService.SendTextMessageToUserAsync(

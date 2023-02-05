@@ -1,9 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Telegram.Bot;
-using TradeHero.Core.Types.Repositories;
-using TradeHero.Core.Types.Services;
-using TradeHero.Core.Types.Settings;
-using TradeHero.Main.Telegram;
+using TradeHero.Core.Contracts.Repositories;
+using TradeHero.Core.Contracts.Services;
+using TradeHero.Core.Contracts.Settings;
 using TradeHero.Services.Services;
 
 namespace TradeHero.Services;
@@ -21,6 +20,8 @@ public static class ServicesDiContainer
         serviceCollection.AddSingleton<IFileService, FileService>();
         serviceCollection.AddSingleton<IGithubService, GithubService>();
         serviceCollection.AddSingleton<ITerminalService, TerminalService>();
+
+        // Store
         serviceCollection.AddSingleton<IStoreService, StoreService>();
         
         // Environment

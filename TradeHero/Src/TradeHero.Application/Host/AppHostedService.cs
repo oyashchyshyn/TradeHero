@@ -1,10 +1,9 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using TradeHero.Application.Bot;
 using TradeHero.Core.Constants;
+using TradeHero.Core.Contracts.Services;
 using TradeHero.Core.Enums;
-using TradeHero.Core.Types.Client;
-using TradeHero.Core.Types.Menu;
-using TradeHero.Core.Types.Services;
 
 namespace TradeHero.Application.Host;
 
@@ -15,24 +14,17 @@ internal class AppHostedService : IHostedService
     private readonly IInternetConnectionService _internetConnectionService;
     private readonly IFileService _fileService;
     private readonly IEnvironmentService _environmentService;
-    private readonly IStoreService _storeService;
-    private readonly IMenuFactory _menuFactory;
-    private readonly IThSocketBinanceClient _binanceSocketClient;
-
     private readonly ApplicationShutdown _applicationShutdown;
+    private readonly BotWorker _botWorker;
 
-    private CancellationTokenSource _cancellationTokenSource = new();
-    
     public AppHostedService(
         ILogger<AppHostedService> logger,
         IJobService jobService,
         IInternetConnectionService internetConnectionService,
         IFileService fileService,
         IEnvironmentService environmentService,
-        IStoreService storeService,
-        IMenuFactory menuFactory, 
-        IThSocketBinanceClient binanceSocketClient,
-        ApplicationShutdown applicationShutdown
+        ApplicationShutdown applicationShutdown, 
+        BotWorker botWorker
         )
     {
         _logger = logger;
@@ -40,10 +32,8 @@ internal class AppHostedService : IHostedService
         _internetConnectionService = internetConnectionService;
         _fileService = fileService;
         _environmentService = environmentService;
-        _storeService = storeService;
-        _menuFactory = menuFactory;
-        _binanceSocketClient = binanceSocketClient;
         _applicationShutdown = applicationShutdown;
+        _botWorker = botWorker;
     }
     
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -55,9 +45,7 @@ internal class AppHostedService : IHostedService
             _logger.LogInformation("Application environment: {GetEnvironmentType}", _environmentService.GetEnvironmentType());
             _logger.LogInformation("Base path: {GetBasePath}", _environmentService.GetBasePath());
             _logger.LogInformation("Runner type: {RunnerType}", _environmentService.GetRunnerType());
-            
-            _applicationShutdown.SetActionsBeforeStop(StopServicesAsync);
-            
+
             if (_environmentService.GetEnvironmentType() == EnvironmentType.Development)
             {
                 _logger.LogInformation("Args: {GetBasePath}", string.Join(", ", _environmentService.GetEnvironmentArgs()));   
@@ -65,26 +53,35 @@ internal class AppHostedService : IHostedService
 
             await _internetConnectionService.StartInternetConnectionCheckAsync();
 
-            _internetConnectionService.OnInternetConnected += InternetConnectionServiceOnOnInternetConnected;
-            _internetConnectionService.OnInternetDisconnected += InternetConnectionServiceOnOnInternetDisconnected;
-
-            RegisterBackgroundJobs();
-
-            if (_environmentService.GetEnvironmentArgs().Contains(ArgumentKeyConstants.Update))
+            var appSettings = _environmentService.GetAppSettings();
+        
+            async Task DeleteOldLogFilesFunction()
             {
-                _storeService.Application.Update.IsApplicationAfterUpdate = true;
+                await _fileService.DeleteFilesInFolderAsync(
+                    Path.Combine(_environmentService.GetBasePath(), appSettings.Folder.LogsFolderName), 
+                    TimeSpan.FromDays(30).TotalMilliseconds
+                );
             }
+        
+            _jobService.StartJob("DeleteOldLogFilesFunction", DeleteOldLogFilesFunction, TimeSpan.FromDays(1), true);
+        
+            async Task DeleteOldClusterResultFilesFunction()
+            {
+                await _fileService.DeleteFilesInFolderAsync(
+                    Path.Combine(_environmentService.GetBasePath(), FolderConstants.ClusterResultsFolder), 
+                    TimeSpan.FromDays(10).TotalMilliseconds
+                );
+            }
+        
+            _jobService.StartJob("DeleteOldClusterResultFilesFunction", DeleteOldClusterResultFilesFunction, TimeSpan.FromDays(1), true);
             
-            foreach (var menu in _menuFactory.GetMenus())
-            {
-                await menu.InitAsync(_cancellationTokenSource.Token);   
-            }
+            await _botWorker.InitBotAsync();
         }
         catch (Exception exception)
         {
             _logger.LogCritical(exception, "In {Method}", nameof(StartAsync));
-            
-            throw;
+
+            await _applicationShutdown.ShutdownAsync(AppExitCode.Failure);
         }
     }
 
@@ -94,69 +91,4 @@ internal class AppHostedService : IHostedService
         
         return Task.CompletedTask;
     }
-
-    #region Private methods
-
-    private async Task StopServicesAsync()
-    {
-        try
-        {
-            foreach (var menu in _menuFactory.GetMenus())
-            {
-                await menu.FinishAsync(_cancellationTokenSource.Token);
-            }
-        
-            _jobService.FinishAllJobs();
-
-            await _binanceSocketClient.UnsubscribeAllAsync();
-            
-            _internetConnectionService.OnInternetConnected -= InternetConnectionServiceOnOnInternetConnected;
-            _internetConnectionService.OnInternetDisconnected -= InternetConnectionServiceOnOnInternetDisconnected;
-        
-            _internetConnectionService.StopInternetConnectionChecking();
-        }
-        catch (Exception exception)
-        {
-            _logger.LogCritical(exception, "In {Method}", nameof(StopServicesAsync));
-            
-            throw;
-        }
-    }
-    
-    private void RegisterBackgroundJobs()
-    {
-        var appSettings = _environmentService.GetAppSettings();
-        
-        async Task DeleteOldFilesFunction()
-        {
-            await _fileService.DeleteFilesInFolderAsync(
-                Path.Combine(_environmentService.GetBasePath(), appSettings.Folder.LogsFolderName), 
-                TimeSpan.FromDays(30).TotalMilliseconds
-            );
-        }
-        
-        _jobService.StartJob("DeleteOldLogFiles", DeleteOldFilesFunction, TimeSpan.FromDays(1), true);
-    }
-    
-    private async void InternetConnectionServiceOnOnInternetConnected(object? sender, EventArgs e)
-    {
-        _cancellationTokenSource = new CancellationTokenSource();
-
-        foreach (var menu in _menuFactory.GetMenus())
-        {
-            await menu.OnReconnectToInternetAsync(_cancellationTokenSource.Token);
-        }
-    }
-    
-    private async void InternetConnectionServiceOnOnInternetDisconnected(object? sender, EventArgs e)
-    {
-        _cancellationTokenSource.Cancel();
-
-        foreach (var menu in _menuFactory.GetMenus())
-        {
-            await menu.OnDisconnectFromInternetAsync(_cancellationTokenSource.Token);
-        }
-    }
-
-    #endregion
 }

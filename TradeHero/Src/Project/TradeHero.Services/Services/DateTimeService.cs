@@ -1,7 +1,7 @@
 using Binance.Net.Enums;
 using NCrontab;
+using TradeHero.Core.Contracts.Services;
 using TradeHero.Core.Exceptions;
-using TradeHero.Core.Types.Services;
 
 namespace TradeHero.Services.Services;
 
@@ -10,6 +10,11 @@ internal class DateTimeService : IDateTimeService
     public DateTime GetUtcDateTime()
     {
         return DateTime.UtcNow;
+    }
+    
+    public DateTime GetLocalDateTime()
+    {
+        return DateTime.Now;
     }
 
     public DateTime ConvertToLocalTime(DateTime dateTime)

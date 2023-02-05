@@ -1,7 +1,7 @@
 using Binance.Net.Enums;
 using Microsoft.Extensions.Logging;
+using TradeHero.Core.Contracts.Services;
 using TradeHero.Core.Enums;
-using TradeHero.Core.Types.Services;
 using TradeHero.Services.Containers;
 
 namespace TradeHero.Services.Services;

@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using TradeHero.Core.Types.Trading;
+using TradeHero.Core.Contracts.Trading;
 using TradeHero.Trading.Endpoints.Rest;
 using TradeHero.Trading.Endpoints.Rest.Implementation;
 using TradeHero.Trading.Endpoints.Socket;

@@ -2,9 +2,8 @@ using Binance.Net.Clients;
 using Binance.Net.Objects;
 using Microsoft.Extensions.DependencyInjection;
 using TradeHero.Client.CustomApi;
-using TradeHero.Core.Types.Client;
-using TradeHero.Core.Types.Client.CustomApi;
-using TradeHero.Core.Types.Services;
+using TradeHero.Core.Contracts.Client;
+using TradeHero.Core.Contracts.Services;
 
 namespace TradeHero.Client.Clients;
 

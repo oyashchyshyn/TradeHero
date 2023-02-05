@@ -2,11 +2,11 @@ using Binance.Net.Enums;
 using Binance.Net.Objects.Models.Futures;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using TradeHero.Core.Constants;
+using TradeHero.Core.Contracts.Services;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Extensions;
-using TradeHero.Core.Types.Services;
-using TradeHero.Core.Types.Trading.Models;
-using TradeHero.Core.Types.Trading.Models.Instance;
+using TradeHero.Core.Models.Trading;
 using TradeHero.Trading.Logic.PercentLimit.Enums;
 using TradeHero.Trading.Logic.PercentLimit.Models;
 using TradeHero.Trading.Logic.PercentLimit.Options;
@@ -65,7 +65,7 @@ internal class PercentLimitFilters
             _logger.LogInformation("Filtered Longs: {FilteredLongsCount}. Filtered Shorts: {FilteredShortsCount}. In {Method}",
                 topLongKlines.Length, topShortKlines.Length, nameof(GetFilteredOrdersForOpenPositionAsync));
 
-            var folderName = Path.Combine(_environmentService.GetBasePath(), "ClusterResults");
+            var folderName = Path.Combine(_environmentService.GetBasePath(), FolderConstants.ClusterResultsFolder);
             var jsonShorts = _jsonService.SerializeObject(instanceResult.ShortSignals, Formatting.Indented).Data;
             var jsonLongs = _jsonService.SerializeObject(instanceResult.LongSignals, Formatting.Indented).Data;
             var jsonFilteredShorts = _jsonService.SerializeObject(topShortKlines, Formatting.Indented).Data;
@@ -88,12 +88,11 @@ internal class PercentLimitFilters
             var shortsPositionsToOpen = 0;
             var longsPositionsToOpen = 0;
 
-
-            var positionsForOpenLeft = tradeLogicLogicOptions.MaximumPositions - openedPositions.Count;
-            
-            var availablePositionsToOpen = positionsForOpenLeft >= tradeLogicLogicOptions.MaximumPositionsPerIteration
-                ? tradeLogicLogicOptions.MaximumPositionsPerIteration 
-                : tradeLogicLogicOptions.MaximumPositionsPerIteration - positionsForOpenLeft;
+            var availablePositionsToOpen = (tradeLogicLogicOptions.MaximumPositions - openedPositions.Count) switch
+            {
+                > 0 => tradeLogicLogicOptions.MaximumPositions - openedPositions.Count,
+                _ => 0
+            };
 
             if (availablePositionsToOpen < 0)
             {
@@ -102,7 +101,10 @@ internal class PercentLimitFilters
 
                 return new List<SymbolMarketInfo>();
             }
-            
+
+            _logger.LogInformation("Maximum available positions for open: {AvailablePositionsForOpen}. Current opened positions: {CurrentOpenedPositions}. In {Method}",
+                tradeLogicLogicOptions.MaximumPositions, openedPositions.Count, nameof(GetFilteredOrdersForOpenPositionAsync));
+
             switch (instanceResult.MarketMood)
             {
                 case Mood.Short:

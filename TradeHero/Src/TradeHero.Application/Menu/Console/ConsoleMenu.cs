@@ -1,7 +1,9 @@
 using Microsoft.Extensions.Logging;
+using TradeHero.Core.Contracts.Menu;
+using TradeHero.Core.Contracts.Services;
 using TradeHero.Core.Enums;
-using TradeHero.Core.Types.Menu;
-using TradeHero.Core.Types.Services;
+using TradeHero.Core.Models.Menu;
+using TradeHero.Core.Models.Terminal;
 
 namespace TradeHero.Application.Menu.Console;
 
@@ -9,22 +11,25 @@ internal class ConsoleMenu : IMenuService
 {
     private readonly ILogger<ConsoleMenu> _logger;
     private readonly ITerminalService _terminalService;
-
+    private readonly IDateTimeService _dateTimeService;
+    
+    public MenuType MenuType => MenuType.Console;
+    
     public ConsoleMenu(
         ILogger<ConsoleMenu> logger, 
-        ITerminalService terminalService
+        ITerminalService terminalService, 
+        IDateTimeService dateTimeService
         )
     {
         _logger = logger;
         _terminalService = terminalService;
+        _dateTimeService = dateTimeService;
     }
 
     public Task<ActionResult> InitAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            _terminalService.WriteLine("Bot started! Please check telegram.");
-            
             return Task.FromResult(ActionResult.Success);
         }
         catch (Exception exception)
@@ -39,8 +44,6 @@ internal class ConsoleMenu : IMenuService
     {
         try
         {
-            _terminalService.WriteLine("Bot finished!");
-            
             return Task.FromResult(ActionResult.Success);
         }
         catch (Exception exception)
@@ -51,33 +54,37 @@ internal class ConsoleMenu : IMenuService
         }
     }
 
-    public Task<ActionResult> OnDisconnectFromInternetAsync(CancellationToken cancellationToken = default)
+    public Task<ActionResult> SendMessageAsync(string message, SendMessageOptions sendMessageOptions,
+        CancellationToken cancellationToken = default)
     {
         try
         {
-            _terminalService.WriteLine("Internet disconnected.");
+            switch (sendMessageOptions.MenuAction)
+            {
+                case MenuAction.WithoutMenu:
+                    break;
+                case MenuAction.MainMenu:
+                case MenuAction.PreviousMenu:
+                default:
+                    _terminalService.ClearConsole();
+                    break;
+            }
+            
+            if (sendMessageOptions.IsNeedToShowTime)
+            {
+                _terminalService.Write($"[{_dateTimeService.GetLocalDateTime():HH:mm:ss}]", 
+                    new WriteMessageOptions { FontColor = ConsoleColor.Gray });
+                
+                _terminalService.Write(" ");
+            }
+            
+            _terminalService.Write(message, new WriteMessageOptions { IsMessageFinished = true });
             
             return Task.FromResult(ActionResult.Success);
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, "In {Method}", nameof(InitAsync));
-
-            return Task.FromResult(ActionResult.SystemError);
-        }
-    }
-
-    public Task<ActionResult> OnReconnectToInternetAsync(CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            _terminalService.WriteLine("Internet reconnected.");
-            
-            return Task.FromResult(ActionResult.Success);
-        }
-        catch (Exception exception)
-        {
-            _logger.LogError(exception, "In {Method}", nameof(OnReconnectToInternetAsync));
+            _logger.LogError(exception, "In {Method}", nameof(SendMessageAsync));
 
             return Task.FromResult(ActionResult.SystemError);
         }

@@ -1,13 +1,10 @@
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
+using TradeHero.Core.Contracts.Services;
+using TradeHero.Core.Contracts.Trading;
 using TradeHero.Core.Enums;
-using TradeHero.Core.Types.Repositories.Models;
-using TradeHero.Core.Types.Services;
-using TradeHero.Core.Types.Trading;
-using TradeHero.Core.Types.Trading.Models;
-using TradeHero.Core.Types.Trading.Models.FuturesUsd;
-using TradeHero.Core.Types.Trading.Models.Instance;
-using TradeHero.Core.Types.Trading.Models.Spot;
+using TradeHero.Core.Models.Repositories;
+using TradeHero.Core.Models.Trading;
 
 namespace TradeHero.Trading.Base;
 

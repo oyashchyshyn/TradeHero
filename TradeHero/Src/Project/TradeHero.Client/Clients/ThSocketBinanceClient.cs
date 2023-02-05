@@ -1,6 +1,6 @@
 using Binance.Net.Clients;
 using Binance.Net.Objects;
-using TradeHero.Core.Types.Client;
+using TradeHero.Core.Contracts.Client;
 
 namespace TradeHero.Client.Clients;
 

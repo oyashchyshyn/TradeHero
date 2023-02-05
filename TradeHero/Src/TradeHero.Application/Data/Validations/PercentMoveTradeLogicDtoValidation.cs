@@ -2,9 +2,9 @@ using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.Extensions.Logging;
 using TradeHero.Application.Data.Dtos.TradeLogic;
+using TradeHero.Core.Contracts.Repositories;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Extensions;
-using TradeHero.Core.Types.Repositories;
 
 namespace TradeHero.Application.Data.Validations;
 
