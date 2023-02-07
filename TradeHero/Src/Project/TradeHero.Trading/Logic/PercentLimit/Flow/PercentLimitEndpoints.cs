@@ -32,7 +32,7 @@ internal class  PercentLimitEndpoints
         _futuresUsdEndpoints = futuresUsdEndpoints;
     }
 
-    public async Task<ActionResult> CreateBuyMarketOrderAsync(SymbolMarketInfo symbolMarketInfo, decimal lastPrice, BinanceFuturesUsdtSymbol symbolInfo, 
+    public async Task<ActionResult> CreateBuyMarketOrderAsync(SymbolMarketInfo symbolMarketInfo, BinanceFuturesUsdtSymbol symbolInfo, 
         BinancePositionDetailsUsdt positionInfo, BinanceFuturesAccountBalance balance, PercentLimitTradeLogicLogicOptions tradeLogicLogicOptions, int maxRetries = 5, 
         CancellationToken cancellationToken = default)
     {
@@ -59,6 +59,14 @@ internal class  PercentLimitEndpoints
                 return ActionResult.Error;
             }
 
+            if (balance.WalletBalance <= 0)
+            {
+                _logger.LogWarning("{Symbol} | {Side}. Wallet balance is lower or equal to zero. In {Method}",
+                    symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, nameof(CreateMarketAverageBuyOrderAsync));
+                    
+                return ActionResult.Error;
+            }
+            
             var initialMargin = tradeLogicLogicOptions.PercentFromDepositForOpen != 0 
                 ? Math.Round(balance.AvailableBalance * tradeLogicLogicOptions.PercentFromDepositForOpen / 100, 2) * positionInfo.Leverage
                 : symbolInfo.MinNotionalFilter.MinNotional; 
@@ -67,131 +75,103 @@ internal class  PercentLimitEndpoints
                 symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, tradeLogicLogicOptions.PercentFromDepositForOpen, 
                 initialMargin, nameof(CreateBuyMarketOrderAsync));
 
-            var orderQuantity = _calculatorService.GetOrderQuantity(
-                lastPrice,
-                initialMargin,
-                symbolInfo.LotSizeFilter.MinQuantity
-            );
+            for (var i = 0; i < maxRetries; i++)
+            { 
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    _logger.LogInformation("Cancellation token is requested. In {Method}", 
+                        nameof(CreateBuyMarketOrderAsync));
 
-            var marginForOrder = orderQuantity * lastPrice / positionInfo.Leverage;
-            
-            _logger.LogInformation("{Symbol} | {Side}. Future position quantity: {Quantity}. Last price: {LastPrice}. Margin for order: {Margin}. In {Method}",
-                symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, orderQuantity, lastPrice, marginForOrder,
-                nameof(CreateBuyMarketOrderAsync));
-            
-            if (balance.WalletBalance <= 0)
-            {
-                _logger.LogWarning("{Symbol} | {Side}. Wallet balance is lower or equal to zero. In {Method}",
-                    symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, nameof(CreateMarketAverageBuyOrderAsync));
-                
-                return ActionResult.Error;
-            }
-            
-            var availableBalancePercent = _calculatorService.GetAvailableBalancePercentWithFutureMargin(
-                balance.WalletBalance, 
-                balance.AvailableBalance,
-                marginForOrder
-            );
-            
-            if (100.0m - availableBalancePercent > tradeLogicLogicOptions.AvailableDepositPercentForTrading)
-            {
-                _logger.LogWarning("{Symbol} | {Side}. Margin is not available. Margin percent for trading is {MarginPercentIsSettings}. " +
-                                "Current balance percent in use with future order is {BalancePercentInUse}. " +
-                                "Current balance: {Balance}. Available balance: {AvailableBalance}. In {Method}",
-                    symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, 
-                    tradeLogicLogicOptions.AvailableDepositPercentForTrading, 100.0m - availableBalancePercent, 
-                    balance.WalletBalance, balance.AvailableBalance, nameof(CreateMarketAverageBuyOrderAsync));
-                
-                return ActionResult.Error;
-            }
+                    return ActionResult.CancellationTokenRequested;
+                }
 
-            var isNeedToUpdatePrice = false;
-            
-            foreach (var futureOrderQuantity in _calculatorService.SplitPositionQuantity(orderQuantity, symbolInfo.LotSizeFilter.MaxQuantity))
-            {
-                var currentOrderQuantity = futureOrderQuantity;
-                
-                for (var i = 0; i < maxRetries; i++)
-                { 
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        _logger.LogInformation("Cancellation token is requested. In {Method}", 
-                            nameof(CreateBuyMarketOrderAsync));
+                var lastPriceRequest = await _restBinanceClient.UsdFuturesApi.ExchangeData.GetPriceAsync(
+                    symbolMarketInfo.FuturesUsdName,
+                    ct: cancellationToken
+                );
 
-                        return ActionResult.CancellationTokenRequested;
-                    }
-
-                    if (isNeedToUpdatePrice)
-                    {
-                        var lastPriceRequest = await _restBinanceClient.UsdFuturesApi.ExchangeData.GetPriceAsync(
-                            symbolMarketInfo.FuturesUsdName,
-                            ct: cancellationToken
-                        );
-
-                        if (!lastPriceRequest.Success)
-                        {
-                            _logger.LogWarning(new ThException(lastPriceRequest.Error),"{Symbol} | {Side}. In {Method}",
-                                symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, nameof(CreateBuyMarketOrderAsync));
-                            
-                            continue;
-                        }
-                        
-                        currentOrderQuantity = _calculatorService.GetOrderQuantity(
-                            lastPriceRequest.Data.Price,
-                            initialMargin,
-                            symbolInfo.LotSizeFilter.MinQuantity
-                        );
-
-                        isNeedToUpdatePrice = false;
-                    }
-                    
-                    var placeOrderRequest = await _restBinanceClient.UsdFuturesApi.Trading.PlaceOrderAsync(
-                        symbol: symbolMarketInfo.FuturesUsdName,
-                        side: symbolMarketInfo.PositionSide == PositionSide.Short ? OrderSide.Sell : OrderSide.Buy,
-                        type: FuturesOrderType.Market,
-                        quantity: currentOrderQuantity,
-                        positionSide: symbolMarketInfo.PositionSide,
-                        ct: cancellationToken
-                    );
-
-                    if (placeOrderRequest.Success)
-                    {
-                        _logger.LogInformation("{Symbol} | {Side}. Open position market order with id {OrderId} and quantity {Quantity} placed successfully. In {Method}",
-                            symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, placeOrderRequest.Data.Id, 
-                            currentOrderQuantity, nameof(CreateBuyMarketOrderAsync)); 
-                        
-                        break;
-                    }
-
-                    _logger.LogWarning(new ThException(placeOrderRequest.Error),"{Symbol} | {Side}. In {Method}",
+                if (!lastPriceRequest.Success)
+                {
+                    _logger.LogWarning(new ThException(lastPriceRequest.Error),"{Symbol} | {Side}. In {Method}",
                         symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, nameof(CreateBuyMarketOrderAsync));
-
-                    switch (placeOrderRequest.Error?.Code)
-                    {
-                        case (int)ApiErrorCodes.MinNotionalError:
-                        {
-                            isNeedToUpdatePrice = true;
-                            
-                            continue;
-                        }
-                        case (int)ApiErrorCodes.MaximumExceededAtCurrentLeverage:
-                        {
-                            _logger.LogError("{Symbol} | {Side}. Order won't be placed due to last warning. In {Method}",
-                                symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, nameof(CreateBuyMarketOrderAsync));
                         
-                            return ActionResult.ClientError;
-                        }
-                    }
+                    continue;
+                }
+                
+                var orderQuantity = _calculatorService.GetOrderQuantity(
+                    lastPriceRequest.Data.Price,
+                    initialMargin,
+                    symbolInfo.LotSizeFilter.MinQuantity
+                );
 
-                    if (i != maxRetries - 1)
-                    {
-                        continue;
-                    }
+                var marginForOrder = orderQuantity * lastPriceRequest.Data.Price / positionInfo.Leverage;
+                
+                _logger.LogInformation("{Symbol} | {Side}. Future position quantity: {Quantity}. Last price: {LastPrice}. Margin for order: {Margin}. In {Method}",
+                    symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, orderQuantity, lastPriceRequest.Data.Price, marginForOrder,
+                    nameof(CreateBuyMarketOrderAsync));
+
+                var availableBalancePercent = _calculatorService.GetAvailableBalancePercentWithFutureMargin(
+                    balance.WalletBalance, 
+                    balance.AvailableBalance,
+                    marginForOrder
+                );
+                
+                if (100.0m - availableBalancePercent > tradeLogicLogicOptions.AvailableDepositPercentForTrading)
+                {
+                    _logger.LogWarning("{Symbol} | {Side}. Margin is not available. Margin percent for trading is {MarginPercentIsSettings}. " +
+                                    "Current balance percent in use with future order is {BalancePercentInUse}. " +
+                                    "Current balance: {Balance}. Available balance: {AvailableBalance}. In {Method}",
+                        symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, 
+                        tradeLogicLogicOptions.AvailableDepositPercentForTrading, 100.0m - availableBalancePercent, 
+                        balance.WalletBalance, balance.AvailableBalance, nameof(CreateMarketAverageBuyOrderAsync));
                     
+                    return ActionResult.Error;
+                }
+
+                var placeOrderRequest = await _restBinanceClient.UsdFuturesApi.Trading.PlaceOrderAsync(
+                    symbol: symbolMarketInfo.FuturesUsdName,
+                    side: symbolMarketInfo.PositionSide == PositionSide.Short ? OrderSide.Sell : OrderSide.Buy,
+                    type: FuturesOrderType.Market,
+                    quantity: orderQuantity,
+                    positionSide: symbolMarketInfo.PositionSide,
+                    ct: cancellationToken
+                );
+
+                if (placeOrderRequest.Success)
+                {
+                    _logger.LogInformation("{Symbol} | {Side}. Open position market order with id {OrderId} and quantity {Quantity} placed successfully. In {Method}",
+                        symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, placeOrderRequest.Data.Id, 
+                        orderQuantity, nameof(CreateBuyMarketOrderAsync)); 
+                    
+                    break;
+                }
+
+                if (i >= maxRetries - 1)
+                {
                     _logger.LogError("{Symbol} | {Side}. {Number} retries exceeded In {Method}",
                         symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, maxRetries, nameof(CreateBuyMarketOrderAsync));
 
                     return ActionResult.ClientError;
+                }
+
+                _logger.LogWarning(new ThException(placeOrderRequest.Error),"{Symbol} | {Side}. In {Method}",
+                    symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, nameof(CreateBuyMarketOrderAsync));
+
+                switch (placeOrderRequest.Error?.Code)
+                {
+                    case (int)ApiErrorCodes.MinNotionalError:
+                    {
+                        initialMargin += initialMargin * 10.0m / 100.0m;
+                        
+                        continue;
+                    }
+                    case (int)ApiErrorCodes.MaximumExceededAtCurrentLeverage:
+                    {
+                        _logger.LogError("{Symbol} | {Side}. Order won't be placed due to last warning. In {Method}",
+                            symbolMarketInfo.FuturesUsdName, symbolMarketInfo.PositionSide, nameof(CreateBuyMarketOrderAsync));
+                    
+                        return ActionResult.ClientError;
+                    }
                 }
             }
 
