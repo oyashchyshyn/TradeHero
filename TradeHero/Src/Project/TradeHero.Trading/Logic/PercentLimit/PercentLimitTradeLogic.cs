@@ -282,8 +282,7 @@ internal class PercentLimitTradeLogic : BaseFuturesUsdTradeLogic
                 var balance = _percentLimitStore.FuturesUsd.AccountData.Balances.Single(x => x.Asset == filteredPosition.QuoteAsset);
                 
                 await _percentLimitEndpoints.CreateBuyMarketOrderAsync(
-                    filteredPosition, 
-                    _percentLimitStore.MarketLastPrices[filteredPosition.FuturesUsdName],
+                    filteredPosition,
                     symbolInfo,
                     positionInfo,
                     balance,

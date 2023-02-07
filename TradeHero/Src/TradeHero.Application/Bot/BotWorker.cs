@@ -279,145 +279,119 @@ internal class BotWorker
             _internetConnectionResetEvent.Wait();
             
             _cancellationTokenSource = new CancellationTokenSource();
-            
-            var showMessage = false;
 
             foreach (var menu in _menuFactory.GetMenus())
             {
                 await menu.InitAsync(_cancellationTokenSource.Token);
+                
+                await menu.SendMessageAsync("Launched after internet disconnection.", 
+                    new SendMessageOptions { MenuAction = MenuAction.WithoutMenu, IsNeedToShowTime = true },
+                    _cancellationTokenSource.Token);
             }
 
-            while (true)
+            if (_storeService.Bot.TradeLogic != null)
             {
-                if (showMessage)
-                {
-                    foreach (var menu in _menuFactory.GetMenus())
-                    {
-                        await menu.SendMessageAsync("Will try repeat connection in a minute...", 
-                            new SendMessageOptions { MenuAction = MenuAction.WithoutMenu, IsNeedToShowTime = true },
-                            _cancellationTokenSource.Token);
-                    }
-                    
-                    await Task.Delay(TimeSpan.FromMinutes(1), _cancellationTokenSource.Token);
-                }
-                else
-                {
-                    foreach (var menu in _menuFactory.GetMenus())
-                    {
-                        await menu.SendMessageAsync("Launched after internet disconnection.", 
-                            new SendMessageOptions { MenuAction = MenuAction.WithoutMenu, IsNeedToShowTime = true },
-                            _cancellationTokenSource.Token);
-                    }
-                }
-
-                if (_storeService.Bot.TradeLogic != null)
-                {
-                    foreach (var menu in _menuFactory.GetMenus())
-                    {
-                        await menu.SendMessageAsync("Waiting for closing previous strategy...", 
-                            new SendMessageOptions { MenuAction = MenuAction.WithoutMenu, IsNeedToShowTime = true },
-                            _cancellationTokenSource.Token);
-                    }
-                
-                    while (_storeService.Bot.TradeLogic != null) { }
-
-                    foreach (var menu in _menuFactory.GetMenus())
-                    {
-                        await menu.SendMessageAsync("Previous strategy closed.", 
-                            new SendMessageOptions { MenuAction = MenuAction.WithoutMenu, IsNeedToShowTime = true },
-                            _cancellationTokenSource.Token);
-                    }
-                }
-
-                if (_storeService.Bot.TradeLogicStatus == TradeLogicStatus.Running)
-                {
-                    var connection = await _connectionRepository.GetActiveConnectionAsync();
-                    if (connection == null)
-                    {
-                        foreach (var menu in _menuFactory.GetMenus())
-                        {
-                            await menu.SendMessageAsync("There is no active connection to exchanger.", 
-                                new SendMessageOptions { MenuAction = MenuAction.WithoutMenu, IsNeedToShowTime = true },
-                                _cancellationTokenSource.Token);
-                        }
-                        
-                        break;
-                    }
-                
-                    var activeStrategy = await _strategyRepository.GetActiveStrategyAsync();
-                    if (activeStrategy == null)
-                    {
-                        foreach (var menu in _menuFactory.GetMenus())
-                        {
-                            await menu.SendMessageAsync("There is no active strategy.", 
-                                new SendMessageOptions { MenuAction = MenuAction.WithoutMenu, IsNeedToShowTime = true },
-                                _cancellationTokenSource.Token);
-                        }
-                        
-                        break;
-                    }
-                
-                    var strategy = _tradeLogicFactory.GetTradeLogicRunner(activeStrategy.TradeLogicType);
-                    if (strategy == null)
-                    {
-                        foreach (var menu in _menuFactory.GetMenus())
-                        {
-                            await menu.SendMessageAsync("Strategy does not exist.", 
-                                new SendMessageOptions { MenuAction = MenuAction.WithoutMenu, IsNeedToShowTime = true },
-                                _cancellationTokenSource.Token);
-                        }
-
-                        break;
-                    }
-                    
-                    foreach (var menu in _menuFactory.GetMenus())
-                    {
-                        await menu.SendMessageAsync("In starting process...", 
-                            new SendMessageOptions { MenuAction = MenuAction.WithoutMenu, IsNeedToShowTime = true },
-                            _cancellationTokenSource.Token);
-                    }
-                
-                    var strategyResult = await strategy.InitAsync(activeStrategy);
-                    if (strategyResult != ActionResult.Success)
-                    {
-                        await strategy.FinishAsync(true);
-                    
-                        foreach (var menu in _menuFactory.GetMenus())
-                        {
-                            await menu.SendMessageAsync(
-                                $"Cannot start '{activeStrategy.Name}' strategy. Error code: {strategyResult}.", 
-                                new SendMessageOptions { MenuAction = MenuAction.WithoutMenu, IsNeedToShowTime = true },
-                                _cancellationTokenSource.Token);
-                        }
-
-                        showMessage = true;
-                    
-                        continue;
-                    }
-                
-                    _storeService.Bot.SetTradeLogic(strategy, TradeLogicStatus.Running);
-                
-                    foreach (var menu in _menuFactory.GetMenus())
-                    {
-                        await menu.SendMessageAsync("Strategy started! Enjoy lazy pidor.", 
-                            new SendMessageOptions { MenuAction = MenuAction.WithoutMenu, IsNeedToShowTime = true },
-                            _cancellationTokenSource.Token);
-                    }
-
-                    break;
-                }
-            
                 foreach (var menu in _menuFactory.GetMenus())
                 {
-                    if (menu.MenuType == MenuType.Telegram)
+                    await menu.SendMessageAsync("Waiting for closing previous strategy...", 
+                        new SendMessageOptions { MenuAction = MenuAction.WithoutMenu, IsNeedToShowTime = true },
+                        _cancellationTokenSource.Token);
+                }
+                
+                while (_storeService.Bot.TradeLogic != null) { }
+
+                foreach (var menu in _menuFactory.GetMenus())
+                {
+                    await menu.SendMessageAsync("Previous strategy closed.", 
+                        new SendMessageOptions { MenuAction = MenuAction.WithoutMenu, IsNeedToShowTime = true },
+                        _cancellationTokenSource.Token);
+                }
+            }
+
+            if (_storeService.Bot.TradeLogicStatus == TradeLogicStatus.Running)
+            {
+                var connection = await _connectionRepository.GetActiveConnectionAsync();
+                if (connection == null)
+                {
+                    foreach (var menu in _menuFactory.GetMenus())
                     {
-                        await menu.SendMessageAsync("Choose action:", 
+                        await menu.SendMessageAsync("There is no active connection to exchanger.", 
                             new SendMessageOptions { MenuAction = MenuAction.WithoutMenu, IsNeedToShowTime = true },
                             _cancellationTokenSource.Token);
                     }
+                        
+                    return;
+                }
+                
+                var activeStrategy = await _strategyRepository.GetActiveStrategyAsync();
+                if (activeStrategy == null)
+                {
+                    foreach (var menu in _menuFactory.GetMenus())
+                    {
+                        await menu.SendMessageAsync("There is no active strategy.", 
+                            new SendMessageOptions { MenuAction = MenuAction.WithoutMenu, IsNeedToShowTime = true },
+                            _cancellationTokenSource.Token);
+                    }
+                        
+                    return;
+                }
+                
+                var strategy = _tradeLogicFactory.GetTradeLogicRunner(activeStrategy.TradeLogicType);
+                if (strategy == null)
+                {
+                    foreach (var menu in _menuFactory.GetMenus())
+                    {
+                        await menu.SendMessageAsync("Strategy does not exist.", 
+                            new SendMessageOptions { MenuAction = MenuAction.WithoutMenu, IsNeedToShowTime = true },
+                            _cancellationTokenSource.Token);
+                    }
+
+                    return;
+                }
+                    
+                foreach (var menu in _menuFactory.GetMenus())
+                {
+                    await menu.SendMessageAsync("In starting process...", 
+                        new SendMessageOptions { MenuAction = MenuAction.WithoutMenu, IsNeedToShowTime = true },
+                        _cancellationTokenSource.Token);
+                }
+                
+                var strategyResult = await strategy.InitAsync(activeStrategy);
+                if (strategyResult != ActionResult.Success)
+                {
+                    await strategy.FinishAsync(true);
+                    
+                    foreach (var menu in _menuFactory.GetMenus())
+                    {
+                        await menu.SendMessageAsync(
+                            $"Cannot start '{activeStrategy.Name}' strategy. Error code: {strategyResult}.", 
+                            new SendMessageOptions { MenuAction = MenuAction.MainMenu, IsNeedToShowTime = true },
+                            _cancellationTokenSource.Token);
+                    }
+                        
+                    return;
+                }
+                
+                _storeService.Bot.SetTradeLogic(strategy, TradeLogicStatus.Running);
+                
+                foreach (var menu in _menuFactory.GetMenus())
+                {
+                    await menu.SendMessageAsync("Strategy started! Enjoy lazy pidor.", 
+                        new SendMessageOptions { MenuAction = MenuAction.MainMenu, IsNeedToShowTime = true },
+                        _cancellationTokenSource.Token);
                 }
 
-                break;
+                return;
+            }
+            
+            foreach (var menu in _menuFactory.GetMenus())
+            {
+                if (menu.MenuType == MenuType.Telegram)
+                {
+                    await menu.SendMessageAsync("Choose action:", 
+                        new SendMessageOptions { MenuAction = MenuAction.MainMenu, IsNeedToShowTime = true },
+                        _cancellationTokenSource.Token);
+                }
             }
         }
         catch (TaskCanceledException taskCanceledException)
@@ -429,6 +403,14 @@ internal class BotWorker
         {
             _logger.LogCritical(exception, "In {Method}", 
                 nameof(InternetConnectionServiceOnOnInternetConnected));
+            
+            foreach (var menu in _menuFactory.GetMenus())
+            {
+                await menu.SendMessageAsync(
+                    "There was an error during bot starting. Please, try again later.", 
+                    new SendMessageOptions { MenuAction = MenuAction.MainMenu, IsNeedToShowTime = true },
+                    _cancellationTokenSource.Token);
+            }
         }
     }
     
