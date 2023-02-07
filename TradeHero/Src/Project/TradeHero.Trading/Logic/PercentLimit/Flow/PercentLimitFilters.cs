@@ -94,7 +94,7 @@ internal class PercentLimitFilters
                 _ => 0
             };
 
-            if (availablePositionsToOpen < 0)
+            if (availablePositionsToOpen <= 0)
             {
                 _logger.LogInformation("There is no ability to open new positions. Opened positions count is: {OpenedPositionsCount}. In {Method}",
                     openedPositions.Count, nameof(GetFilteredOrdersForOpenPositionAsync));
@@ -102,8 +102,8 @@ internal class PercentLimitFilters
                 return new List<SymbolMarketInfo>();
             }
 
-            _logger.LogInformation("Maximum available positions for open: {AvailablePositionsForOpen}. Current opened positions: {CurrentOpenedPositions}. In {Method}",
-                tradeLogicLogicOptions.MaximumPositions, openedPositions.Count, nameof(GetFilteredOrdersForOpenPositionAsync));
+            _logger.LogInformation("Maximum available positions for open: {Afo}. Current opened positions: {Cop}. Available positions to open: {Ato}. In {Method}",
+                tradeLogicLogicOptions.MaximumPositions, openedPositions.Count, availablePositionsToOpen, nameof(GetFilteredOrdersForOpenPositionAsync));
 
             switch (instanceResult.MarketMood)
             {
