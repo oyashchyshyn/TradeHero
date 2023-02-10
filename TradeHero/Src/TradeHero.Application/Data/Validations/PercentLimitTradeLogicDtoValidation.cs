@@ -109,6 +109,10 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
         RuleFor(x => x.MarketStopExitActivationAfterTime)
             .CustomAsync(ValidateMarketStopExitActivationAfterTimeAsync)
             .When(x => x.EnableMarketStopToExit && x.MarketStopExitActivationAfterTime.HasValue);
+        
+        RuleFor(x => x.StopLossPercentFromDeposit)
+            .CustomAsync(ValidateStopLossPercentFromDepositAsync)
+            .When(x => x.EnableMarketStopLoss);
     }
 
     private async Task ValidateNameAsync(string name, ValidationContext<PercentLimitTradeLogicDto> propertyContext, 
@@ -688,6 +692,39 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
             
             propertyContext.AddFailure(new ValidationFailure(
                 $"{_propertyNames[nameof(PercentLimitTradeLogicDto.MarketStopExitActivationAfterTime)]}", 
+                "Validation failed."));
+            
+            return Task.CompletedTask;
+        }
+    }
+    
+    private Task ValidateStopLossPercentFromDepositAsync(decimal stopLossPercentFromDeposit, ValidationContext<PercentLimitTradeLogicDto> propertyContext, 
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            switch (stopLossPercentFromDeposit)
+            {
+                case < 0.01m:
+                    propertyContext.AddFailure(new ValidationFailure(
+                        _propertyNames[nameof(PercentLimitTradeLogicDto.StopLossPercentFromDeposit)], 
+                        "Cannot be lower then 0.01."));
+                    return Task.CompletedTask;
+                case > 100.00m:
+                    propertyContext.AddFailure(new ValidationFailure(
+                        _propertyNames[nameof(PercentLimitTradeLogicDto.StopLossPercentFromDeposit)], 
+                        "Cannot be higher then 100.00."));
+                    return Task.CompletedTask;
+            }
+
+            return Task.CompletedTask;
+        }
+        catch (Exception exception)
+        {
+            _logger.LogCritical(exception, "In {Method}", nameof(ValidateStopLossPercentFromDepositAsync));
+            
+            propertyContext.AddFailure(new ValidationFailure(
+                $"{_propertyNames[nameof(PercentLimitTradeLogicDto.StopLossPercentFromDeposit)]}", 
                 "Validation failed."));
             
             return Task.CompletedTask;
