@@ -41,4 +41,9 @@ internal class PercentLimitTradeLogicLogicOptions : BaseTradeLogicOptions
     public decimal MarketStopExitPriceFromLastPricePercent { get; set; }
     public decimal? MarketStopExitActivationFromAvailableBalancePercent { get; set; }
     public TimeSpan? MarketStopExitActivationAfterTime { get; set; }
+    
+    // Market Stop Close
+    public bool EnableMarketStopLoss { get; set; }
+    public decimal StopLossPercentFromDeposit { get; set; }
+    public PositionSide StopLossForSide { get; set; }
 }

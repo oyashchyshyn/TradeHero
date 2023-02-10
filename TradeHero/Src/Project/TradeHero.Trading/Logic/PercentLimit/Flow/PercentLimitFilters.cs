@@ -296,6 +296,26 @@ internal class PercentLimitFilters
     {
         try
         {
+            // Stop loss logic
+            if (tradeLogicLogicOptions.EnableMarketStopLoss)
+            {
+                var currentPnl = _calculatorService.CalculatePnl(openedPosition.PositionSide, lastPrice,
+                    openedPosition.EntryPrice, openedPosition.TotalQuantity);
+
+                if (tradeLogicLogicOptions.StopLossForSide == PositionSide.Both || tradeLogicLogicOptions.StopLossForSide == openedPosition.PositionSide)
+                {
+                    if (Math.Abs(currentPnl) >= Math.Round(balance.WalletBalance * tradeLogicLogicOptions.StopLossPercentFromDeposit / 100, 2))
+                    {
+                        _logger.LogInformation("{Position}. Order will be closed by stop loss. Stop loss side: {Side}. Current pnl: {CurrentPnl}. " +
+                                               "Current wallet balance: {CurrentWalletBalance}. Percent from deposit to loss {ToLossPercent}%. In {Method}",
+                            openedPosition.ToString(), tradeLogicLogicOptions.StopLossForSide, currentPnl, balance.WalletBalance, 
+                            tradeLogicLogicOptions.StopLossPercentFromDeposit, nameof(IsNeedToActivateOrders));
+                    
+                        return PercentLimitOrderToPlace.MarketToClose;
+                    }   
+                }
+            }
+            
             var roePercent = _calculatorService.CalculateRoe(openedPosition.PositionSide, openedPosition.EntryPrice, 
                 lastPrice, openedPosition.Leverage);
 
@@ -335,7 +355,7 @@ internal class PercentLimitFilters
                     _logger.LogInformation("{Position}. Market Stop to close by balance. ROE is valid and order will be placed. ROE: {Roe}%. In {Method}", 
                         openedPosition.ToString(), roePercent, nameof(IsNeedToActivateOrders));
                     
-                    return PercentLimitOrderToPlace.MarketStopToClose;
+                    return PercentLimitOrderToPlace.MarketStopToExit;
                 }
                 
                 // By time
@@ -344,15 +364,14 @@ internal class PercentLimitFilters
                     < _dateTimeService.GetUtcDateTime())
                 {
                     var timeAfterAdding = openedPosition.LastUpdateTime.AddMilliseconds(
-                        tradeLogicLogicOptions.MarketStopExitActivationAfterTime.Value.TotalMilliseconds
-                        );
+                        tradeLogicLogicOptions.MarketStopExitActivationAfterTime.Value.TotalMilliseconds);
 
                     _logger.LogInformation("{Position}. Market Stop to close by time. ROE is valid and order will be placed. " +
                                            "Position LasTime: {PositionTime}. Time after adding {AfterAdding}. Utc time {UtcTime}. ROE: {Roe}%. In {Method}", 
                         openedPosition.ToString(), openedPosition.LastUpdateTime, timeAfterAdding, _dateTimeService.GetUtcDateTime(), 
                         roePercent, nameof(IsNeedToActivateOrders));
                     
-                    return PercentLimitOrderToPlace.MarketStopToClose;
+                    return PercentLimitOrderToPlace.MarketStopToExit;
                 }
             }
 

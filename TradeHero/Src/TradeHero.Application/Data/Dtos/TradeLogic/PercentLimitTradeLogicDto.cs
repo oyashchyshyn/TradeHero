@@ -125,4 +125,17 @@ internal class PercentLimitTradeLogicDto : BaseStrategyDto
     [Description("Defines how much time need to pass in order to activate market stop feature. Available range is 00:00:01 to 24:00:00. This parameter is optional, skip it if do not want to use it.")]
     [JsonProperty("ms_from_time")]
     public TimeSpan? MarketStopExitActivationAfterTime { get; set; }
+    
+    // Market Stop loss
+    [Description("Enables stop loss feature. Bot will automatically close position when pnl reaches to percent from deposit.")]
+    [JsonProperty("sl_enable")]
+    public bool EnableMarketStopLoss { get; set; }
+    
+    [Description("Defines how much pecent from deposit can be lost for stop loss.")]
+    [JsonProperty("sl_from_balance_p")]
+    public decimal StopLossPercentFromDeposit { get; set; }
+    
+    [EnumDescription("Defines side for stop loss feature.", typeof(PositionSide))]
+    [JsonProperty("sl_side")]
+    public PositionSide StopLossForSide { get; set; }
 }
