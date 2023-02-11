@@ -1,3 +1,5 @@
+using TradeHero.Core.Models.Client;
+
 namespace TradeHero.Trading.Instances.Models;
 
 internal class TradedRange
@@ -9,4 +11,5 @@ internal class TradedRange
     public decimal SellVolume { get; set; }
     public int SellTrades { get; set; }
     public int BuyTrades { get; set; }
+    public List<BinanceClusterVolume> ClusterVolumes { get; } = new();
 }
