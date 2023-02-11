@@ -21,64 +21,27 @@ public class SymbolMarketInfo
     public decimal KlineBuyVolume { get; set; }
     public decimal KlineSellVolume { get; set; }
     public decimal KlineDeltaVolume => KlineBuyVolume - KlineSellVolume;
-    public decimal KlineTotalVolume => PocBuyVolume + PocSellVolume;
-    public decimal KlineAveragePrice { get; set; }
-    public decimal KlineAverageTradeQuoteVolume => KlineAveragePrice * (KlineBuyVolume + KlineSellVolume);
-    public decimal KlineVolumeCoefficient => GetCoefficient(KlineBuyVolume, KlineSellVolume);
+    public decimal KlineVolumeCoefficient => Math.Round(KlineBuyVolume / KlineSellVolume, 2);
+    public decimal KlineTradedQuoteVolume { get; set; }
     
     // Poc volume info
     public decimal PocBuyVolume { get; set; }
     public decimal PocSellVolume { get; set; }
     public decimal PocDeltaVolume => PocBuyVolume - PocSellVolume;
-    public decimal PocTotalVolume => PocBuyVolume + PocSellVolume;
-    public decimal PocAveragePrice { get; set; }
-    public decimal PocAverageTradeQuoteVolume => PocAveragePrice * (PocBuyVolume + PocSellVolume);
-    public decimal PocVolumeCoefficient => GetCoefficient(PocBuyVolume, PocSellVolume);
+    public decimal PocTradedQuoteVolume { get; set; }
 
     // Poc volume info
     public int PocBuyTrades { get; set; }
     public int PocSellTrades { get; set; }
     public int PocDeltaTrades => PocBuyTrades - PocSellTrades;
-    public int TotalTrades => PocBuyTrades + PocSellTrades;
-    public decimal PocTradesCoefficient => GetCoefficient(PocBuyTrades, PocSellTrades);
+    public decimal PocTradesCoefficient => Math.Round((decimal)PocBuyTrades / PocSellTrades, 2);
     
     // OrderBook info
     [JsonIgnore]
-    public List<BinanceOrderBookEntry> Asks { get; } = new();
-    [JsonIgnore]
     public List<BinanceOrderBookEntry> Bids { get; } = new();
-    public decimal TotalAsks => Asks.Sum(x => x.Quantity);
+    [JsonIgnore]
+    public List<BinanceOrderBookEntry> Asks { get; } = new();
     public decimal TotalBids => Bids.Sum(x => x.Quantity);
-    public decimal AsksBidsCoefficient => GetCoefficient(
-        Asks.Sum(x => x.Quantity), 
-        Bids.Sum(x => x.Quantity)
-    );
-
-    #region Private methods
-
-    private static decimal GetCoefficient(decimal buy, decimal sell)
-    {
-        try
-        {
-            var delta = buy - sell;
-            
-            buy = buy <= 0 ? 1 : buy;
-            sell = sell <= 0 ? 1 : sell;
-
-            return delta switch
-            {
-                0 => delta,
-                > 0 => buy / sell,
-                _ => sell / buy
-            };
-        }
-        catch (Exception exception)
-        {
-            Console.WriteLine(exception);
-
-            return 0;
-        }
-    }
-
-    #endregion
+    public decimal TotalAsks => Asks.Sum(x => x.Quantity);
+    public decimal AsksBidsCoefficient => Math.Round(TotalBids / TotalAsks, 2);
 }

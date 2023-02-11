@@ -330,17 +330,16 @@ internal class SpotClusterVolumeInstance : IInstance
                 BaseFuturesUsdAsset = symbolNameContainer.BaseFuturesUsdAsset,
                 QuoteAsset = symbolNameContainer.QuoteAsset,
                 Power = kline.OpenPrice < kline.ClosePrice ? KlinePower.Bull : KlinePower.Bear,
-                KlineAveragePrice = (kline.LowPrice + kline.HighPrice) / 2,
-                IsPocInWick =
-                    (currentPoc.EndPrice > kline.OpenPrice && currentPoc.EndPrice > kline.ClosePrice)
-                    || (currentPoc.StartPrice < kline.OpenPrice && currentPoc.StartPrice < kline.ClosePrice),
+                IsPocInWick = (currentPoc.EndPrice > kline.OpenPrice && currentPoc.EndPrice > kline.ClosePrice)
+                              || (currentPoc.StartPrice < kline.OpenPrice && currentPoc.StartPrice < kline.ClosePrice),
                 PocBuyVolume = currentPoc.BuyVolume,
                 PocSellVolume = currentPoc.SellVolume,
                 PocBuyTrades = currentPoc.BuyTrades,
                 PocSellTrades = currentPoc.SellTrades,
-                PocAveragePrice = (currentPoc.StartPrice + currentPoc.EndPrice) / 2,
+                PocTradedQuoteVolume = currentPoc.ClusterVolumes.Sum(x => (x.BuyVolume + x.SellVolume) * x.Price),
                 KlineBuyVolume = previousKlineClusterVolumeRequest.Data.Sum(x => x.BuyVolume),
-                KlineSellVolume = previousKlineClusterVolumeRequest.Data.Sum(x => x.SellVolume)
+                KlineSellVolume = previousKlineClusterVolumeRequest.Data.Sum(x => x.SellVolume),
+                KlineTradedQuoteVolume = previousKlineClusterVolumeRequest.Data.Sum(x => (x.BuyVolume + x.SellVolume) * x.Price)
             };
 
             switch (currentPoc.Index)
@@ -448,6 +447,7 @@ internal class SpotClusterVolumeInstance : IInstance
                 stepBinanceClusterVolume.BuyVolume = clusters.Sum(x => x.BuyVolume);
                 stepBinanceClusterVolume.BuyTrades = clusters.Sum(x => x.BuyTrades);
                 stepBinanceClusterVolume.SellTrades = clusters.Sum(x => x.SellTrades);
+                stepBinanceClusterVolume.ClusterVolumes.AddRange(clusters);
             }
             else
             {

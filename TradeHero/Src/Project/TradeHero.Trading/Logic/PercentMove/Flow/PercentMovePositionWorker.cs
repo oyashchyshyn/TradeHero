@@ -187,15 +187,22 @@ internal class PercentMovePositionWorker : BasePositionWorker
             if (pmsStore.Positions.Count(x => x.Name == positionToDelete.Name) == 1)
             {
                 pmsStore.MarketLastPrices.Remove(positionToDelete.Name);
-
                 pmsStore.SymbolStatus.Remove(positionToDelete.Name);
                 
                 var stream = pmsStore.UsdFuturesTickerStreams[positionToDelete.Name];
-                await _socketBinanceClient.UnsubscribeAsync(stream.SocketSubscription);
-                pmsStore.UsdFuturesTickerStreams.Remove(positionToDelete.Name);
+                if (stream != null)
+                {
+                    await _socketBinanceClient.UnsubscribeAsync(stream.SocketSubscription);
+                    pmsStore.UsdFuturesTickerStreams.Remove(positionToDelete.Name);
                 
-                _logger.LogInformation("{Position}. Unsubscribed from socket. In {Method}", 
-                    positionInString, nameof(DeletePositionAsync));
+                    _logger.LogInformation("{Position}. Unsubscribed from socket. In {Method}", 
+                        positionInString, nameof(DeletePositionAsync));   
+                }
+                else
+                {
+                    _logger.LogWarning("{Position}. Not unsubscribed from socket because socket is null. In {Method}", 
+                        positionInString, nameof(DeletePositionAsync));   
+                }
             }
 
             pmsStore.Positions.Remove(positionToDelete);
