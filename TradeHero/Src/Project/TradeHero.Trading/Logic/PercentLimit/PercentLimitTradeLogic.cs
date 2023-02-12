@@ -39,7 +39,7 @@ internal class PercentLimitTradeLogic : BaseFuturesUsdTradeLogic
         PercentLimitUserAccountStream percentLimitUserAccountStream
         ) 
         : base(binanceSocketClient, jobService, spotEndpoints, instanceFactory, futuresUsdMarketTickerStream,
-            percentLimitUserAccountStream, percentLimitPositionWorker, logger, telegramService, futuresUsdEndpoints)
+            percentLimitUserAccountStream, logger, telegramService, futuresUsdEndpoints)
     {
         _percentLimitPositionWorker = percentLimitPositionWorker;
         _percentLimitEndpoints = percentLimitEndpoints;
