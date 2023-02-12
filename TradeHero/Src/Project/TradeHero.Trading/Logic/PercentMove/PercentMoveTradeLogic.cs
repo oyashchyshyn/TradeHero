@@ -35,7 +35,7 @@ internal class PercentMoveTradeLogic : BaseFuturesUsdTradeLogic
         PercentMoveUserAccountStream percentMoveUserAccountStream
         )
         : base(binanceSocketClient, jobService, spotEndpoints, instanceFactory, futuresUsdMarketTickerStream,
-            percentMoveUserAccountStream, percentMovePositionWorker, logger, telegramService, futuresUsdEndpoints)
+            percentMoveUserAccountStream, logger, telegramService, futuresUsdEndpoints)
     {
         _percentMovePositionWorker = percentMovePositionWorker;
         _percentMoveStore = percentMoveStore;
