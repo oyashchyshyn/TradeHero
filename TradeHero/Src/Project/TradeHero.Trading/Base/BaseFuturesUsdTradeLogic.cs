@@ -21,7 +21,6 @@ internal abstract class BaseFuturesUsdTradeLogic : ITradeLogic
     private readonly IFuturesUsdMarketTickerStream _futuresUsdMarketTickerStream;
     
     private readonly BaseFuturesUsdUserAccountStream _userAccountStreamStream;
-    private readonly BasePositionWorker _positionWorker;
 
     protected readonly ILogger Logger;
     protected readonly ITelegramService TelegramService;
@@ -41,7 +40,6 @@ internal abstract class BaseFuturesUsdTradeLogic : ITradeLogic
         IInstanceFactory instanceFactory,
         IFuturesUsdMarketTickerStream futuresUsdMarketTickerStream,
         BaseFuturesUsdUserAccountStream userAccountStreamStream,
-        BasePositionWorker positionWorker,
         ILogger logger,
         ITelegramService telegramService,
         IFuturesUsdEndpoints futuresUsdEndpoints
@@ -53,8 +51,7 @@ internal abstract class BaseFuturesUsdTradeLogic : ITradeLogic
         _instanceFactory = instanceFactory;
         _futuresUsdMarketTickerStream = futuresUsdMarketTickerStream;
         _userAccountStreamStream = userAccountStreamStream;
-        _positionWorker = positionWorker;
-     
+
         Logger = logger;
         TelegramService = telegramService;
         FuturesUsdEndpoints = futuresUsdEndpoints;
@@ -335,62 +332,7 @@ internal abstract class BaseFuturesUsdTradeLogic : ITradeLogic
 
         async Task UpdatePositionsInfoInStoreJob()
         {
-            var result = await FuturesUsdEndpoints.SetFuturesUsdPositionInfoAsync(store, cancellationToken: cancellationToken);
-            if (result == ActionResult.Success)
-            {
-                try
-                {
-                    var copiedCollection = new Position[Store.Positions.Count];
-                    Store.Positions.CopyTo(copiedCollection);
-                    
-                    foreach (var position in copiedCollection)
-                    {
-                        if (Store.FuturesUsd.AccountData.Positions.Where(x =>
-                                x.Symbol == position.Name && x.PositionSide == position.PositionSide)
-                            .Any(x => x.EntryPrice != 0 && x.Quantity != 0))
-                        {
-
-                            var openedPosition = Store.FuturesUsd.AccountData.Positions
-                                .Where(x => x.Symbol == position.Name && x.PositionSide == position.PositionSide)
-                                .First(x => x.EntryPrice != 0 && x.Quantity != 0);
-
-                            _positionWorker.UpdatePositionDetails(store, position, openedPosition);
-                        }
-                        else
-                        {
-                            await _positionWorker.DeletePositionAsync(store, position, cancellationToken);
-                        }
-                    }
-                    
-                    var openedPositions = Store.FuturesUsd.AccountData.Positions
-                        .Where(x => x.EntryPrice != 0)
-                        .Where(x => x.Quantity != 0);
-
-                    foreach (var openedPosition in openedPositions)
-                    {
-                        var storePosition = Store.Positions.SingleOrDefault(x =>
-                            x.Name == openedPosition.Symbol && x.PositionSide == openedPosition.PositionSide);
-            
-                        if (storePosition == null)
-                        {
-                            await _positionWorker.CreatePositionAsync(store, openedPosition.Symbol, openedPosition.PositionSide,
-                                openedPosition.EntryPrice, openedPosition.UpdateTime, openedPosition.Quantity, true, 
-                                cancellationToken);
-                        }
-                    }
-
-                    Logger.LogInformation("Opened positions updated. In {Method}", nameof(UpdatePositionsInfoInStoreJob));
-                }
-                catch (TaskCanceledException taskCanceledException)
-                {
-                    Logger.LogInformation("{Message}. In {Method}",
-                        taskCanceledException.Message, nameof(UpdatePositionsInfoInStoreJob));
-                }
-                catch (Exception exception)
-                {
-                    Logger.LogCritical(exception, "In {Method}", nameof(UpdatePositionsInfoInStoreJob));
-                }
-            }
+            await FuturesUsdEndpoints.SetFuturesUsdPositionInfoAsync(store, cancellationToken: cancellationToken);
         }
         _jobService.StartJob(JobKey.UpdatePositionsInfoInStore, UpdatePositionsInfoInStoreJob, delay: TimeSpan.FromMinutes(3));
         

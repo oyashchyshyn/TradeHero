@@ -90,6 +90,7 @@ internal class PercentLimitSymbolTickerStream : BaseFuturesUsdSymbolTickerStream
                     switch (orderToPlace)
                     {
                         case PercentLimitOrderToPlace.MarketToClose:
+                        {
                             var marketClosePositionResult = await _percentLimitEndpoints.CreateMarketClosePositionOrderAsync(
                                 position,
                                 symbolInfo,
@@ -100,7 +101,9 @@ internal class PercentLimitSymbolTickerStream : BaseFuturesUsdSymbolTickerStream
                                 return;
                             }   
                             break;
+                        }
                         case PercentLimitOrderToPlace.MarketStopToSafe:
+                        {
                             var stopLimitToSafeResult = await _percentLimitEndpoints.CreateMarketStopOrderAsync(
                                 position,
                                 ticker.LastPrice,
@@ -113,7 +116,9 @@ internal class PercentLimitSymbolTickerStream : BaseFuturesUsdSymbolTickerStream
                                 positionInfo.IsNeedToPlaceMarketStop = false;
                             }   
                             break;
-                        case PercentLimitOrderToPlace.MarketStopToClose:
+                        }
+                        case PercentLimitOrderToPlace.MarketStopToExit:
+                        {
                             var stopLimitToCloseResult = await _percentLimitEndpoints.CreateMarketStopOrderAsync(
                                 position,
                                 ticker.LastPrice,
@@ -126,6 +131,7 @@ internal class PercentLimitSymbolTickerStream : BaseFuturesUsdSymbolTickerStream
                                 positionInfo.IsNeedToPlaceMarketStop = false;
                             }   
                             break;
+                        }
                         case PercentLimitOrderToPlace.None:
                         default:
                             break;

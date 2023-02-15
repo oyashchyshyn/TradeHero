@@ -5,5 +5,5 @@ internal enum PercentLimitOrderToPlace
     None,
     MarketToClose,
     MarketStopToSafe,
-    MarketStopToClose
+    MarketStopToExit
 }
