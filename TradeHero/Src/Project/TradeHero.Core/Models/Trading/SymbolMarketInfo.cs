@@ -51,6 +51,9 @@ public class SymbolMarketInfo
     {
         var delta = buys - sells;
         
+        buys = buys <= 0 ? 1 : buys;
+        sells = sells <= 0 ? 1 : sells;
+        
         var result = delta switch
         {
             > 0 => buys / sells,
