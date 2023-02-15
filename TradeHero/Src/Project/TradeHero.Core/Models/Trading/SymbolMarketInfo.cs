@@ -21,7 +21,7 @@ public class SymbolMarketInfo
     public decimal KlineBuyVolume { get; set; }
     public decimal KlineSellVolume { get; set; }
     public decimal KlineDeltaVolume => KlineBuyVolume - KlineSellVolume;
-    public decimal KlineVolumeCoefficient => Math.Round(KlineBuyVolume / KlineSellVolume, 2);
+    public decimal KlineVolumeCoefficient => GetCoefficient(KlineBuyVolume, KlineSellVolume);
     public decimal KlineTradedQuoteVolume { get; set; }
     
     // Poc volume info
@@ -34,7 +34,7 @@ public class SymbolMarketInfo
     public int PocBuyTrades { get; set; }
     public int PocSellTrades { get; set; }
     public int PocDeltaTrades => PocBuyTrades - PocSellTrades;
-    public decimal PocTradesCoefficient => Math.Round((decimal)PocBuyTrades / PocSellTrades, 2);
+    public decimal PocTradesCoefficient => GetCoefficient(PocBuyTrades, PocSellTrades);
     
     // OrderBook info
     [JsonIgnore]
@@ -43,5 +43,23 @@ public class SymbolMarketInfo
     public List<BinanceOrderBookEntry> Asks { get; } = new();
     public decimal TotalBids => Bids.Sum(x => x.Quantity);
     public decimal TotalAsks => Asks.Sum(x => x.Quantity);
-    public decimal AsksBidsCoefficient => Math.Round(TotalBids / TotalAsks, 2);
+    public decimal AsksBidsCoefficient => GetCoefficient(TotalBids, TotalAsks);
+
+    #region Private methods
+
+    private static decimal GetCoefficient(decimal buys, decimal sells)
+    {
+        var delta = buys - sells;
+        
+        var result = delta switch
+        {
+            > 0 => buys / sells,
+            < 0 => -(sells / buys),
+            _ => 0
+        };
+
+        return Math.Round(result, 2);
+    }
+
+    #endregion
 }
