@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Binance.Net.Enums;
+using Binance.Net.Interfaces;
 using Binance.Net.Objects.Models;
 using Microsoft.Extensions.Logging;
 using TradeHero.Core.Constants;
@@ -94,10 +95,10 @@ internal class SpotClusterVolumeInstance : IInstance
                 .ToArray();
 
             var filteredTickersData = tickersRequest.Data.Where(x => spotSymbolNames.Contains(x.Symbol))
-                .ToArray();
+                .ToDictionary(x => x.Symbol, x => x);
 
-            var totalCount = (decimal)filteredTickersData.Length;
-            var priceChangedToPlusCount = (decimal)filteredTickersData.Count(x => x.PriceChangePercent > 0);
+            var totalCount = (decimal)filteredTickersData.Count;
+            var priceChangedToPlusCount = (decimal)filteredTickersData.Values.Count(x => x.PriceChangePercent > 0);
             var longMoodPercent = Math.Round(priceChangedToPlusCount / totalCount * 100m, 2);
             var shortMoodPercent = Math.Round(100m - longMoodPercent, 2);
 
@@ -116,7 +117,7 @@ internal class SpotClusterVolumeInstance : IInstance
                 .WhereIf(localInstanceOptions.BaseAssets.Any(), x => localInstanceOptions.BaseAssets.Contains(x.BaseFuturesUsdAsset))
                 .WhereIf(localInstanceOptions.ExcludeAssets.Any(), x => !localInstanceOptions.ExcludeAssets.Contains(x.BaseFuturesUsdAsset))
                 .ToArray();
-            
+
             var seconds = (int)instanceResult.Interval * localInstanceOptions.VolumeAverage;
             instanceResult.EndTo = _dateTimeService.GetUtcDateTime().AddSeconds(-(int)instanceResult.Interval);
             instanceResult.StartFrom = instanceResult.EndTo.AddSeconds(-seconds);
@@ -163,6 +164,7 @@ internal class SpotClusterVolumeInstance : IInstance
                     
                     var symbolMarketInfo = await SetKlineDetailInfoAsync(
                         symbolNameContainer,
+                        filteredTickersData[symbolNameContainer.SpotName],
                         localInstanceOptions.VolumeAverage,
                         localInstanceOptions.OrderBookDepthPercent,
                         instanceResult.Interval,
@@ -221,8 +223,8 @@ internal class SpotClusterVolumeInstance : IInstance
 
     #region Private methods
     
-    private async Task<SymbolMarketInfo?> SetKlineDetailInfoAsync(SymbolNameContainer symbolNameContainer, int volumeMovingAverage, decimal orderBookDepthPercent, 
-        KlineInterval interval, DateTime startFrom, DateTime endTo, Market market, CancellationToken cancellationToken)
+    private async Task<SymbolMarketInfo?> SetKlineDetailInfoAsync(SymbolNameContainer symbolNameContainer, IBinanceTick ticker, int volumeMovingAverage, 
+        decimal orderBookDepthPercent, KlineInterval interval, DateTime startFrom, DateTime endTo, Market market, CancellationToken cancellationToken)
     {
         var stopwatch = new Stopwatch();
 
@@ -314,7 +316,7 @@ internal class SpotClusterVolumeInstance : IInstance
 
             var tradedRanges = GetTradedRanges(previousKlineClusterVolumeRequest.Data, tradeRangeStep);
 
-            var currentPoc = tradedRanges.MaxBy(x => x.SellVolume + x.BuyVolume);
+            var currentPoc = tradedRanges.MaxBy(x => x.Clusters.Sum(y => y.SellVolume) + x.Clusters.Sum(y => y.BuyVolume));
             if (currentPoc == null)
             {
                 _logger.LogInformation("{Symbol}. There is no POC in tradedRanges. In {Method}",
@@ -323,23 +325,28 @@ internal class SpotClusterVolumeInstance : IInstance
                 return null;
             }
 
+            var isPocInWick = (currentPoc.EndPrice > kline.OpenPrice && currentPoc.EndPrice > kline.ClosePrice) 
+                              || (currentPoc.StartPrice < kline.OpenPrice && currentPoc.StartPrice < kline.ClosePrice);
+            
             var symbolMarketInfo = new SymbolMarketInfo
             {
                 SpotName = symbolNameContainer.SpotName,
                 FuturesUsdName = symbolNameContainer.FuturesUsdName,
                 BaseFuturesUsdAsset = symbolNameContainer.BaseFuturesUsdAsset,
                 QuoteAsset = symbolNameContainer.QuoteAsset,
+                PriceChangePercent = ticker.PriceChangePercent,
                 Power = kline.OpenPrice < kline.ClosePrice ? KlinePower.Bull : KlinePower.Bear,
-                IsPocInWick = (currentPoc.EndPrice > kline.OpenPrice && currentPoc.EndPrice > kline.ClosePrice)
-                              || (currentPoc.StartPrice < kline.OpenPrice && currentPoc.StartPrice < kline.ClosePrice),
-                PocBuyVolume = currentPoc.BuyVolume,
-                PocSellVolume = currentPoc.SellVolume,
-                PocBuyTrades = currentPoc.BuyTrades,
-                PocSellTrades = currentPoc.SellTrades,
-                PocTradedQuoteVolume = currentPoc.ClusterVolumes.Sum(x => (x.BuyVolume + x.SellVolume) * x.Price),
+                IsPocInWick = isPocInWick,
                 KlineBuyVolume = previousKlineClusterVolumeRequest.Data.Sum(x => x.BuyVolume),
                 KlineSellVolume = previousKlineClusterVolumeRequest.Data.Sum(x => x.SellVolume),
-                KlineTradedQuoteVolume = previousKlineClusterVolumeRequest.Data.Sum(x => (x.BuyVolume + x.SellVolume) * x.Price)
+                KlineBuyTrades = previousKlineClusterVolumeRequest.Data.Sum(x => x.BuyTrades),
+                KlineSellTrades = previousKlineClusterVolumeRequest.Data.Sum(x => x.SellTrades),
+                KlineQuoteVolume = previousKlineClusterVolumeRequest.Data.Sum(x => (x.BuyVolume + x.SellVolume) * x.Price),
+                PocBuyVolume = currentPoc.Clusters.Sum(x => x.BuyVolume),
+                PocSellVolume = currentPoc.Clusters.Sum(x => x.SellVolume),
+                PocBuyTrades = currentPoc.Clusters.Sum(x => x.BuyTrades),
+                PocSellTrades = currentPoc.Clusters.Sum(x => x.SellTrades),
+                PocQuoteVolume = currentPoc.Clusters.Sum(x => (x.BuyVolume + x.SellVolume) * x.Price),
             };
 
             switch (currentPoc.Index)
@@ -443,20 +450,12 @@ internal class SpotClusterVolumeInstance : IInstance
             {
                 stepBinanceClusterVolume.StartPrice = clusters.Max(x => x.Price);
                 stepBinanceClusterVolume.EndPrice = clusters.Min(x => x.Price);
-                stepBinanceClusterVolume.SellVolume = clusters.Sum(x => x.SellVolume);
-                stepBinanceClusterVolume.BuyVolume = clusters.Sum(x => x.BuyVolume);
-                stepBinanceClusterVolume.BuyTrades = clusters.Sum(x => x.BuyTrades);
-                stepBinanceClusterVolume.SellTrades = clusters.Sum(x => x.SellTrades);
-                stepBinanceClusterVolume.ClusterVolumes.AddRange(clusters);
+                stepBinanceClusterVolume.Clusters.AddRange(clusters);
             }
             else
             {
                 stepBinanceClusterVolume.StartPrice = priceStart;
                 stepBinanceClusterVolume.EndPrice = priceStart;
-                stepBinanceClusterVolume.SellVolume = 0;
-                stepBinanceClusterVolume.BuyVolume = 0;
-                stepBinanceClusterVolume.BuyTrades = 0;
-                stepBinanceClusterVolume.SellTrades = 0;
             }
 
             priceStart = priceEnd;

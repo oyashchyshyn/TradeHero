@@ -17,10 +17,11 @@ internal class PercentLimitTradeLogicLogicOptions : BaseTradeLogicOptions
     public decimal PercentFromDepositForOpen { get; set; }
     public KlineActionSignal KlineActionForOpen { get; set; }
     public KlinePowerSignal KlinePowerForOpen { get; set; }
-    public decimal MinQuoteVolumeForOpen { get; set; }
     public bool IsPocMustBeInWickForOpen { get; set; }
-    public decimal CoefficientOfSellBuyVolumeForOpen { get; set; }
-    public decimal CoefficientOfBidAsksForOpen { get; set; }
+    public decimal MinQuoteVolumeForOpen { get; set; }
+    public decimal MinTradesForOpen { get; set; }
+    public decimal CoefficientOfVolumeForOpen { get; set; }
+    public decimal CoefficientOfOrderLimitsForOpen { get; set; }
 
     // Average Position
     public bool EnableAveraging { get; set; }
@@ -28,10 +29,11 @@ internal class PercentLimitTradeLogicLogicOptions : BaseTradeLogicOptions
     public KlinePowerSignal KlinePowerForAverage { get; set; }
     public decimal AverageFromRoe { get; set; }
     public decimal AverageToRoe { get; set; }
-    public decimal MinQuoteVolumeForAverage { get; set; }
     public bool IsPocMustBeInWickForAverage { get; set; }
-    public decimal CoefficientOfSellBuyVolumeForAverage { get; set; }
-    public decimal CoefficientOfBidAsksForAverage { get; set; }
+    public decimal MinQuoteVolumeForAverage { get; set; }
+    public decimal MinTradesForAverage { get; set; }
+    public decimal CoefficientOfVolumeForAverage { get; set; }
+    public decimal CoefficientOfOrderLimitsForAverage { get; set; }
 
     // Trailing Stop
     public bool EnableTrailingStops { get; set; }

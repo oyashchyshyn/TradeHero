@@ -13,7 +13,7 @@ internal class SpotClusterVolumeOptions : BaseInstanceOptions
     }
 
     public decimal OrderBookDepthPercent { get; set; }
-    
+
     public override Market Market => Market.Spot;
 
     public override string ToString()

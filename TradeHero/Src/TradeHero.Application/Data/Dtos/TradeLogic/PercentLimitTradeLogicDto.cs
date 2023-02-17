@@ -51,21 +51,25 @@ internal class PercentLimitTradeLogicDto : BaseStrategyDto
     [JsonProperty("open_pos_power_signal")]
     public KlinePowerSignal KlinePowerForOpen { get; set; }
 
-    [Description("Average quote volume for candle to open position. Available range is 0.00 to 100000000.00. Only works when 'open_pos_enable' enabled.")]
-    [JsonProperty("open_pos_min_quote_v")]
-    public decimal MinQuoteVolumeForOpen { get; set; }
-    
     [Description("Defining is POC must be only in wick of candles. Only works when 'open_pos_enable' enabled.")]
     [JsonProperty("open_poc_in_wick")]
     public bool IsPocMustBeInWickForOpen { get; set; }
     
+    [Description("Average quote volume for candle to open position. Available range is 0.00 to 100000000.00. Only works when 'open_pos_enable' enabled.")]
+    [JsonProperty("open_pos_min_quote_v")]
+    public decimal MinQuoteVolumeForOpen { get; set; }
+
+    [Description("Defining min value of trades in kline. Aavailalble range is 0 to 1000000. Only works when 'open_pos_enable' enabled.")]
+    [JsonProperty("open_trades")]
+    public decimal MinTradesForOpen { get; set; }
+    
     [Description("Defining how greate the difference between sell and buy orders should be. If set to 0 bot will not check coefficient. Aavailalble range is 0.00 t0 100.00. Only works when 'open_pos_enable' enabled.")]
     [JsonProperty("open_coef_volume")]
-    public decimal CoefficientOfSellBuyVolumeForOpen { get; set; }
+    public decimal CoefficientOfVolumeForOpen { get; set; }
     
     [Description("Defining how greate the difference between sell and buy orders should be. If set to 0 bot will not check coefficient. Aavailalble range is 0.00 t0 100.00. Only works when 'open_pos_enable' enabled.")]
     [JsonProperty("open_coef_limits")]
-    public decimal CoefficientOfBidAsksForOpen { get; set; }
+    public decimal CoefficientOfOrderLimitsForOpen { get; set; }
 
     // Average Position
     [Description("Enables automatic average of position. Bot will automatically open aaverage orders by parameters for average.")]
@@ -88,21 +92,25 @@ internal class PercentLimitTradeLogicDto : BaseStrategyDto
     [JsonProperty("avg_to_roe")]
     public decimal AverageToRoe { get; set; }
 
-    [Description("Average quote volume for candle to average position. Available range is 0.00 to 100000000.00. Only works when 'avg_enable' enabled.")]
-    [JsonProperty("avg_min_quote_v")]
-    public decimal MinQuoteVolumeForAverage { get; set; }
-    
     [Description("Defining is POC must be only in wich of candles. Only works when 'avg_enable' enabled.")]
     [JsonProperty("avg_poc_in_wick")]
     public bool IsPocMustBeInWickForAverage { get; set; }
     
+    [Description("Average quote volume for candle to average position. Available range is 0.00 to 100000000.00. Only works when 'avg_enable' enabled.")]
+    [JsonProperty("avg_min_quote_v")]
+    public decimal MinQuoteVolumeForAverage { get; set; }
+
+    [Description("Defining min value of trades in kline. Aavailalble range is 0 to 1000000. Only works when 'avg_enable' enabled.")]
+    [JsonProperty("avg_trades")]
+    public decimal MinTradesForAverage { get; set; }
+    
     [Description("Defining how greate the difference between sell and buy orders should be. If set to 0 bot will not check coefficient. Aavailalble range is 0.00 t0 100.00. Only works when 'avg_enable' enabled.")]
     [JsonProperty("avg_coef_volume")]
-    public decimal CoefficientOfSellBuyVolumeForAverage { get; set; }
+    public decimal CoefficientOfVolumeForAverage { get; set; }
     
     [Description("Defining how greate the difference between bids and asks limits should be. If set to 0 bot will not check coefficient. Aavailalble range is 0.00 t0 100.00. Only works when 'avg_enable' enabled.")]
     [JsonProperty("avg_coef_limits")]
-    public decimal CoefficientOfBidAsksForAverage { get; set; }
+    public decimal CoefficientOfOrderLimitsForAverage { get; set; }
     
     // Trailing stop
     [Description("Enables trailing stop feature. Bot will automatically close position by parameter for trailing stop.")]

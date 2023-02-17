@@ -27,7 +27,7 @@ internal class PercentLimitFilters
         IJsonService jsonService,
         IDateTimeService dateTimeService,
         IEnvironmentService environmentService
-    )
+        )
     {
         _logger = logger;
         _calculatorService = calculatorService;
@@ -44,41 +44,32 @@ internal class PercentLimitFilters
         {
             var topShortKlines = instanceResult.ShortSignals
                 .WhereIf(options.IsPocMustBeInWickForOpen, x => x.IsPocInWick)
-                .WhereIf(options.CoefficientOfSellBuyVolumeForOpen > 0,
-                    x => x.KlineVolumeCoefficient > 0 &&
-                         x.KlineVolumeCoefficient >= options.CoefficientOfSellBuyVolumeForOpen)
-                .WhereIf(options.CoefficientOfBidAsksForOpen > 0,
-                    x => x.AsksBidsCoefficient > 0 && x.AsksBidsCoefficient >= options.CoefficientOfBidAsksForOpen)
-                .Where(x => GetKlineActionsFromKlineActionSignal(options.KlineActionForOpen, x.PositionSide)
-                    .Contains(x.KlineAction))
-                .Where(x => GetKlinePowersFromKlinePowerSignal(options.KlinePowerForOpen, x.PositionSide)
-                    .Contains(x.Power))
-                .Where(x => x.KlineTradedQuoteVolume >= options.MinQuoteVolumeForOpen)
+                .WhereIf(options.CoefficientOfVolumeForOpen > 0, x => x.KlineVolumeCoefficient > 0 && x.KlineVolumeCoefficient >= options.CoefficientOfVolumeForOpen)
+                .WhereIf(options.CoefficientOfOrderLimitsForOpen > 0, x => x.AsksBidsCoefficient > 0 && x.AsksBidsCoefficient >= options.CoefficientOfOrderLimitsForOpen)
+                .Where(x => GetKlineActionsFromKlineActionSignal(options.KlineActionForOpen, x.PositionSide).Contains(x.KlineAction))
+                .Where(x => GetKlinePowersFromKlinePowerSignal(options.KlinePowerForOpen, x.PositionSide).Contains(x.Power))
+                .Where(x => GetKlineActionsFromKlineActionSignal(options.KlineActionForOpen, x.PositionSide).Contains(x.KlineAction))
+                .Where(x => x.KlineTotalTrades >= options.MinTradesForOpen)
+                .Where(x => x.KlineQuoteVolume >= options.MinQuoteVolumeForOpen)
                 .Where(x => x.TotalAsks > x.TotalBids)
-                .OrderByDescending(x => x.AsksBidsCoefficient)
-                .ThenByDescending(x => x.PocTradesCoefficient)
+                .OrderByDescending(x => x.KlineQuoteVolume)
+                .ThenByDescending(x => x.AsksBidsCoefficient)
                 .ToArray();
 
             var topLongKlines = instanceResult.LongSignals
                 .WhereIf(options.IsPocMustBeInWickForOpen, x => x.IsPocInWick)
-                .WhereIf(options.CoefficientOfSellBuyVolumeForOpen > 0,
-                    x => x.KlineVolumeCoefficient < 0 &&
-                         Math.Abs(x.KlineVolumeCoefficient) >= options.CoefficientOfSellBuyVolumeForOpen)
-                .WhereIf(options.CoefficientOfBidAsksForOpen > 0,
-                    x => x.AsksBidsCoefficient < 0 &&
-                         Math.Abs(x.AsksBidsCoefficient) >= options.CoefficientOfBidAsksForOpen)
-                .Where(x => GetKlineActionsFromKlineActionSignal(options.KlineActionForOpen, x.PositionSide)
-                    .Contains(x.KlineAction))
-                .Where(x => GetKlinePowersFromKlinePowerSignal(options.KlinePowerForOpen, x.PositionSide)
-                    .Contains(x.Power))
-                .Where(x => x.KlineTradedQuoteVolume >= options.MinQuoteVolumeForOpen)
+                .WhereIf(options.CoefficientOfVolumeForOpen > 0, x => x.KlineVolumeCoefficient < 0 && Math.Abs(x.KlineVolumeCoefficient) >= options.CoefficientOfVolumeForOpen)
+                .WhereIf(options.CoefficientOfOrderLimitsForOpen > 0, x => x.AsksBidsCoefficient < 0 && Math.Abs(x.AsksBidsCoefficient) >= options.CoefficientOfOrderLimitsForOpen)
+                .Where(x => GetKlineActionsFromKlineActionSignal(options.KlineActionForOpen, x.PositionSide).Contains(x.KlineAction))
+                .Where(x => GetKlinePowersFromKlinePowerSignal(options.KlinePowerForOpen, x.PositionSide).Contains(x.Power))
+                .Where(x => x.KlineTotalTrades >= options.MinTradesForOpen)
+                .Where(x => x.KlineQuoteVolume >= options.MinQuoteVolumeForOpen)
                 .Where(x => x.TotalBids > x.TotalAsks)
-                .OrderByDescending(x => x.AsksBidsCoefficient)
-                .ThenByDescending(x => x.PocTradesCoefficient)
+                .OrderByDescending(x => x.KlineQuoteVolume)
+                .ThenByDescending(x => x.AsksBidsCoefficient)
                 .ToArray();
 
-            _logger.LogInformation(
-                "Filtered Longs: {FilteredLongsCount}. Filtered Shorts: {FilteredShortsCount}. In {Method}",
+            _logger.LogInformation("Filtered Longs: {FilteredLongsCount}. Filtered Shorts: {FilteredShortsCount}. In {Method}",
                 topLongKlines.Length, topShortKlines.Length, nameof(GetFilteredOrdersForOpenPositionAsync));
 
             var folderName = Path.Combine(_environmentService.GetBasePath(), FolderConstants.ClusterResultsFolder);
@@ -247,34 +238,43 @@ internal class PercentLimitFilters
                 return Task.FromResult(false);
             }
 
-            if (tradeLogicLogicOptions.CoefficientOfSellBuyVolumeForAverage > 0 
-                && IsCoefficientValid(openedPosition.PositionSide, symbolMarketInfo.KlineVolumeCoefficient, tradeLogicLogicOptions.CoefficientOfSellBuyVolumeForAverage))
+            if (tradeLogicLogicOptions.MinTradesForAverage  < symbolMarketInfo.KlineTotalTrades)
+            {
+                _logger.LogInformation("{Position}. Not valid amount of trades. Kline trades: {KlineTrades}. Accepted trades: {AcceptedTrades}. In {Method}",
+                    openedPosition.ToString(), symbolMarketInfo.KlineTotalTrades, tradeLogicLogicOptions.MinTradesForAverage, 
+                    nameof(IsNeedToPlaceMarketAverageOrderAsync));
+
+                return Task.FromResult(false);
+            }
+            
+            if (tradeLogicLogicOptions.CoefficientOfVolumeForAverage > 0 
+                && IsCoefficientValid(openedPosition.PositionSide, symbolMarketInfo.KlineVolumeCoefficient, tradeLogicLogicOptions.CoefficientOfVolumeForAverage))
             {
                 _logger.LogInformation("{Position}. Not valid volume coefficient. Kline volume coefficient is {KlineVolumeCoefficient}. " +
                                        "Accepted volume coefficient in options: {KlineVolumeCoefficientInOptions}. In {Method}",
-                    openedPosition.ToString(), symbolMarketInfo.KlineVolumeCoefficient, tradeLogicLogicOptions.CoefficientOfSellBuyVolumeForAverage,
+                    openedPosition.ToString(), symbolMarketInfo.KlineVolumeCoefficient, tradeLogicLogicOptions.CoefficientOfVolumeForAverage,
                     nameof(IsNeedToPlaceMarketAverageOrderAsync));
 
                 return Task.FromResult(false);
             }
 
-            if (tradeLogicLogicOptions.CoefficientOfBidAsksForAverage > 0 
-                && IsCoefficientValid(openedPosition.PositionSide, symbolMarketInfo.AsksBidsCoefficient, tradeLogicLogicOptions.CoefficientOfBidAsksForAverage))
+            if (tradeLogicLogicOptions.CoefficientOfOrderLimitsForAverage > 0 
+                && IsCoefficientValid(openedPosition.PositionSide, symbolMarketInfo.AsksBidsCoefficient, tradeLogicLogicOptions.CoefficientOfOrderLimitsForAverage))
             {
                 _logger.LogInformation("{Position}. Not valid asks bids coefficient. Kline asks bids coefficient is {AsksBidsCoefficient}. " +
                                        "Accepted asks bids coefficient in options: {AsksBidsCoefficientInOptions}. In {Method}",
-                    openedPosition.ToString(), symbolMarketInfo.AsksBidsCoefficient, tradeLogicLogicOptions.CoefficientOfBidAsksForAverage,
+                    openedPosition.ToString(), symbolMarketInfo.AsksBidsCoefficient, tradeLogicLogicOptions.CoefficientOfOrderLimitsForAverage,
                     nameof(IsNeedToPlaceMarketAverageOrderAsync));
 
                 return Task.FromResult(false);
             }
 
-            if (tradeLogicLogicOptions.MinQuoteVolumeForAverage > symbolMarketInfo.KlineTradedQuoteVolume)
+            if (tradeLogicLogicOptions.MinQuoteVolumeForAverage > symbolMarketInfo.KlineQuoteVolume)
             {
                 _logger.LogInformation(
                     "{Position}. Not valid trade quote volume. Kline trade asset volume is {TradeQuoteVolumeKline}. " +
                     "Accepted trade quote volume in options. {TradeQuoteVolumeInOptions}. In {Method}",
-                    openedPosition.ToString(), symbolMarketInfo.KlineTradedQuoteVolume,
+                    openedPosition.ToString(), symbolMarketInfo.KlineQuoteVolume,
                     tradeLogicLogicOptions.MinQuoteVolumeForAverage,
                     nameof(IsNeedToPlaceMarketAverageOrderAsync));
 
