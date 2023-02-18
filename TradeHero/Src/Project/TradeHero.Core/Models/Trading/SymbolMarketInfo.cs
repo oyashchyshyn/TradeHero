@@ -30,6 +30,7 @@ public class SymbolMarketInfo
     public decimal PocBuyVolume { get; set; }
     public decimal PocSellVolume { get; set; }
     public decimal PocDeltaVolume => PocBuyVolume - PocSellVolume;
+    public decimal PocVolumeCoefficient => GetCoefficient(PocBuyVolume, PocSellVolume);
     public int PocBuyTrades { get; set; }
     public int PocSellTrades { get; set; }
     public int PocDeltaTrades => PocBuyTrades - PocSellTrades;

@@ -109,7 +109,7 @@ internal class SpotClusterVolumeInstance : IInstance
                 Side = localInstanceOptions.Side,
                 LongsMarketMoodPercent = longMoodPercent,
                 ShortMarketMoodPercent = shortMoodPercent,
-                MarketMood = shortMoodPercent >= 60 ? Mood.Short : longMoodPercent >= 60 ? Mood.Long : Mood.Balanced
+                MarketMood = shortMoodPercent >= localInstanceOptions.ShortMoodAt ? Mood.Short : longMoodPercent >= localInstanceOptions.LongMoodAt ? Mood.Long : Mood.Balanced
             };
 
             var filteredSymbolNameContainers = symbolNameContainers
