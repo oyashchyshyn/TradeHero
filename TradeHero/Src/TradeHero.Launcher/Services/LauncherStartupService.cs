@@ -173,7 +173,9 @@ internal class LauncherStartupService
                         $"Please, be attentive when writing data.{Environment.NewLine}" +
                         $"Also, make sure that user send '/start' command or send a message to bot.{Environment.NewLine}" +
                         "Make sure that you solve problems above and insert data one more time.";
+                    
                     _terminalService.ClearConsole();
+                    
                     continue;
                 }
 
@@ -250,103 +252,113 @@ internal class LauncherStartupService
     {
         Task.Run(async () =>
         {
-            var appSettings = _environmentService.GetAppSettings();
-            var appPath = Path.Combine(_environmentService.GetBasePath(), _environmentService.GetRunningApplicationName());
-            var releaseAppPath = Path.Combine(_environmentService.GetBasePath(), _environmentService.GetReleaseApplicationName());
-
-            while (true)
+            try
             {
-                if (!File.Exists(appPath))
+                var appSettings = _environmentService.GetAppSettings();
+                var appPath = Path.Combine(_environmentService.GetBasePath(), _environmentService.GetRunningApplicationName());
+                var releaseAppPath = Path.Combine(_environmentService.GetBasePath(), _environmentService.GetReleaseApplicationName());
+
+                while (true)
                 {
-                    _terminalService.Write("Preparing application...", new WriteMessageOptions { IsMessageFinished = true });
-
-                    var latestRelease = await _githubService.GetLatestReleaseAsync();
-                    if (latestRelease.ActionResult != ActionResult.Success)
+                    if (!File.Exists(appPath))
                     {
-                        throw new Exception("Cannot find remote additional data for bot.");
-                    }
+                        _terminalService.Write("Preparing application...", new WriteMessageOptions { IsMessageFinished = true });
+
+                        var latestRelease = await _githubService.GetLatestReleaseAsync();
+                        if (latestRelease.ActionResult != ActionResult.Success)
+                        {
+                            throw new Exception("Cannot find remote additional data for bot.");
+                        }
                     
-                    var downloadResult = await _githubService.DownloadReleaseAsync(latestRelease.Data.AppDownloadUri, appPath);
-                    if (downloadResult.ActionResult != ActionResult.Success)
+                        var downloadResult = await _githubService.DownloadReleaseAsync(latestRelease.Data.AppDownloadUri, appPath);
+                        if (downloadResult.ActionResult != ActionResult.Success)
+                        {
+                            throw new Exception("Cannot download remote additional data for bot.");
+                        }
+                    
+                        _terminalService.ClearConsole();
+                    }
+
+                    var arguments = $"{ArgumentKeyConstants.Environment}{_environmentService.GetEnvironmentType()} " +
+                                    $"{appSettings.Application.RunAppKey}";
+
+                    if (_isNeedToUpdateApp)
                     {
-                        throw new Exception("Cannot download remote additional data for bot.");
+                        File.Move(releaseAppPath, appPath, true);
+
+                        arguments += $" {ArgumentKeyConstants.Update}";
+
+                        _isNeedToUpdateApp = false;
                     }
-                    
-                    _terminalService.ClearConsole();
-                }
-
-                var arguments = $"{ArgumentKeyConstants.Environment}{_environmentService.GetEnvironmentType()} " +
-                        $"{appSettings.Application.RunAppKey}";
-
-                if (_isNeedToUpdateApp)
-                {
-                    File.Move(releaseAppPath, appPath, true);
-
-                    arguments += $" {ArgumentKeyConstants.Update}";
-
-                    _isNeedToUpdateApp = false;
-                }
             
-                if (_environmentService.GetCurrentOperationSystem() == OperationSystem.Linux)
-                {
-                    EnvironmentHelper.SetFullPermissionsToFileLinux(appPath);
-                }
+                    if (_environmentService.GetCurrentOperationSystem() == OperationSystem.Linux)
+                    {
+                        EnvironmentHelper.SetFullPermissionsToFileLinux(appPath);
+                    }
                 
-                var processStartInfo = new ProcessStartInfo
-                {
-                    FileName = appPath,
-                    Arguments = arguments,
-                    UseShellExecute = false
-                };
+                    var processStartInfo = new ProcessStartInfo
+                    {
+                        FileName = appPath,
+                        Arguments = arguments,
+                        UseShellExecute = false
+                    };
 
-                _runningProcess = Process.Start(processStartInfo);
-                if (_runningProcess == null)
-                {
-                    _logger.LogWarning("App process did not started! Process is null. In {Method}", 
-                        nameof(RunApp));
+                    _runningProcess = Process.Start(processStartInfo);
+                    if (_runningProcess == null)
+                    {
+                        _logger.LogWarning("App process did not started! Process is null. In {Method}", 
+                            nameof(RunApp));
 
-                    _waitAppClosed.Set();
-                    AppWaiting.Set();
+                        _waitAppClosed.Set();
+                        AppWaiting.Set();
                     
-                    _terminalService.Write("Cannot start bot, please see logs.", new WriteMessageOptions { IsMessageFinished = true });
+                        _terminalService.Write("Cannot start bot, please see logs.", new WriteMessageOptions { IsMessageFinished = true });
                     
-                    return;
-                }
+                        return;
+                    }
                 
-                _logger.LogInformation("App process started! In {Method}", nameof(RunApp));
+                    _logger.LogInformation("App process started! In {Method}", nameof(RunApp));
 
-                await _runningProcess.WaitForExitAsync();
+                    await _runningProcess.WaitForExitAsync();
 
-                var exitCode = _runningProcess.ExitCode;
+                    var exitCode = _runningProcess.ExitCode;
                 
-                _logger.LogInformation("App stopped. Exit code: {ExitCode}. In {Method}", 
-                    exitCode, nameof(RunApp));
+                    _logger.LogInformation("App stopped. Exit code: {ExitCode}. In {Method}", 
+                        exitCode, nameof(RunApp));
                 
-                _runningProcess?.Dispose();
-                _runningProcess = null;
+                    _runningProcess?.Dispose();
+                    _runningProcess = null;
                 
-                switch (exitCode)
-                {
-                    case (int)AppExitCode.Update:
-                        _isNeedToUpdateApp = true;
-                        _logger.LogInformation("App finished with Update exit code. In {Method}", nameof(RunApp));
-                        continue;
-                    case (int)AppExitCode.Failure:
-                        _logger.LogInformation("App finished with Failure exit code. In {Method}", nameof(RunApp));
-                        _waitAppClosed.Set();
-                        ReleaseLauncherAndSetExitCode();
-                        return;
-                    case (int)AppExitCode.Success:
-                        _logger.LogInformation("App finished with Success exit code. In {Method}", nameof(RunApp));
-                        _waitAppClosed.Set();
-                        ReleaseLauncherAndSetExitCode();
-                        return;
-                    default: 
-                        _logger.LogInformation("App finished with unknown exit code. In {Method}", nameof(RunApp));
-                        _waitAppClosed.Set();
-                        ReleaseLauncherAndSetExitCode();
-                        return;
+                    switch (exitCode)
+                    {
+                        case (int)AppExitCode.Update:
+                            _isNeedToUpdateApp = true;
+                            _logger.LogInformation("App finished with Update exit code. In {Method}", nameof(RunApp));
+                            continue;
+                        case (int)AppExitCode.Failure:
+                            _logger.LogInformation("App finished with Failure exit code. In {Method}", nameof(RunApp));
+                            _waitAppClosed.Set();
+                            ReleaseLauncherAndSetExitCode();
+                            return;
+                        case (int)AppExitCode.Success:
+                            _logger.LogInformation("App finished with Success exit code. In {Method}", nameof(RunApp));
+                            _waitAppClosed.Set();
+                            ReleaseLauncherAndSetExitCode();
+                            return;
+                        default: 
+                            _logger.LogInformation("App finished with unknown exit code. In {Method}", nameof(RunApp));
+                            _waitAppClosed.Set();
+                            ReleaseLauncherAndSetExitCode();
+                            return;
+                    }
                 }
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError(exception, "In {Method}", nameof(RunApp));
+                
+                _waitAppClosed.Set();
+                AppWaiting.Set();
             }
         });
     }

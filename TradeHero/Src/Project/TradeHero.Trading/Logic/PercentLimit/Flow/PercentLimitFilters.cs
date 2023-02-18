@@ -27,7 +27,7 @@ internal class PercentLimitFilters
         IJsonService jsonService,
         IDateTimeService dateTimeService,
         IEnvironmentService environmentService
-    )
+        )
     {
         _logger = logger;
         _calculatorService = calculatorService;
@@ -36,72 +36,34 @@ internal class PercentLimitFilters
         _environmentService = environmentService;
     }
 
-    public async Task<List<SymbolMarketInfo>> GetFilteredOrdersForOpenPositionAsync(InstanceResult instanceResult,
+    public async Task<List<SignalInfo>> GetFilteredOrdersForOpenPositionAsync(InstanceResult instanceResult,
         PercentLimitTradeLogicLogicOptions options, IReadOnlyCollection<Position> openedPositions,
         IReadOnlyCollection<BinancePositionDetailsUsdt> positionsInfo)
     {
         try
         {
-            var topShortKlines = instanceResult.ShortSignals
-                .WhereIf(options.IsPocMustBeInWickForOpen, x => x.IsPocInWick)
-                .WhereIf(options.CoefficientOfSellBuyVolumeForOpen > 0,
-                    x => x.KlineVolumeCoefficient > 0 &&
-                         x.KlineVolumeCoefficient >= options.CoefficientOfSellBuyVolumeForOpen)
-                .WhereIf(options.CoefficientOfBidAsksForOpen > 0,
-                    x => x.AsksBidsCoefficient > 0 && x.AsksBidsCoefficient >= options.CoefficientOfBidAsksForOpen)
-                .Where(x => GetKlineActionsFromKlineActionSignal(options.KlineActionForOpen, x.PositionSide)
-                    .Contains(x.KlineAction))
-                .Where(x => GetKlinePowersFromKlinePowerSignal(options.KlinePowerForOpen, x.PositionSide)
-                    .Contains(x.Power))
-                .Where(x => x.KlineTradedQuoteVolume >= options.MinQuoteVolumeForOpen)
-                .Where(x => x.TotalAsks > x.TotalBids)
-                .OrderByDescending(x => x.AsksBidsCoefficient)
-                .ThenByDescending(x => x.PocTradesCoefficient)
-                .ToArray();
+            var shortSignals = GetShortSignalsForOpen(instanceResult, options);
+            var longSignals = GetLongSignalsForOpen(instanceResult, options);
 
-            var topLongKlines = instanceResult.LongSignals
-                .WhereIf(options.IsPocMustBeInWickForOpen, x => x.IsPocInWick)
-                .WhereIf(options.CoefficientOfSellBuyVolumeForOpen > 0,
-                    x => x.KlineVolumeCoefficient < 0 &&
-                         Math.Abs(x.KlineVolumeCoefficient) >= options.CoefficientOfSellBuyVolumeForOpen)
-                .WhereIf(options.CoefficientOfBidAsksForOpen > 0,
-                    x => x.AsksBidsCoefficient < 0 &&
-                         Math.Abs(x.AsksBidsCoefficient) >= options.CoefficientOfBidAsksForOpen)
-                .Where(x => GetKlineActionsFromKlineActionSignal(options.KlineActionForOpen, x.PositionSide)
-                    .Contains(x.KlineAction))
-                .Where(x => GetKlinePowersFromKlinePowerSignal(options.KlinePowerForOpen, x.PositionSide)
-                    .Contains(x.Power))
-                .Where(x => x.KlineTradedQuoteVolume >= options.MinQuoteVolumeForOpen)
-                .Where(x => x.TotalBids > x.TotalAsks)
-                .OrderByDescending(x => x.AsksBidsCoefficient)
-                .ThenByDescending(x => x.PocTradesCoefficient)
-                .ToArray();
-
-            _logger.LogInformation(
-                "Filtered Longs: {FilteredLongsCount}. Filtered Shorts: {FilteredShortsCount}. In {Method}",
-                topLongKlines.Length, topShortKlines.Length, nameof(GetFilteredOrdersForOpenPositionAsync));
+            _logger.LogInformation("Filtered Longs: {FilteredLongsCount}. Filtered Shorts: {FilteredShortsCount}. In {Method}",
+                shortSignals.Count, longSignals.Count, nameof(GetFilteredOrdersForOpenPositionAsync));
 
             var folderName = Path.Combine(_environmentService.GetBasePath(), FolderConstants.ClusterResultsFolder);
-            var jsonShorts = _jsonService.SerializeObject(instanceResult.ShortSignals, Formatting.Indented).Data;
-            var jsonLongs = _jsonService.SerializeObject(instanceResult.LongSignals, Formatting.Indented).Data;
-            var jsonFilteredShorts = _jsonService.SerializeObject(topShortKlines, Formatting.Indented).Data;
-            var jsonFilteredLongs = _jsonService.SerializeObject(topLongKlines, Formatting.Indented).Data;
+            
+            var jsonSignals = _jsonService.SerializeObject(instanceResult.Signals, Formatting.Indented).Data;
+            var jsonShorts = _jsonService.SerializeObject(shortSignals, Formatting.Indented).Data;
+            var jsonLongs = _jsonService.SerializeObject(longSignals, Formatting.Indented).Data;
 
-            var messagePositions =
-                $"SHORTS:{Environment.NewLine}{jsonShorts}{Environment.NewLine}LONGS:{Environment.NewLine}{jsonLongs}";
-            var messagePositionsToOpen =
-                $"SHORTS:{Environment.NewLine}{jsonFilteredShorts}{Environment.NewLine}LONGS:{Environment.NewLine}{jsonFilteredLongs}";
+            var newLine = Environment.NewLine;
+            
+            var messagePositions = $"SIGNALS:{newLine}{jsonSignals}{newLine}FILTERED SHORTS:{newLine}{jsonShorts}{newLine}FILTERED LONGS:{newLine}{jsonLongs}";
 
             if (!Directory.Exists(folderName))
             {
                 Directory.CreateDirectory(folderName);
             }
 
-            await File.WriteAllTextAsync(
-                Path.Combine(folderName, $"{_dateTimeService.GetUtcDateTime():dd_MM_yyyy_HH_mm_ss}.json"),
-                string.Join($"{Environment.NewLine}------------------------{Environment.NewLine}",
-                    messagePositions, messagePositionsToOpen)
-            );
+            await File.WriteAllTextAsync(Path.Combine(folderName, $"{_dateTimeService.GetUtcDateTime():dd_MM_yyyy_HH_mm_ss}.json"), messagePositions);
 
             var shortsPositionsToOpen = 0;
             var longsPositionsToOpen = 0;
@@ -118,7 +80,7 @@ internal class PercentLimitFilters
                     "There is no ability to open new positions. Opened positions count is: {OpenedPositionsCount}. In {Method}",
                     openedPositions.Count, nameof(GetFilteredOrdersForOpenPositionAsync));
 
-                return new List<SymbolMarketInfo>();
+                return new List<SignalInfo>();
             }
 
             _logger.LogInformation(
@@ -135,51 +97,34 @@ internal class PercentLimitFilters
                     longsPositionsToOpen = options.MaximumPositionsPerIteration;
                     break;
                 case Mood.Balanced:
-                    switch (instanceResult.SignalsMood)
+                {
+                    if (options.MaximumPositionsPerIteration % 2 == 0)
                     {
-                        case Mood.Short:
-                            shortsPositionsToOpen = options.MaximumPositionsPerIteration;
-                            break;
-                        case Mood.Long:
-                            longsPositionsToOpen = options.MaximumPositionsPerIteration;
-                            break;
-                        case Mood.Balanced:
-                        {
-                            if (options.MaximumPositionsPerIteration % 2 == 0)
-                            {
-                                shortsPositionsToOpen = options.MaximumPositionsPerIteration / 2;
-                                longsPositionsToOpen = options.MaximumPositionsPerIteration / 2;
-                            }
-                            else
-                            {
-                                var dividedPerIteration =
-                                    (int)Math.Round((decimal)options.MaximumPositionsPerIteration / 2, 0);
-
-                                if (instanceResult.ShortSignalsCount > instanceResult.LongSignalsCount)
-                                {
-                                    shortsPositionsToOpen = dividedPerIteration;
-                                    longsPositionsToOpen = options.MaximumPositionsPerIteration - dividedPerIteration;
-                                }
-                                else
-                                {
-                                    shortsPositionsToOpen = options.MaximumPositionsPerIteration - dividedPerIteration;
-                                    longsPositionsToOpen = dividedPerIteration;
-                                }
-                            }
-
-                            break;
-                        }
-                        default:
-                            _logger.LogWarning("There is no signal mood. In {Method}",
-                                nameof(GetFilteredOrdersForOpenPositionAsync));
-                            return new List<SymbolMarketInfo>();
+                        shortsPositionsToOpen = options.MaximumPositionsPerIteration / 2;
+                        longsPositionsToOpen = options.MaximumPositionsPerIteration / 2;
                     }
+                    else
+                    {
+                        var dividedPerIteration = (int)Math.Round((decimal)options.MaximumPositionsPerIteration / 2, 0);
 
+                        if (instanceResult.ShortMarketMoodPercent > instanceResult.LongsMarketMoodPercent)
+                        {
+                            shortsPositionsToOpen = dividedPerIteration;
+                            longsPositionsToOpen = options.MaximumPositionsPerIteration - dividedPerIteration;
+                        }
+                        else
+                        {
+                            shortsPositionsToOpen = options.MaximumPositionsPerIteration - dividedPerIteration;
+                            longsPositionsToOpen = dividedPerIteration;
+                        }
+                    }
+                    
                     break;
+                }
                 default:
                     _logger.LogWarning("There is no market mood. In {Method}",
                         nameof(GetFilteredOrdersForOpenPositionAsync));
-                    return new List<SymbolMarketInfo>();
+                    return new List<SignalInfo>();
             }
 
             _logger.LogInformation(
@@ -187,10 +132,11 @@ internal class PercentLimitFilters
                 options.MaximumPositionsPerIteration, longsPositionsToOpen, shortsPositionsToOpen,
                 nameof(GetFilteredOrdersForOpenPositionAsync));
 
-            var shortsToOpen = GetPositions(shortsPositionsToOpen, topShortKlines, openedPositions, positionsInfo,
-                options);
-            var longsToOpen =
-                GetPositions(longsPositionsToOpen, topLongKlines, openedPositions, positionsInfo, options);
+            var shortSignalInfo = shortSignals.Select(x => new SignalInfo(x, PositionSide.Short)).ToArray();
+            var longSignalInfo = longSignals.Select(x => new SignalInfo(x, PositionSide.Long)).ToArray();
+            
+            var shortsToOpen = GetPositions(shortsPositionsToOpen, shortSignalInfo, openedPositions, positionsInfo, options);
+            var longsToOpen = GetPositions(longsPositionsToOpen, longSignalInfo, openedPositions, positionsInfo, options);
 
             _logger.LogInformation("Longs to open: {LongsCount}. Shorts to open: {ShortsCount}. In {Method}",
                 longsToOpen.Count, shortsToOpen.Count, nameof(GetFilteredOrdersForOpenPositionAsync));
@@ -203,13 +149,12 @@ internal class PercentLimitFilters
         {
             _logger.LogCritical(exception, "In {Method}", nameof(GetFilteredOrdersForOpenPositionAsync));
 
-            return new List<SymbolMarketInfo>();
+            return new List<SignalInfo>();
         }
     }
 
-    public Task<bool> IsNeedToPlaceMarketAverageOrderAsync(InstanceResult instanceResult, Position openedPosition,
-        decimal lastPrice, SymbolMarketInfo symbolMarketInfo,
-        BinanceFuturesUsdtSymbol symbolInfo, PercentLimitTradeLogicLogicOptions tradeLogicLogicOptions)
+    public Task<bool> IsNeedToPlaceMarketAverageOrderAsync(InstanceResult instanceResult, Position openedPosition, decimal lastPrice, 
+        SymbolMarketInfo symbolMarketInfo, BinanceFuturesUsdtSymbol symbolInfo, PercentLimitTradeLogicLogicOptions options)
     {
         try
         {
@@ -222,7 +167,7 @@ internal class PercentLimitFilters
                 return Task.FromResult(false);
             }
 
-            if (!tradeLogicLogicOptions.EnableAveraging)
+            if (!options.EnableAveraging)
             {
                 _logger.LogInformation("{Position}. Averaging is disabled. In {Method}",
                     openedPosition.ToString(), nameof(IsNeedToPlaceMarketAverageOrderAsync));
@@ -230,84 +175,129 @@ internal class PercentLimitFilters
                 return Task.FromResult(false);
             }
 
-            if (openedPosition.PositionSide != symbolMarketInfo.PositionSide)
-            {
-                _logger.LogInformation("{Position}. Not valid side for average. Kline side is {KlineSide}. In {Method}",
-                    openedPosition.ToString(), symbolMarketInfo.PositionSide,
-                    nameof(IsNeedToPlaceMarketAverageOrderAsync));
+            var positionOption = GetPositionOption(instanceResult.MarketMood, options, FilterPositionAction.Average, 
+                openedPosition.PositionSide);
 
-                return Task.FromResult(false);
-            }
-
-            if (tradeLogicLogicOptions.IsPocMustBeInWickForAverage && !symbolMarketInfo.IsPocInWick)
+            if (positionOption == null)
             {
-                _logger.LogInformation("{Position}. Poc does not located in wick of kline. In {Method}",
+                _logger.LogError("{Position}. Signal options  is null. In {Method}", 
                     openedPosition.ToString(), nameof(IsNeedToPlaceMarketAverageOrderAsync));
+                
+                return Task.FromResult(false);
+            }
+            
+            if (positionOption.Status == PositionOptionStatus.Disabled)
+            {
+                _logger.LogInformation("{Position}. Signal status is Disabled. In {Method}", 
+                    openedPosition.ToString(),nameof(GetFilteredOrdersForOpenPositionAsync));
 
                 return Task.FromResult(false);
             }
-
-            if (tradeLogicLogicOptions.CoefficientOfSellBuyVolumeForAverage > 0 
-                && IsCoefficientValid(openedPosition.PositionSide, symbolMarketInfo.KlineVolumeCoefficient, tradeLogicLogicOptions.CoefficientOfSellBuyVolumeForAverage))
+            
+            if (positionOption.KlinePocLocation != KlinePocLocation.Any)
             {
-                _logger.LogInformation("{Position}. Not valid volume coefficient. Kline volume coefficient is {KlineVolumeCoefficient}. " +
+                switch (symbolMarketInfo.IsPocInWick)
+                {
+                    case true when positionOption.KlinePocLocation == KlinePocLocation.InBody:
+                    case false when positionOption.KlinePocLocation == KlinePocLocation.InWick:
+                        _logger.LogInformation("{Position}. Is POC in wick: {IsPocInWick}. Poc location is: {PocLocation}. In {Method}",
+                            openedPosition.ToString(), symbolMarketInfo.IsPocInWick, positionOption.KlinePocLocation, 
+                            nameof(IsNeedToPlaceMarketAverageOrderAsync));
+                    return Task.FromResult(false);
+                }
+            }
+            
+            if (positionOption.KlinePower != KlinePowerSignal.Any)
+            {
+                switch (symbolMarketInfo.Power)
+                {
+                    case KlinePower.Bear when positionOption.KlinePower == KlinePowerSignal.Bull:
+                    case KlinePower.Bull when positionOption.KlinePower == KlinePowerSignal.Bear:
+                        _logger.LogInformation("{Position}. Kline power is: {KlinePower}. Accepted power is: {AcceptedPower}. In {Method}",
+                            openedPosition.ToString(), symbolMarketInfo.Power, positionOption.KlinePower, 
+                            nameof(IsNeedToPlaceMarketAverageOrderAsync));
+                        return Task.FromResult(false);
+                }
+            }
+            
+            if (positionOption.PocVolumeDeltaType != KlineDeltaType.Any)
+            {
+                switch (symbolMarketInfo.PocDeltaVolume)
+                {
+                    case > 0 when positionOption.PocVolumeDeltaType == KlineDeltaType.Sell:
+                    case < 0 when positionOption.PocVolumeDeltaType == KlineDeltaType.Buy:
+                        _logger.LogInformation("{Position}. Poc delta type is: {PocDeltaType}. Accepted Poc volume delta type is: {AcceptedPocDeltaType}. In {Method}",
+                            openedPosition.ToString(), symbolMarketInfo.PocDeltaVolume, positionOption.PocVolumeDeltaType, nameof(IsNeedToPlaceMarketAverageOrderAsync));
+                        return Task.FromResult(false);
+                }
+            }
+
+            if (positionOption.MinTrades < symbolMarketInfo.KlineTotalTrades)
+            {
+                _logger.LogInformation("{Position}. Not valid amount of trades. Kline trades: {KlineTrades}. Accepted trades: {AcceptedTrades}. In {Method}",
+                    openedPosition.ToString(), symbolMarketInfo.KlineTotalTrades, positionOption.MinTrades, 
+                    nameof(IsNeedToPlaceMarketAverageOrderAsync));
+
+                return Task.FromResult(false);
+            }
+            
+            if (positionOption.CoefficientOfVolume > 0 && Math.Abs(symbolMarketInfo.KlineVolumeCoefficient) < positionOption.CoefficientOfVolume)
+            {
+                _logger.LogInformation("{Position}. Not valid kline volume coefficient. Kline volume coefficient is {KlineVolumeCoefficient}. " +
                                        "Accepted volume coefficient in options: {KlineVolumeCoefficientInOptions}. In {Method}",
-                    openedPosition.ToString(), symbolMarketInfo.KlineVolumeCoefficient, tradeLogicLogicOptions.CoefficientOfSellBuyVolumeForAverage,
+                    openedPosition.ToString(), symbolMarketInfo.KlineVolumeCoefficient, positionOption.CoefficientOfVolume,
                     nameof(IsNeedToPlaceMarketAverageOrderAsync));
 
                 return Task.FromResult(false);
             }
 
-            if (tradeLogicLogicOptions.CoefficientOfBidAsksForAverage > 0 
-                && IsCoefficientValid(openedPosition.PositionSide, symbolMarketInfo.AsksBidsCoefficient, tradeLogicLogicOptions.CoefficientOfBidAsksForAverage))
+            if (positionOption.CoefficientOfPocVolume > 0 && Math.Abs(symbolMarketInfo.PocVolumeCoefficient) < positionOption.CoefficientOfPocVolume)
+            {
+                _logger.LogInformation("{Position}. Not valid POC volume coefficient. POC volume coefficient is {KlineVolumeCoefficient}. " +
+                                       "Accepted volume coefficient in options: {KlineVolumeCoefficientInOptions}. In {Method}",
+                    openedPosition.ToString(), symbolMarketInfo.KlineVolumeCoefficient, positionOption.CoefficientOfVolume,
+                    nameof(IsNeedToPlaceMarketAverageOrderAsync));
+
+                return Task.FromResult(false);
+            }
+            
+            if (positionOption.CoefficientOfOrderLimits > 0 && Math.Abs(symbolMarketInfo.AsksBidsCoefficient) < positionOption.CoefficientOfOrderLimits)
             {
                 _logger.LogInformation("{Position}. Not valid asks bids coefficient. Kline asks bids coefficient is {AsksBidsCoefficient}. " +
                                        "Accepted asks bids coefficient in options: {AsksBidsCoefficientInOptions}. In {Method}",
-                    openedPosition.ToString(), symbolMarketInfo.AsksBidsCoefficient, tradeLogicLogicOptions.CoefficientOfBidAsksForAverage,
+                    openedPosition.ToString(), symbolMarketInfo.AsksBidsCoefficient, positionOption.CoefficientOfOrderLimits,
                     nameof(IsNeedToPlaceMarketAverageOrderAsync));
 
                 return Task.FromResult(false);
             }
 
-            if (tradeLogicLogicOptions.MinQuoteVolumeForAverage > symbolMarketInfo.KlineTradedQuoteVolume)
+            if (positionOption.MinQuoteVolume > symbolMarketInfo.KlineQuoteVolume)
             {
                 _logger.LogInformation(
                     "{Position}. Not valid trade quote volume. Kline trade asset volume is {TradeQuoteVolumeKline}. " +
                     "Accepted trade quote volume in options. {TradeQuoteVolumeInOptions}. In {Method}",
-                    openedPosition.ToString(), symbolMarketInfo.KlineTradedQuoteVolume,
-                    tradeLogicLogicOptions.MinQuoteVolumeForAverage,
+                    openedPosition.ToString(), symbolMarketInfo.KlineQuoteVolume, positionOption.MinQuoteVolume,
                     nameof(IsNeedToPlaceMarketAverageOrderAsync));
 
                 return Task.FromResult(false);
             }
 
-            if (!GetKlineActionsFromKlineActionSignal(tradeLogicLogicOptions.KlineActionForAverage, openedPosition.PositionSide).Contains(symbolMarketInfo.KlineAction))
+            if (!IsKlinePocTypeValidForKlineSignalType(symbolMarketInfo.KlinePocType, openedPosition.PositionSide, positionOption.KlineSignalType))
             {
                 _logger.LogInformation("{Position}. Not valid kline action. Current kline action is {KlineAction}. " +
                                        "Kline action signal for average is {KlineActionSignal}. In {Method}",
-                    openedPosition.ToString(), symbolMarketInfo.KlineAction,
-                    tradeLogicLogicOptions.KlineActionForAverage,
+                    openedPosition.ToString(), symbolMarketInfo.KlinePocType, positionOption.KlineSignalType, 
                     nameof(IsNeedToPlaceMarketAverageOrderAsync));
 
                 return Task.FromResult(false);
             }
 
-            if (!GetKlinePowersFromKlinePowerSignal(tradeLogicLogicOptions.KlinePowerForAverage, openedPosition.PositionSide).Contains(symbolMarketInfo.Power))
-            {
-                _logger.LogInformation("{Position}. Not valid kline power. Current kline power is {KlinePower}. " +
-                                       "Kline power signal for average is {KlinePowerSignal}. In {Method}",
-                    openedPosition.ToString(), symbolMarketInfo.Power, tradeLogicLogicOptions.KlinePowerForAverage,
-                    nameof(IsNeedToPlaceMarketAverageOrderAsync));
-
-                return Task.FromResult(false);
-            }
-
-            if (symbolMarketInfo.PositionSide == PositionSide.Short && symbolMarketInfo.TotalAsks <= symbolMarketInfo.TotalBids
-                || symbolMarketInfo.PositionSide == PositionSide.Long && symbolMarketInfo.TotalBids <= symbolMarketInfo.TotalAsks)
+            if (openedPosition.PositionSide == PositionSide.Short && symbolMarketInfo.TotalAsks <= symbolMarketInfo.TotalBids
+                || openedPosition.PositionSide == PositionSide.Long && symbolMarketInfo.TotalBids <= symbolMarketInfo.TotalAsks)
             {
                 _logger.LogInformation(
                     "{Position}. Not valid Bids and Asks coefficient. Kline side is {KlineSide}. Asks: {Asks}. Bids {Bids}. In {Method}",
-                    openedPosition.ToString(), symbolMarketInfo.PositionSide, symbolMarketInfo.TotalAsks,
+                    openedPosition.ToString(), openedPosition.PositionSide, symbolMarketInfo.TotalAsks,
                     symbolMarketInfo.TotalBids, nameof(IsNeedToPlaceMarketAverageOrderAsync));
 
                 return Task.FromResult(false);
@@ -316,24 +306,12 @@ internal class PercentLimitFilters
             var roePercent = _calculatorService.CalculateRoe(openedPosition.PositionSide, openedPosition.EntryPrice,
                 lastPrice, openedPosition.Leverage);
 
-            if (roePercent > tradeLogicLogicOptions.AverageFromRoe)
+            if (roePercent > options.AverageFromRoe)
             {
-                _logger.LogInformation("{Position}. Roe percent is invalid. ROE: {Roe}%. In {Method}",
+                _logger.LogInformation("{Position}. ROE percent is invalid. ROE: {Roe}%. In {Method}",
                     openedPosition.ToString(), roePercent, nameof(IsNeedToPlaceMarketAverageOrderAsync));
 
                 return Task.FromResult(false);
-            }
-
-            switch (instanceResult.MarketMood)
-            {
-                case Mood.Short when openedPosition.PositionSide == PositionSide.Long:
-                case Mood.Long when openedPosition.PositionSide == PositionSide.Short:
-                case Mood.Balanced:
-                    _logger.LogInformation(
-                        "{Position}. Wrong market mood. Current market mood is {MarketMood}. In {Method}",
-                        openedPosition.ToString(), instanceResult.MarketMood,
-                        nameof(IsNeedToPlaceMarketAverageOrderAsync));
-                    return Task.FromResult(false);
             }
 
             _logger.LogInformation("{Position}. ROE is valid and order will be placed. ROE: {Roe}%. In {Method}",
@@ -484,18 +462,95 @@ internal class PercentLimitFilters
 
     #region Private methods
 
-    private List<SymbolMarketInfo> GetPositions(int toOpen, IEnumerable<SymbolMarketInfo> klineInfos,
-        IReadOnlyCollection<Position> openedPositions,
-        IReadOnlyCollection<BinancePositionDetailsUsdt> positionsInfo,
+    private List<SymbolMarketInfo> GetShortSignalsForOpen(InstanceResult instanceResult, PercentLimitTradeLogicLogicOptions options)
+    {
+        var positionOption = GetPositionOption(instanceResult.MarketMood, options, FilterPositionAction.Open, PositionSide.Short);
+        
+        if (positionOption == null)
+        {
+            _logger.LogError("Signal options for side: {PositionSide}, action: {PositionAction} is null. In {Method}", 
+                PositionSide.Short, FilterPositionAction.Open, nameof(GetFilteredOrdersForOpenPositionAsync));
+                
+            return new List<SymbolMarketInfo>();
+        }
+            
+        if (positionOption.Status == PositionOptionStatus.Disabled)
+        {
+            _logger.LogInformation("Signal status for side: {PositionSide}, action: {PositionAction} is Disabled. In {Method}", 
+                PositionSide.Short, FilterPositionAction.Open, nameof(GetFilteredOrdersForOpenPositionAsync));
+
+            return new List<SymbolMarketInfo>();
+        }
+        
+        var shortSignals = GetFilteredSignals(positionOption, instanceResult.Signals)
+            .Where(x => IsKlinePocTypeValidForKlineSignalType(x.KlinePocType, PositionSide.Short, positionOption.KlineSignalType))
+            .Where(x => x.TotalAsks > x.TotalBids)
+            .OrderByDescending(x => x.KlineQuoteVolume)
+            .ThenByDescending(x => x.AsksBidsCoefficient)
+            .ToList();
+            
+        return shortSignals;
+    }
+    
+    private List<SymbolMarketInfo> GetLongSignalsForOpen(InstanceResult instanceResult, PercentLimitTradeLogicLogicOptions options)
+    {
+        var positionOption = GetPositionOption(instanceResult.MarketMood, options, FilterPositionAction.Open, PositionSide.Long);
+        
+        if (positionOption == null)
+        {
+            _logger.LogError("Signal options for side: {PositionSide}, action: {PositionAction} is null. In {Method}", 
+                PositionSide.Long, FilterPositionAction.Open, nameof(GetFilteredOrdersForOpenPositionAsync));
+                
+            return new List<SymbolMarketInfo>();
+        }
+            
+        if (positionOption.Status == PositionOptionStatus.Disabled)
+        {
+            _logger.LogInformation("Signal status for side: {PositionSide}, action: {PositionAction} is Disabled. In {Method}", 
+                PositionSide.Long, FilterPositionAction.Open, nameof(GetFilteredOrdersForOpenPositionAsync));
+
+            return new List<SymbolMarketInfo>();
+        }
+
+        var longSignals = GetFilteredSignals(positionOption, instanceResult.Signals)
+            .Where(x => IsKlinePocTypeValidForKlineSignalType(x.KlinePocType, PositionSide.Long, positionOption.KlineSignalType))
+            .Where(x => x.TotalAsks < x.TotalBids)
+            .OrderByDescending(x => x.KlineQuoteVolume)
+            .ThenByDescending(x => x.AsksBidsCoefficient)
+            .ToList();
+            
+        return longSignals;
+    }
+
+    private static IEnumerable<SymbolMarketInfo> GetFilteredSignals(PositionOption positionOption, IEnumerable<SymbolMarketInfo> signals)
+    {
+        var filteredSignals = signals
+            .WhereIf(positionOption.KlinePocLocation == KlinePocLocation.InBody, x => !x.IsPocInWick)
+            .WhereIf(positionOption.KlinePocLocation == KlinePocLocation.InWick, x => x.IsPocInWick)
+            .WhereIf(positionOption.KlinePower == KlinePowerSignal.Bull, x => x.Power == KlinePower.Bull)
+            .WhereIf(positionOption.KlinePower == KlinePowerSignal.Bear, x => x.Power == KlinePower.Bear)
+            .WhereIf(positionOption.PocVolumeDeltaType == KlineDeltaType.Buy, x => x.PocDeltaVolume > 0)
+            .WhereIf(positionOption.PocVolumeDeltaType == KlineDeltaType.Sell, x => x.PocDeltaVolume < 0)
+            .WhereIf(positionOption.CoefficientOfVolume > 0, x => Math.Abs(x.KlineVolumeCoefficient) >= positionOption.CoefficientOfVolume)
+            .WhereIf(positionOption.CoefficientOfPocVolume > 0, x => Math.Abs(x.PocVolumeCoefficient) >= positionOption.CoefficientOfPocVolume)
+            .WhereIf(positionOption.CoefficientOfOrderLimits > 0, x => Math.Abs(x.AsksBidsCoefficient) >= positionOption.CoefficientOfOrderLimits)
+            .Where(x => x.KlineTotalTrades >= positionOption.MinTrades)
+            .Where(x => x.KlineQuoteVolume >= positionOption.MinQuoteVolume);
+
+        return filteredSignals;
+    }
+    
+    private List<SignalInfo> GetPositions(int toOpen, IEnumerable<SignalInfo> klineInfos,
+        IReadOnlyCollection<Position> openedPositions, IReadOnlyCollection<BinancePositionDetailsUsdt> positionsInfo,
         PercentLimitTradeLogicLogicOptions tradeLogicLogicOptions)
     {
         if (toOpen == 0)
         {
-            return new List<SymbolMarketInfo>();
+            return new List<SignalInfo>();
         }
 
         var counter = 0;
-        var list = new List<SymbolMarketInfo>();
+        var list = new List<SignalInfo>();
         foreach (var position in klineInfos)
         {
             if (counter >= toOpen)
@@ -503,12 +558,12 @@ internal class PercentLimitFilters
                 break;
             }
 
-            if (openedPositions.Any(x => x.Name == position.FuturesUsdName && x.PositionSide == position.PositionSide))
+            if (openedPositions.Any(x => x.Name == position.SymbolName && x.PositionSide == position.SignalSide))
             {
                 continue;
             }
 
-            if (positionsInfo.Any(x => x.Symbol == position.FuturesUsdName
+            if (positionsInfo.Any(x => x.Symbol == position.SymbolName
                                        && (x.Leverage != tradeLogicLogicOptions.Leverage ||
                                            x.MarginType != tradeLogicLogicOptions.MarginType)))
             {
@@ -525,83 +580,108 @@ internal class PercentLimitFilters
 
         return list;
     }
-
-    private static List<KlineAction> GetKlineActionsFromKlineActionSignal(KlineActionSignal klineActionSignal,
-        PositionSide positionSide)
+    
+    private static bool IsKlinePocTypeValidForKlineSignalType(KlinePocType klinePocType, PositionSide positionSide, KlineSignalType klineSignalType)
     {
-        return klineActionSignal switch
+        switch (positionSide)
         {
-            KlineActionSignal.Low when positionSide == PositionSide.Short => new List<KlineAction>
-            {
-                KlineAction.StopSlow, KlineAction.None, KlineAction.StopStrong
-            },
-            KlineActionSignal.Low when positionSide == PositionSide.Long => new List<KlineAction>
-            {
-                KlineAction.PushSlow, KlineAction.None, KlineAction.PushStrong
-            },
-            KlineActionSignal.Middle when positionSide == PositionSide.Short => new List<KlineAction>
-            {
-                KlineAction.StopSlow, KlineAction.StopStrong
-            },
-            KlineActionSignal.Middle when positionSide == PositionSide.Long => new List<KlineAction>
-            {
-                KlineAction.PushSlow, KlineAction.PushStrong
-            },
-            KlineActionSignal.Strong when positionSide == PositionSide.Short => new List<KlineAction>
-            {
-                KlineAction.StopStrong
-            },
-            KlineActionSignal.Strong when positionSide == PositionSide.Long => new List<KlineAction>
-            {
-                KlineAction.PushStrong
-            },
-            _ => new List<KlineAction>
-            {
-                KlineAction.None
-            }
-        };
+            case PositionSide.Short:
+                switch (klineSignalType)
+                {
+                    case KlineSignalType.Low when klinePocType is KlinePocType.High or KlinePocType.MiddleHigh or KlinePocType.Middle:
+                    case KlineSignalType.Middle when klinePocType is KlinePocType.High or KlinePocType.MiddleHigh:
+                    case KlineSignalType.Strong when klinePocType is KlinePocType.High:
+                        return true;
+                    default:
+                        return false;
+                }
+            case PositionSide.Long:
+                switch (klineSignalType)
+                {
+                    case KlineSignalType.Low when klinePocType is KlinePocType.Low or KlinePocType.MiddleLow or KlinePocType.Middle:
+                    case KlineSignalType.Middle when klinePocType is KlinePocType.Low or KlinePocType.MiddleLow:
+                    case KlineSignalType.Strong when klinePocType is KlinePocType.Low:
+                        return true;
+                    default:
+                        return false;
+                }
+            case PositionSide.Both:
+            default:
+                return false;
+        }
     }
 
-    private static List<KlinePower> GetKlinePowersFromKlinePowerSignal(KlinePowerSignal klinePowerSignal,
-        PositionSide positionSide)
+    private static PositionOption? GetPositionOption(Mood marketMood, PercentLimitTradeLogicLogicOptions options, FilterPositionAction filterPositionAction, PositionSide positionSide)
     {
-        return klinePowerSignal switch
+        switch (filterPositionAction)
         {
-            KlinePowerSignal.AccordingToPosition when positionSide == PositionSide.Short => new List<KlinePower>
-            {
-                KlinePower.Bear
-            },
-            KlinePowerSignal.AccordingToPosition when positionSide == PositionSide.Long => new List<KlinePower>
-            {
-                KlinePower.Bull
-            },
-            KlinePowerSignal.ReversalToPosition when positionSide == PositionSide.Short => new List<KlinePower>
-            {
-                KlinePower.Bull
-            },
-            KlinePowerSignal.ReversalToPosition when positionSide == PositionSide.Long => new List<KlinePower>
-            {
-                KlinePower.Bear
-            },
-            KlinePowerSignal.Any => new List<KlinePower>
-            {
-                KlinePower.Bear, KlinePower.Bull
-            },
-            _ => new List<KlinePower>
-            {
-                KlinePower.Bear, KlinePower.Bull
-            }
-        };
-    }
+            case FilterPositionAction.Open:
+                switch (marketMood)
+                {
+                    case Mood.Short:
+                        switch (positionSide)
+                        {
+                            case PositionSide.Short:
+                                return options.SignalSettingsForOpen.ShortMarketMood.Short;
+                            case PositionSide.Long:
+                                return options.SignalSettingsForOpen.ShortMarketMood.Long;
+                        }
+                        break;
+                    case Mood.Long:
+                        switch (positionSide)
+                        {
+                            case PositionSide.Short:
+                                return options.SignalSettingsForOpen.LongMarketMood.Short;
+                            case PositionSide.Long:
+                                return options.SignalSettingsForOpen.LongMarketMood.Long;
+                        }
+                        break;
+                    case Mood.Balanced:
+                        switch (positionSide)
+                        {
+                            case PositionSide.Short:
+                                return options.SignalSettingsForOpen.BalancedMarketMood.Short;
+                            case PositionSide.Long:
+                                return options.SignalSettingsForOpen.BalancedMarketMood.Long;
+                        }
+                        break;
+                }
+                break;
+            case FilterPositionAction.Average:
+                switch (marketMood)
+                {
+                    case Mood.Short:
+                        switch (positionSide)
+                        {
+                            case PositionSide.Short:
+                                return options.SignalSettingsForAverage.ShortMarketMood.Short;
+                            case PositionSide.Long:
+                                return options.SignalSettingsForAverage.ShortMarketMood.Long;
+                        }
+                        break;
+                    case Mood.Long:
+                        switch (positionSide)
+                        {
+                            case PositionSide.Short:
+                                return options.SignalSettingsForAverage.LongMarketMood.Short;
+                            case PositionSide.Long:
+                                return options.SignalSettingsForAverage.LongMarketMood.Long;
+                        }
+                        break;
+                    case Mood.Balanced:
+                        switch (positionSide)
+                        {
+                            case PositionSide.Short:
+                                return options.SignalSettingsForAverage.BalancedMarketMood.Short;
+                            case PositionSide.Long:
+                                return options.SignalSettingsForAverage.BalancedMarketMood.Long;
+                        }
+                        break;
+                }
+                break;
+        }
 
-    private static bool IsCoefficientValid(PositionSide positionSide, decimal coefficient, decimal optionsCoefficient)
-    {
-        return positionSide switch
-        {
-            PositionSide.Long when coefficient < 0 && Math.Abs(coefficient) >= optionsCoefficient => true,
-            PositionSide.Short when coefficient > 0 && coefficient >= optionsCoefficient => true,
-            _ => false
-        };
+        return null;
     }
 
     #endregion

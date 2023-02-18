@@ -15,23 +15,13 @@ internal class PercentLimitTradeLogicLogicOptions : BaseTradeLogicOptions
     // Open Position
     public bool EnableOpenPositions { get; set; }
     public decimal PercentFromDepositForOpen { get; set; }
-    public KlineActionSignal KlineActionForOpen { get; set; }
-    public KlinePowerSignal KlinePowerForOpen { get; set; }
-    public decimal MinQuoteVolumeForOpen { get; set; }
-    public bool IsPocMustBeInWickForOpen { get; set; }
-    public decimal CoefficientOfSellBuyVolumeForOpen { get; set; }
-    public decimal CoefficientOfBidAsksForOpen { get; set; }
+    public SignalSettings SignalSettingsForOpen { get; set; } = new();
 
     // Average Position
     public bool EnableAveraging { get; set; }
-    public KlineActionSignal KlineActionForAverage { get; set; }
-    public KlinePowerSignal KlinePowerForAverage { get; set; }
     public decimal AverageFromRoe { get; set; }
     public decimal AverageToRoe { get; set; }
-    public decimal MinQuoteVolumeForAverage { get; set; }
-    public bool IsPocMustBeInWickForAverage { get; set; }
-    public decimal CoefficientOfSellBuyVolumeForAverage { get; set; }
-    public decimal CoefficientOfBidAsksForAverage { get; set; }
+    public SignalSettings SignalSettingsForAverage { get; set; } = new();
 
     // Trailing Stop
     public bool EnableTrailingStops { get; set; }

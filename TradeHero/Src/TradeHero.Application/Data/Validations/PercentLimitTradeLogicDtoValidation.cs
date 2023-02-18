@@ -77,14 +77,19 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                 await ValidateRangeAsync(propertyValue, context, 0.00m, 100000000.00m, nameof(PercentLimitTradeLogicDto.MinQuoteVolumeForOpen)))
             .When(x => x.EnableOpenPositions);
         
-        RuleFor(x => x.CoefficientOfSellBuyVolumeForOpen)
+        RuleFor(x => x.MinTradesForOpen)
             .CustomAsync(async (propertyValue, context, _) => 
-                await ValidateRangeAsync(propertyValue, context, 0, 100.00m, nameof(PercentLimitTradeLogicDto.CoefficientOfSellBuyVolumeForOpen)))
+                await ValidateRangeAsync(propertyValue, context, 0, 1000000, nameof(PercentLimitTradeLogicDto.MinTradesForOpen)))
             .When(x => x.EnableOpenPositions);
         
-        RuleFor(x => x.CoefficientOfBidAsksForOpen)
+        RuleFor(x => x.CoefficientOfVolumeForOpen)
             .CustomAsync(async (propertyValue, context, _) => 
-                await ValidateRangeAsync(propertyValue, context, 0, 100.00m, nameof(PercentLimitTradeLogicDto.CoefficientOfBidAsksForOpen)))
+                await ValidateRangeAsync(propertyValue, context, 0, 100.00m, nameof(PercentLimitTradeLogicDto.CoefficientOfVolumeForOpen)))
+            .When(x => x.EnableOpenPositions);
+        
+        RuleFor(x => x.CoefficientOfOrderLimitsForOpen)
+            .CustomAsync(async (propertyValue, context, _) => 
+                await ValidateRangeAsync(propertyValue, context, 0, 100.00m, nameof(PercentLimitTradeLogicDto.CoefficientOfOrderLimitsForOpen)))
             .When(x => x.EnableOpenPositions);
 
         RuleFor(x => x.AverageToRoe)
@@ -102,14 +107,19 @@ internal class PercentLimitStrategyDtoValidation : AbstractValidator<PercentLimi
                 await ValidateRangeAsync(propertyValue, context, 0.00m, 100000000.00m, nameof(PercentLimitTradeLogicDto.MinQuoteVolumeForAverage)))
             .When(x => x.EnableAveraging);
         
-        RuleFor(x => x.CoefficientOfSellBuyVolumeForAverage)
+        RuleFor(x => x.MinQuoteVolumeForAverage)
             .CustomAsync(async (propertyValue, context, _) => 
-                await ValidateRangeAsync(propertyValue, context, 0, 100.00m, nameof(PercentLimitTradeLogicDto.CoefficientOfSellBuyVolumeForAverage)))
+                await ValidateRangeAsync(propertyValue, context, 0, 1000000, nameof(PercentLimitTradeLogicDto.MinTradesForAverage)))
+            .When(x => x.EnableAveraging);
+        
+        RuleFor(x => x.CoefficientOfVolumeForAverage)
+            .CustomAsync(async (propertyValue, context, _) => 
+                await ValidateRangeAsync(propertyValue, context, 0, 100.00m, nameof(PercentLimitTradeLogicDto.CoefficientOfVolumeForAverage)))
             .When(x => x.EnableOpenPositions);
         
-        RuleFor(x => x.CoefficientOfBidAsksForAverage)
+        RuleFor(x => x.CoefficientOfOrderLimitsForAverage)
             .CustomAsync(async (propertyValue, context, _) => 
-                await ValidateRangeAsync(propertyValue, context, 0, 100.00m, nameof(PercentLimitTradeLogicDto.CoefficientOfBidAsksForAverage)))
+                await ValidateRangeAsync(propertyValue, context, 0, 100.00m, nameof(PercentLimitTradeLogicDto.CoefficientOfOrderLimitsForAverage)))
             .When(x => x.EnableOpenPositions);
         
         RuleFor(x => x.TrailingStopRoe)
