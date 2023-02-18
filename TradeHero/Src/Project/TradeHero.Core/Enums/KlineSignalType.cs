@@ -1,8 +1,7 @@
 namespace TradeHero.Core.Enums;
 
-public enum KlineActionSignal
+public enum KlineSignalType
 {
     Low,
-    Middle,
     Strong
 }

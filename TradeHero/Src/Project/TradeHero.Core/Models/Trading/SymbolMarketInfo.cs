@@ -1,4 +1,3 @@
-using Binance.Net.Enums;
 using Binance.Net.Objects.Models;
 using Newtonsoft.Json;
 using TradeHero.Core.Enums;
@@ -13,8 +12,7 @@ public class SymbolMarketInfo
     public string QuoteAsset { get; init; } = string.Empty;
 
     public KlinePower Power { get; set; }
-    public KlineAction KlineAction { get; set; }
-    public PositionSide PositionSide { get; set; }
+    public KlinePocType KlinePocType { get; set; }
     public bool IsPocInWick { get; set; }
     public decimal PriceChangePercent { get; set; }
 

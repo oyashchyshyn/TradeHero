@@ -179,31 +179,10 @@ internal class SpotClusterVolumeInstance : IInstance
                         continue;
                     }
                     
-                    switch (symbolMarketInfo.PositionSide)
-                    {
-                        case PositionSide.Short when instanceResult.Side is PositionSide.Both or PositionSide.Short:
-                            instanceResult.ShortSignals.Add(symbolMarketInfo);
-                            break;
-                        case PositionSide.Long when instanceResult.Side is PositionSide.Both or PositionSide.Long:
-                            instanceResult.LongSignals.Add(symbolMarketInfo);
-                            break;
-                        case PositionSide.Both:
-                        default:
-                            continue;
-                    }   
+                    instanceResult.Signals.Add(symbolMarketInfo);  
                 }
             });
-            
-            instanceResult.LongsSignalMoodPercent = Math.Round(
-                instanceResult.LongSignalsCount / (instanceResult.LongSignalsCount + instanceResult.ShortSignalsCount) * 100m, 
-                2);
-            
-            instanceResult.ShortSignalMoodPercent = Math.Round(100m - longMoodPercent, 2);
 
-            instanceResult.SignalsMood = instanceResult.ShortSignalMoodPercent >= 70 
-                ? Mood.Short 
-                : instanceResult.LongsSignalMoodPercent >= 70 ? Mood.Long : Mood.Balanced;
-            
             return new GenericBaseResult<InstanceResult>(instanceResult);
         }
         catch (TaskCanceledException taskCanceledException)
@@ -352,24 +331,19 @@ internal class SpotClusterVolumeInstance : IInstance
             switch (currentPoc.Index)
             {
                 case 1:
-                    symbolMarketInfo.KlineAction = KlineAction.StopStrong;
-                    symbolMarketInfo.PositionSide = PositionSide.Short;
+                    symbolMarketInfo.KlinePocType = KlinePocType.High;
                     break;
                 case 2:
-                    symbolMarketInfo.KlineAction = KlineAction.StopSlow;
-                    symbolMarketInfo.PositionSide = PositionSide.Short;
+                    symbolMarketInfo.KlinePocType = KlinePocType.MiddleHigh;
                     break;
                 case 3:
-                    symbolMarketInfo.KlineAction = KlineAction.None;
-                    symbolMarketInfo.PositionSide = PositionSide.Both;
+                    symbolMarketInfo.KlinePocType = KlinePocType.Middle;
                     break;
                 case 4:
-                    symbolMarketInfo.KlineAction = KlineAction.PushSlow;
-                    symbolMarketInfo.PositionSide = PositionSide.Long;
+                    symbolMarketInfo.KlinePocType = KlinePocType.MiddleLow;
                     break;
                 case 5:
-                    symbolMarketInfo.KlineAction = KlineAction.PushStrong;
-                    symbolMarketInfo.PositionSide = PositionSide.Long;
+                    symbolMarketInfo.KlinePocType = KlinePocType.Low;
                     break;
             }
 

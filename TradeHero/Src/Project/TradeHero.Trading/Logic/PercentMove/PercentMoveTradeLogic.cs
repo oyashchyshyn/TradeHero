@@ -1,7 +1,5 @@
-using System.Text;
 using Binance.Net.Enums;
 using Microsoft.Extensions.Logging;
-using TradeHero.Core.Constants;
 using TradeHero.Core.Contracts.Client;
 using TradeHero.Core.Contracts.Services;
 using TradeHero.Core.Contracts.Trading;
@@ -128,10 +126,6 @@ internal class PercentMoveTradeLogic : BaseFuturesUsdTradeLogic
                 return;
             }
 
-            Logger.LogInformation("Results. Longs: {LongsCount}. Shorts: {ShortsCount}. In {Method}", 
-                instanceResult.Data.LongSignals.Count, instanceResult.Data.ShortSignals.Count, 
-                nameof(RunInstanceAsync));
-
             if (instanceOptions is { TelegramChannelId: { }, TelegramIsNeedToSendMessages: { } } 
                 && instanceOptions.TelegramIsNeedToSendMessages.Value)
             {
@@ -173,66 +167,6 @@ internal class PercentMoveTradeLogic : BaseFuturesUsdTradeLogic
                 statMessage, 
                 cancellationToken: cancellationToken
             );
-
-            if (instanceResult.ShortSignals.Any())
-            {
-                var shortMessages = new List<StringBuilder> { new($"SHORTS{Environment.NewLine}{Environment.NewLine}") };
-                var shortIndex = 0;
-
-                foreach (var symbolsInfoContainer in instanceResult.ShortSignals)
-                {
-                    var message = MessageGenerator.PositionMessage(symbolsInfoContainer);
-
-                    if (shortMessages[shortIndex].Length + message.Length <= TelegramConstants.MaximumMessageLenght)
-                    {
-                        shortMessages[shortIndex].Append(message);
-
-                        continue;
-                    }
-
-                    shortMessages.Add(new StringBuilder(message));
-                    shortIndex += 1;
-                }
-
-                foreach (var shortPositionsMessage in shortMessages)
-                {
-                    await TelegramService.SendTextMessageToChannelAsync(
-                        channelId, 
-                        shortPositionsMessage.ToString(),
-                        cancellationToken: cancellationToken
-                    );
-                }
-            }
-        
-            if (instanceResult.LongSignals.Any())
-            {
-                var longMessages = new List<StringBuilder> { new($"LONGS{Environment.NewLine}{Environment.NewLine}") };
-                var longIndex = 0;
-            
-                foreach (var symbolsInfoContainer in instanceResult.LongSignals)
-                {
-                    var message = MessageGenerator.PositionMessage(symbolsInfoContainer);
-                
-                    if (longMessages[longIndex].Length + message.Length <= TelegramConstants.MaximumMessageLenght)
-                    {
-                        longMessages[longIndex].Append(message);
-                    
-                        continue;
-                    }
-                
-                    longMessages.Add(new StringBuilder(message));
-                    longIndex += 1;
-                }
-            
-                foreach (var longPositionsMessage in longMessages)
-                {
-                    await TelegramService.SendTextMessageToChannelAsync(
-                        channelId, 
-                        longPositionsMessage.ToString(), 
-                        cancellationToken: cancellationToken
-                    );
-                }
-            }
         }
         catch (TaskCanceledException taskCanceledException)
         {

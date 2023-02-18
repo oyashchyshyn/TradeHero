@@ -43,13 +43,9 @@ internal class PercentLimitTradeLogicDto : BaseStrategyDto
     [JsonProperty("open_pos_initial_margin_p")]
     public decimal PercentFromDepositForOpen { get; set; }
     
-    [EnumDescription("Defines the action of signal for open position. Available values are '{0}'. Only works when 'open_pos_enable' enabled.", typeof(KlineActionSignal))]
-    [JsonProperty("open_pos_action_signal")]
-    public KlineActionSignal KlineActionForOpen { get; set; }
-    
-    [EnumDescription("Defines the power of signal for open position. Available values are '{0}'. Only works when 'open_pos_enable' enabled.", typeof(KlinePowerSignal))]
-    [JsonProperty("open_pos_power_signal")]
-    public KlinePowerSignal KlinePowerForOpen { get; set; }
+    [EnumDescription("Defines the action of signal for open position. Available values are '{0}'. Only works when 'open_pos_enable' enabled.", typeof(KlineSignalType))]
+    [JsonProperty("open_pos_signal_type")]
+    public KlineSignalType KlineSignalTypeForOpen { get; set; }
 
     [Description("Defining is POC must be only in wick of candles. Only works when 'open_pos_enable' enabled.")]
     [JsonProperty("open_poc_in_wick")]
@@ -76,14 +72,10 @@ internal class PercentLimitTradeLogicDto : BaseStrategyDto
     [JsonProperty("avg_enable")]
     public bool EnableAveraging { get; set; }
     
-    [EnumDescription("Defines the action of signal for average position. Available values are '{0}'. Only works when 'avg_enable' enabled.", typeof(KlineActionSignal))]
+    [EnumDescription("Defines the action of signal for average position. Available values are '{0}'. Only works when 'avg_enable' enabled.", typeof(KlineSignalType))]
     [JsonProperty("avg_action_signal")]
-    public KlineActionSignal KlineActionForAverage { get; set; }
-    
-    [EnumDescription("Defines the power of signal for average position. Available values are '{0}'. Only works when 'avg_enable' enabled.", typeof(KlinePowerSignal))]
-    [JsonProperty("avg_power_signal")]
-    public KlinePowerSignal KlinePowerForAverage { get; set; }
-    
+    public KlineSignalType KlineSignalTypeForAverage { get; set; }
+
     [Description("From what percent of roe of position need to search for average. Available range is -10000.00 to 10000.00. Only works when 'avg_enable' enabled.")]
     [JsonProperty("avg_from_roe")]
     public decimal AverageFromRoe { get; set; }

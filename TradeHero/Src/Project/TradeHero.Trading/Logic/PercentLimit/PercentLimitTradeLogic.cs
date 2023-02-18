@@ -1,7 +1,5 @@
-using System.Text;
 using Binance.Net.Enums;
 using Microsoft.Extensions.Logging;
-using TradeHero.Core.Constants;
 using TradeHero.Core.Contracts.Client;
 using TradeHero.Core.Contracts.Services;
 using TradeHero.Core.Contracts.Trading;
@@ -77,10 +75,6 @@ internal class PercentLimitTradeLogic : BaseFuturesUsdTradeLogic
                 
                 return;
             }
-
-            Logger.LogInformation("Results. Longs: {LongsCount}. Shorts: {ShortsCount}. In {Method}", 
-                instanceResult.Data.LongSignals.Count, instanceResult.Data.ShortSignals.Count, 
-                nameof(RunInstanceAsync));
 
             if (_percentLimitStore.TradeLogicLogicOptions.EnableAveraging)
             {
@@ -193,7 +187,7 @@ internal class PercentLimitTradeLogic : BaseFuturesUsdTradeLogic
 
     private async Task ManageAverageOrdersAsync(InstanceResult instanceResult, CancellationToken cancellationToken)
     {
-        foreach (var marketSignals in instanceResult.ShortSignals.Concat(instanceResult.LongSignals))
+        foreach (var marketSignals in instanceResult.Signals)
         {
             try
             {
@@ -204,39 +198,39 @@ internal class PercentLimitTradeLogic : BaseFuturesUsdTradeLogic
                 
                     return;
                 }
-                
-                var openedPosition = _percentLimitStore.Positions
-                    .Where(x => x.Name == marketSignals.FuturesUsdName)
-                    .SingleOrDefault(x => x.PositionSide == marketSignals.PositionSide);
 
-                if (openedPosition == null)
-                {
-                    continue;
-                }
-
-                var symbolInfo =
-                    _percentLimitStore.FuturesUsd.ExchangerData.ExchangeInfo.Symbols.Single(x => x.Name == openedPosition.Name);
-
-                var lastPrice = _percentLimitStore.MarketLastPrices[openedPosition.Name];
-                
-                var isAverageNeeded = await _percentLimitFilters.IsNeedToPlaceMarketAverageOrderAsync(instanceResult, openedPosition, lastPrice, 
-                    marketSignals, symbolInfo, _percentLimitStore.TradeLogicLogicOptions);
-                if (!isAverageNeeded)
+                if (_percentLimitStore.Positions.All(x => x.Name != marketSignals.FuturesUsdName))
                 {
                     continue;
                 }
                 
-                var balance = 
-                    _percentLimitStore.FuturesUsd.AccountData.Balances.Single(x => x.Asset == openedPosition.QuoteAsset);
+                foreach (var openedPosition in _percentLimitStore.Positions.Where(x => x.Name == marketSignals.FuturesUsdName).ToArray())
+                {
+                    var symbolInfo =
+                        _percentLimitStore.FuturesUsd.ExchangerData.ExchangeInfo.Symbols.Single(x => x.Name == openedPosition.Name);
 
-                await _percentLimitEndpoints.CreateMarketAverageBuyOrderAsync(
-                    openedPosition, 
-                    lastPrice,
-                    symbolInfo,
-                    balance,
-                    _percentLimitStore.TradeLogicLogicOptions,
-                    cancellationToken: cancellationToken
-                );
+                    var lastPrice = _percentLimitStore.MarketLastPrices[openedPosition.Name];
+                
+                    var isAverageNeeded = await _percentLimitFilters.IsNeedToPlaceMarketAverageOrderAsync(instanceResult, openedPosition, lastPrice, 
+                        marketSignals, symbolInfo, _percentLimitStore.TradeLogicLogicOptions);
+                    
+                    if (!isAverageNeeded)
+                    {
+                        continue;
+                    }
+                
+                    var balance = 
+                        _percentLimitStore.FuturesUsd.AccountData.Balances.Single(x => x.Asset == openedPosition.QuoteAsset);
+
+                    await _percentLimitEndpoints.CreateMarketAverageBuyOrderAsync(
+                        openedPosition, 
+                        lastPrice,
+                        symbolInfo,
+                        balance,
+                        _percentLimitStore.TradeLogicLogicOptions,
+                        cancellationToken: cancellationToken
+                    );   
+                }
             }
             catch (TaskCanceledException taskCanceledException)
             {
@@ -274,12 +268,12 @@ internal class PercentLimitTradeLogic : BaseFuturesUsdTradeLogic
             foreach (var filteredPosition in filteredPositions)
             {
                 var symbolInfo =
-                    _percentLimitStore.FuturesUsd.ExchangerData.ExchangeInfo.Symbols.Single(x => x.Name == filteredPosition.FuturesUsdName);
+                    _percentLimitStore.FuturesUsd.ExchangerData.ExchangeInfo.Symbols.Single(x => x.Name == filteredPosition.SymbolName);
                 
                 var positionInfo =
-                    _percentLimitStore.FuturesUsd.AccountData.Positions.First(x => x.Symbol == filteredPosition.FuturesUsdName);
+                    _percentLimitStore.FuturesUsd.AccountData.Positions.First(x => x.Symbol == filteredPosition.SymbolName);
 
-                var balance = _percentLimitStore.FuturesUsd.AccountData.Balances.Single(x => x.Asset == filteredPosition.QuoteAsset);
+                var balance = _percentLimitStore.FuturesUsd.AccountData.Balances.Single(x => x.Asset == filteredPosition.QuoteName);
                 
                 await _percentLimitEndpoints.CreateBuyMarketOrderAsync(
                     filteredPosition,
@@ -321,62 +315,6 @@ internal class PercentLimitTradeLogic : BaseFuturesUsdTradeLogic
                 statMessage, 
                 cancellationToken: cancellationToken
             );
-
-            if (instanceResult.ShortSignals.Any())
-            {
-                var shortMessages = new List<StringBuilder> { new($"SHORTS{Environment.NewLine}{Environment.NewLine}") };
-                var shortIndex = 0;
-
-                foreach (var message in instanceResult.ShortSignals.Select(MessageGenerator.PositionMessage))
-                {
-                    if (shortMessages[shortIndex].Length + message.Length <= TelegramConstants.MaximumMessageLenght)
-                    {
-                        shortMessages[shortIndex].Append(message);
-
-                        continue;
-                    }
-
-                    shortMessages.Add(new StringBuilder(message));
-                    shortIndex += 1;
-                }
-
-                foreach (var shortPositionsMessage in shortMessages)
-                {
-                    await TelegramService.SendTextMessageToChannelAsync(
-                        channelId, 
-                        shortPositionsMessage.ToString(), 
-                        cancellationToken: cancellationToken
-                    );
-                }
-            }
-        
-            if (instanceResult.LongSignals.Any())
-            {
-                var longMessages = new List<StringBuilder> { new($"LONGS{Environment.NewLine}{Environment.NewLine}") };
-                var longIndex = 0;
-            
-                foreach (var message in instanceResult.LongSignals.Select(MessageGenerator.PositionMessage))
-                {
-                    if (longMessages[longIndex].Length + message.Length <= TelegramConstants.MaximumMessageLenght)
-                    {
-                        longMessages[longIndex].Append(message);
-                    
-                        continue;
-                    }
-                
-                    longMessages.Add(new StringBuilder(message));
-                    longIndex += 1;
-                }
-            
-                foreach (var longPositionsMessage in longMessages)
-                {
-                    await TelegramService.SendTextMessageToChannelAsync(
-                        channelId, 
-                        longPositionsMessage.ToString(), 
-                        cancellationToken: cancellationToken
-                    );
-                }
-            }
         }
         catch (TaskCanceledException taskCanceledException)
         {
