@@ -1,6 +1,6 @@
 namespace TradeHero.Core.Enums;
 
-public enum KlinePocLocation
+public enum PocLocation
 {
     Any,
     InBody,
