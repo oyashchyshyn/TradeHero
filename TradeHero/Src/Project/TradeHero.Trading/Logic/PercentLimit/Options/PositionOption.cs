@@ -8,7 +8,8 @@ public class PositionOption
     public KlinePowerSignal KlinePower { get; set; }
     public KlineSignalType KlineSignalType { get; set; }
     public KlineDeltaType PocVolumeDeltaType { get; set; }
-    public KlinePocLocation KlinePocLocation { get; set; }
+    public PocLocation KlinePocLocation { get; set; }
+    public PocLevel KlinePocLevel { get; set; }
     public int MinTrades { get; set; }
     public decimal MinQuoteVolume { get; set; }
     public decimal CoefficientOfVolume { get; set; }

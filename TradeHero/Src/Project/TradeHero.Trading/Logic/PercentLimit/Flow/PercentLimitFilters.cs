@@ -194,12 +194,12 @@ internal class PercentLimitFilters
                 return Task.FromResult(false);
             }
             
-            if (positionOption.KlinePocLocation != KlinePocLocation.Any)
+            if (positionOption.KlinePocLocation != PocLocation.Any)
             {
                 switch (symbolMarketInfo.IsPocInWick)
                 {
-                    case true when positionOption.KlinePocLocation == KlinePocLocation.InBody:
-                    case false when positionOption.KlinePocLocation == KlinePocLocation.InWick:
+                    case true when positionOption.KlinePocLocation != PocLocation.InWick:
+                    case false when positionOption.KlinePocLocation != PocLocation.InBody:
                         _logger.LogInformation("{Position}. Is POC in wick: {IsPocInWick}. Poc location is: {PocLocation}. In {Method}",
                             openedPosition.ToString(), symbolMarketInfo.IsPocInWick, positionOption.KlinePocLocation, 
                             nameof(IsNeedToPlaceMarketAverageOrderAsync));
@@ -211,8 +211,8 @@ internal class PercentLimitFilters
             {
                 switch (symbolMarketInfo.Power)
                 {
-                    case KlinePower.Bear when positionOption.KlinePower == KlinePowerSignal.Bull:
-                    case KlinePower.Bull when positionOption.KlinePower == KlinePowerSignal.Bear:
+                    case KlinePower.Bear when positionOption.KlinePower != KlinePowerSignal.Bear:
+                    case KlinePower.Bull when positionOption.KlinePower != KlinePowerSignal.Bull:
                         _logger.LogInformation("{Position}. Kline power is: {KlinePower}. Accepted power is: {AcceptedPower}. In {Method}",
                             openedPosition.ToString(), symbolMarketInfo.Power, positionOption.KlinePower, 
                             nameof(IsNeedToPlaceMarketAverageOrderAsync));
@@ -224,14 +224,30 @@ internal class PercentLimitFilters
             {
                 switch (symbolMarketInfo.PocDeltaVolume)
                 {
-                    case > 0 when positionOption.PocVolumeDeltaType == KlineDeltaType.Sell:
-                    case < 0 when positionOption.PocVolumeDeltaType == KlineDeltaType.Buy:
+                    case > 0 when positionOption.PocVolumeDeltaType != KlineDeltaType.Buy:
+                    case < 0 when positionOption.PocVolumeDeltaType != KlineDeltaType.Sell:
                         _logger.LogInformation("{Position}. Poc delta type is: {PocDeltaType}. Accepted Poc volume delta type is: {AcceptedPocDeltaType}. In {Method}",
                             openedPosition.ToString(), symbolMarketInfo.PocDeltaVolume, positionOption.PocVolumeDeltaType, nameof(IsNeedToPlaceMarketAverageOrderAsync));
                         return Task.FromResult(false);
                 }
             }
 
+            if (positionOption.KlinePocLevel != PocLevel.Any)
+            {
+                switch (symbolMarketInfo.KlinePocType)
+                {
+                    case KlinePocType.High when positionOption.KlinePocLevel != PocLevel.AtTop:
+                    case KlinePocType.MiddleHigh when positionOption.KlinePocLevel != PocLevel.AtTop:
+                    case KlinePocType.Middle when positionOption.KlinePocLevel != PocLevel.InMiddle:
+                    case KlinePocType.MiddleLow when positionOption.KlinePocLevel != PocLevel.AtBottom:
+                    case KlinePocType.Low when positionOption.KlinePocLevel != PocLevel.AtBottom:
+                        _logger.LogInformation("{Position}. Kline power is: {KlinePower}. Accepted power is: {AcceptedPower}. In {Method}",
+                            openedPosition.ToString(), symbolMarketInfo.Power, positionOption.KlinePower, 
+                            nameof(IsNeedToPlaceMarketAverageOrderAsync));
+                        return Task.FromResult(false);
+                }
+            }
+            
             if (positionOption.MinTrades < symbolMarketInfo.KlineTotalTrades)
             {
                 _logger.LogInformation("{Position}. Not valid amount of trades. Kline trades: {KlineTrades}. Accepted trades: {AcceptedTrades}. In {Method}",
@@ -525,12 +541,15 @@ internal class PercentLimitFilters
     private static IEnumerable<SymbolMarketInfo> GetFilteredSignals(PositionOption positionOption, IEnumerable<SymbolMarketInfo> signals)
     {
         var filteredSignals = signals
-            .WhereIf(positionOption.KlinePocLocation == KlinePocLocation.InBody, x => !x.IsPocInWick)
-            .WhereIf(positionOption.KlinePocLocation == KlinePocLocation.InWick, x => x.IsPocInWick)
+            .WhereIf(positionOption.KlinePocLocation == PocLocation.InBody, x => !x.IsPocInWick)
+            .WhereIf(positionOption.KlinePocLocation == PocLocation.InWick, x => x.IsPocInWick)
             .WhereIf(positionOption.KlinePower == KlinePowerSignal.Bull, x => x.Power == KlinePower.Bull)
             .WhereIf(positionOption.KlinePower == KlinePowerSignal.Bear, x => x.Power == KlinePower.Bear)
             .WhereIf(positionOption.PocVolumeDeltaType == KlineDeltaType.Buy, x => x.PocDeltaVolume > 0)
             .WhereIf(positionOption.PocVolumeDeltaType == KlineDeltaType.Sell, x => x.PocDeltaVolume < 0)
+            .WhereIf(positionOption.KlinePocLevel == PocLevel.InMiddle, x => x.KlinePocType == KlinePocType.Middle)
+            .WhereIf(positionOption.KlinePocLevel == PocLevel.AtTop, x => x.KlinePocType is KlinePocType.MiddleHigh or KlinePocType.High)
+            .WhereIf(positionOption.KlinePocLevel == PocLevel.AtBottom, x => x.KlinePocType is KlinePocType.MiddleLow or KlinePocType.Low)
             .WhereIf(positionOption.CoefficientOfVolume > 0, x => Math.Abs(x.KlineVolumeCoefficient) >= positionOption.CoefficientOfVolume)
             .WhereIf(positionOption.CoefficientOfPocVolume > 0, x => Math.Abs(x.PocVolumeCoefficient) >= positionOption.CoefficientOfPocVolume)
             .WhereIf(positionOption.CoefficientOfOrderLimits > 0, x => Math.Abs(x.AsksBidsCoefficient) >= positionOption.CoefficientOfOrderLimits)
@@ -580,7 +599,7 @@ internal class PercentLimitFilters
 
         return list;
     }
-    
+
     private static bool IsKlinePocTypeValidForKlineSignalType(KlinePocType klinePocType, PositionSide positionSide, KlineSignalType klineSignalType)
     {
         switch (positionSide)
