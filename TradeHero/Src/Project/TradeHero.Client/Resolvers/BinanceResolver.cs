@@ -1,5 +1,4 @@
 using Binance.Net.Objects;
-using CryptoExchange.Net.Authentication;
 using Microsoft.Extensions.Logging;
 using TradeHero.Client.Clients;
 using TradeHero.Core.Contracts.Client;
@@ -26,7 +25,7 @@ internal class BinanceResolver : IBinanceResolver
         {
             var options = new BinanceClientOptions
             {
-                ApiCredentials = new ApiCredentials(apiKey, secretKey)
+                ApiCredentials = new BinanceApiCredentials(apiKey, secretKey)
             };
 
             return new ThRestBinanceClient(options, _serviceProvider);

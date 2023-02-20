@@ -98,11 +98,11 @@ internal class PercentMovePositionWorker : BasePositionWorker
             
             AddOrUpdateOrderPrice(pmsStore, symbol, lastOrderPrice);
 
-            if (!pmsStore.UsdFuturesTickerStreams.ContainsKey(symbol))
+            if (!pmsStore.SymbolTickerStreams.ContainsKey(symbol))
             {
                 var stream = _percentMoveTickerStreamFactory.GetPmsSymbolTickerStream();
                 await stream.StartStreamSymbolTickerAsync(symbol, cancellationToken: cancellationToken);
-                pmsStore.UsdFuturesTickerStreams.Add(symbol, stream);
+                pmsStore.SymbolTickerStreams.Add(symbol, stream);
             }
             
             _logger.LogInformation("{Position}. Position created. In {Method}", 
@@ -189,11 +189,11 @@ internal class PercentMovePositionWorker : BasePositionWorker
                 pmsStore.MarketLastPrices.Remove(positionToDelete.Name);
                 pmsStore.SymbolStatus.Remove(positionToDelete.Name);
                 
-                var stream = pmsStore.UsdFuturesTickerStreams[positionToDelete.Name];
+                var stream = pmsStore.SymbolTickerStreams[positionToDelete.Name];
                 if (stream != null)
                 {
                     await _socketBinanceClient.UnsubscribeAsync(stream.SocketSubscription);
-                    pmsStore.UsdFuturesTickerStreams.Remove(positionToDelete.Name);
+                    pmsStore.SymbolTickerStreams.Remove(positionToDelete.Name);
                 
                     _logger.LogInformation("{Position}. Unsubscribed from socket. In {Method}", 
                         positionInString, nameof(DeletePositionAsync));   

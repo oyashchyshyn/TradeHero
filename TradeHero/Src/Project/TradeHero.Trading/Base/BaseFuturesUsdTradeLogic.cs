@@ -236,7 +236,7 @@ internal abstract class BaseFuturesUsdTradeLogic : ITradeLogic
             _jobService.FinishJobByKey(JobKey.UpdateBalancesInfoInStore);
             _jobService.FinishJobByKey(JobKey.UpdatePositionsInfoInStore);
 
-            foreach (var tickerStreamKeyValue in ((BaseTradeLogicStore)Store).UsdFuturesTickerStreams)
+            foreach (var tickerStreamKeyValue in Store.SymbolTickerStreams)
             {
                 if (tickerStreamKeyValue.Value == null)
                 {
@@ -253,11 +253,9 @@ internal abstract class BaseFuturesUsdTradeLogic : ITradeLogic
             }
 
             await _binanceSocketClient.UnsubscribeAsync(_futuresUsdMarketTickerStream.SocketSubscription);
-            
             Logger.LogInformation("Unsubscribe from Market Ticker Stream. In {Method}", nameof(FinishAsync));
             
             await _binanceSocketClient.UnsubscribeAsync(_userAccountStreamStream.SocketSubscription);
-            
             Logger.LogInformation("Unsubscribe from Account Stream. In {Method}", nameof(FinishAsync));
             
             await FuturesUsdEndpoints.DestroyStreamListerKeyAsync(Store, cancellationToken: CancellationTokenSource.Token);
