@@ -62,6 +62,8 @@ internal abstract class BaseFuturesUsdUserAccountStream
                     OnAccountUpdate,
                     OnOrderUpdate,
                     OnListenKeyExpired,
+                    OnStrategyUpdate,
+                    OnGridUpdate,
                     cancellationToken
                 );
 
@@ -194,6 +196,16 @@ internal abstract class BaseFuturesUsdUserAccountStream
     private void OnListenKeyExpired(DataEvent<BinanceStreamEvent> data)
     {
         Logger.LogInformation("OnListenKeyExpiredUpdate. Data: {Data}", JsonService.SerializeObject(data.Data).Data);
+    }
+    
+    private void OnGridUpdate(DataEvent<BinanceGridUpdate> data)
+    {
+        Logger.LogInformation("OnGridUpdate. Data: {Data}", JsonService.SerializeObject(data.Data).Data);
+    }
+
+    private void OnStrategyUpdate(DataEvent<BinanceStrategyUpdate> data)
+    {
+        Logger.LogInformation("OnStrategyUpdate. Data: {Data}", JsonService.SerializeObject(data.Data).Data);
     }
 
     #endregion

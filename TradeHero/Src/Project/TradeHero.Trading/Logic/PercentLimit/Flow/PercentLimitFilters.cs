@@ -132,11 +132,8 @@ internal class PercentLimitFilters
                 options.MaximumPositionsPerIteration, longsPositionsToOpen, shortsPositionsToOpen,
                 nameof(GetFilteredOrdersForOpenPositionAsync));
 
-            var shortSignalInfo = shortSignals.Select(x => new SignalInfo(x, PositionSide.Short)).ToArray();
-            var longSignalInfo = longSignals.Select(x => new SignalInfo(x, PositionSide.Long)).ToArray();
-            
-            var shortsToOpen = GetPositions(shortsPositionsToOpen, shortSignalInfo, openedPositions, positionsInfo, options);
-            var longsToOpen = GetPositions(longsPositionsToOpen, longSignalInfo, openedPositions, positionsInfo, options);
+            var shortsToOpen = GetPositions(shortsPositionsToOpen, PositionSide.Short, shortSignals, openedPositions, positionsInfo, options);
+            var longsToOpen = GetPositions(longsPositionsToOpen, PositionSide.Long, longSignals, openedPositions, positionsInfo, options);
 
             _logger.LogInformation("Longs to open: {LongsCount}. Shorts to open: {ShortsCount}. In {Method}",
                 longsToOpen.Count, shortsToOpen.Count, nameof(GetFilteredOrdersForOpenPositionAsync));
@@ -344,8 +341,7 @@ internal class PercentLimitFilters
     }
 
     public PercentLimitOrderToPlace IsNeedToActivateOrders(Position openedPosition, decimal lastPrice,
-        PercentLimitPositionInfo percentLimitPositionInfo,
-        BinanceFuturesAccountBalance balance, PercentLimitTradeLogicLogicOptions tradeLogicLogicOptions)
+        PercentLimitPositionInfo percentLimitPositionInfo, BinanceFuturesAccountBalance balance, PercentLimitTradeLogicLogicOptions tradeLogicLogicOptions)
     {
         try
         {
@@ -559,7 +555,7 @@ internal class PercentLimitFilters
         return filteredSignals;
     }
     
-    private List<SignalInfo> GetPositions(int toOpen, IEnumerable<SignalInfo> klineInfos,
+    private List<SignalInfo> GetPositions(int toOpen, PositionSide positionSide, IEnumerable<SymbolMarketInfo> symbolMarketInfos,
         IReadOnlyCollection<Position> openedPositions, IReadOnlyCollection<BinancePositionDetailsUsdt> positionsInfo,
         PercentLimitTradeLogicLogicOptions tradeLogicLogicOptions)
     {
@@ -570,29 +566,32 @@ internal class PercentLimitFilters
 
         var counter = 0;
         var list = new List<SignalInfo>();
-        foreach (var position in klineInfos)
+        foreach (var symbolMarketInfo in symbolMarketInfos)
         {
             if (counter >= toOpen)
             {
                 break;
             }
 
-            if (openedPositions.Any(x => x.Name == position.SymbolName && x.PositionSide == position.SignalSide))
+            if (openedPositions.Any(x => x.Name == symbolMarketInfo.FuturesUsdName && x.PositionSide == positionSide))
             {
+                _logger.LogInformation("{SymbolName} | {Side}. Same position is already exist. In {Method}",
+                    symbolMarketInfo.FuturesUsdName, positionSide, nameof(GetPositions));
+                
                 continue;
             }
 
-            if (positionsInfo.Any(x => x.Symbol == position.SymbolName
+            if (positionsInfo.Any(x => x.Symbol == symbolMarketInfo.FuturesUsdName
                                        && (x.Leverage != tradeLogicLogicOptions.Leverage ||
                                            x.MarginType != tradeLogicLogicOptions.MarginType)))
             {
-                _logger.LogWarning("Skip to open position because leverage or margin types are different. In {Method}",
-                    nameof(GetPositions));
+                _logger.LogWarning("{SymbolName} | {Side}. Skip to open position because leverage or margin types are different. In {Method}",
+                    symbolMarketInfo.FuturesUsdName, positionSide, nameof(GetPositions));
 
                 continue;
             }
 
-            list.Add(position);
+            list.Add(new SignalInfo(symbolMarketInfo.FuturesUsdName, symbolMarketInfo.QuoteAsset, positionSide));
 
             counter++;
         }

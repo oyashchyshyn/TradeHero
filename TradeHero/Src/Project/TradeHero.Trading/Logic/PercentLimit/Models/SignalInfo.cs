@@ -9,10 +9,10 @@ internal class SignalInfo
     public string QuoteName { get; }
     public PositionSide SignalSide { get; }
 
-    public SignalInfo(SymbolMarketInfo symbolMarketInfo, PositionSide positionSide)
+    public SignalInfo(string symbolName, string quoteName, PositionSide positionSide)
     {
         SignalSide = positionSide;
-        SymbolName = symbolMarketInfo.FuturesUsdName;
-        QuoteName = symbolMarketInfo.QuoteAsset;
+        SymbolName = symbolName;
+        QuoteName = quoteName;
     }
 }

@@ -61,7 +61,7 @@ internal class PercentLimitUserAccountStream : BaseFuturesUsdUserAccountStream
             }
             else
             {
-                if (data.Data.UpdateData.Type == FuturesOrderType.Market && data.Data.UpdateData.Status is OrderStatus.Filled)
+                if (data.Data.UpdateData is { Type: FuturesOrderType.Market, Status: OrderStatus.Filled })
                 {
                     var openedPosition = Store.Positions.SingleOrDefault(
                         x => x.Name == data.Data.UpdateData.Symbol && x.PositionSide == data.Data.UpdateData.PositionSide

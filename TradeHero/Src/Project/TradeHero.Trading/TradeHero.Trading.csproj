@@ -9,10 +9,11 @@
     </PropertyGroup>
     
     <ItemGroup>
-      <PackageReference Include="Skender.Stock.Indicators" Version="2.4.7" />
+      <PackageReference Include="Skender.Stock.Indicators" Version="2.4.10" />
     </ItemGroup>
 
     <ItemGroup>
+        <Folder Include="Base\Interfaces" />
         <Folder Include="Properties" />
     </ItemGroup>
 

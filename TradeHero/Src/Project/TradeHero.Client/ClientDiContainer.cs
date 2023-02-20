@@ -1,5 +1,4 @@
 ﻿using Binance.Net.Objects;
-using CryptoExchange.Net.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TradeHero.Client.Clients;
@@ -70,7 +69,7 @@ public static class ClientDiContainer
     {
         var clientOptions = new BinanceClientOptions
         {
-            ApiCredentials = new ApiCredentials(apiKey, secretKey),
+            ApiCredentials = new BinanceApiCredentials(apiKey, secretKey),
             LogLevel = appSettings.Logger.RestClientLogLevel
         };
         
@@ -105,7 +104,7 @@ public static class ClientDiContainer
     {
         var clientOptions = new BinanceSocketClientOptions
         {
-            ApiCredentials = new ApiCredentials(apiKey, secretKey),
+            ApiCredentials = new BinanceApiCredentials(apiKey, secretKey),
             LogLevel = appSettings.Logger.SocketClientLogLevel
         };
         
