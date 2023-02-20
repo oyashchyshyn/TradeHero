@@ -69,7 +69,7 @@ internal class  PercentLimitEndpoints
             }
             
             var initialMargin = tradeLogicLogicOptions.PercentFromDepositForOpen != 0 
-                ? Math.Round(balance.AvailableBalance * tradeLogicLogicOptions.PercentFromDepositForOpen / 100, 2) * positionInfo.Leverage
+                ? Math.Round(balance.WalletBalance * tradeLogicLogicOptions.PercentFromDepositForOpen / 100, 2) * positionInfo.Leverage
                 : symbolInfo.MinNotionalFilter.MinNotional; 
                 
             _logger.LogInformation("{Symbol} | {Side}. Percent from deposit is {Percent}%. Margin with leverage is {Margin}. In {Method}",

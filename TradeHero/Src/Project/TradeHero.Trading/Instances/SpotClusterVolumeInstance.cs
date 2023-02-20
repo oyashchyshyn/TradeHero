@@ -364,7 +364,7 @@ internal class SpotClusterVolumeInstance : IInstance
                 symbolMarketInfo.Bids.AddRange(GetOrderBookDepth(orderBookRequest.Data.Bids, orderBookDepthPercent, false));
             }
 
-            _logger.LogInformation("{Symbol}. Finished in {Elapsed}. In {Method}",
+            _logger.LogDebug("{Symbol}. Finished in {Elapsed}. In {Method}",
                 symbolMarketInfo.FuturesUsdName, stopwatch.Elapsed, nameof(SetKlineDetailInfoAsync));
             
             stopwatch.Stop();
