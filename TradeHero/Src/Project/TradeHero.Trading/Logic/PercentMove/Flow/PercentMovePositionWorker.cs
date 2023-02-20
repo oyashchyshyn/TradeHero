@@ -186,7 +186,6 @@ internal class PercentMovePositionWorker : BasePositionWorker
             
             if (pmsStore.Positions.Count(x => x.Name == positionToDelete.Name) == 1)
             {
-                pmsStore.MarketLastPrices.Remove(positionToDelete.Name);
                 pmsStore.SymbolStatus.Remove(positionToDelete.Name);
                 
                 var stream = pmsStore.SymbolTickerStreams[positionToDelete.Name];

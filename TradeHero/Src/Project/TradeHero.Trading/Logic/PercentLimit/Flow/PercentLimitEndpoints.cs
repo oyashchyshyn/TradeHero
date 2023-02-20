@@ -194,7 +194,7 @@ internal class  PercentLimitEndpoints
         }
     } 
     
-    public async Task<ActionResult> CreateMarketAverageBuyOrderAsync(Position openedPosition, decimal lastPrice, BinanceFuturesUsdtSymbol symbolInfo, 
+    public async Task<ActionResult> CreateMarketAverageBuyOrderAsync(Position openedPosition, BinanceFuturesUsdtSymbol symbolInfo, 
         BinanceFuturesAccountBalance balance, PercentLimitTradeLogicLogicOptions tradeLogicLogicOptions, int maxRetries = 5, CancellationToken cancellationToken = default)
     {
         var positionString = openedPosition.ToString();
@@ -220,6 +220,19 @@ internal class  PercentLimitEndpoints
                 return ActionResult.Error;
             }
 
+            var lastPriceRequest = await _restBinanceClient.UsdFuturesApi.ExchangeData.GetPriceAsync(
+                openedPosition.Name,
+                ct: cancellationToken
+            );
+
+            if (!lastPriceRequest.Success)
+            {
+                _logger.LogWarning(new ThException(lastPriceRequest.Error),"{Position}. In {Method}",
+                    positionString, nameof(CreateBuyMarketOrderAsync));
+                        
+                return ActionResult.Error;
+            }
+            
             var orderQuantity = _calculatorService.CalculateOrderQuantity(new CalculatedOrderQuantity
             {
                 MinNotional = symbolInfo.MinNotionalFilter.MinNotional,
@@ -228,7 +241,7 @@ internal class  PercentLimitEndpoints
                 EntryPrice = openedPosition.EntryPrice,
                 TotalQuantity = openedPosition.TotalQuantity,
                 Leverage = openedPosition.Leverage,
-                LastPrice = lastPrice,
+                LastPrice = lastPriceRequest.Data.Price,
                 MinRoePercent = tradeLogicLogicOptions.AverageToRoe
             });
             
@@ -240,10 +253,10 @@ internal class  PercentLimitEndpoints
                 return ActionResult.Error;
             }
             
-            var marginForOrder = orderQuantity * lastPrice / openedPosition.Leverage;
+            var marginForOrder = orderQuantity * lastPriceRequest.Data.Price / openedPosition.Leverage;
                     
             _logger.LogInformation("{Position}. Future order quantity: {Quantity}. Last price: {LastPrice}. Margin for order: {Margin}. In {Method}",
-                positionString, orderQuantity, lastPrice, marginForOrder, nameof(CreateBuyMarketOrderAsync));
+                positionString, orderQuantity, lastPriceRequest.Data.Price, marginForOrder, nameof(CreateBuyMarketOrderAsync));
                     
             if (balance.WalletBalance <= 0)
             {
@@ -337,18 +350,13 @@ internal class  PercentLimitEndpoints
         }
     }
 
-    public async Task<ActionResult> CreateMarketStopOrderAsync(Position openedPosition, decimal lastPrice, decimal? percentFromLastPrice, 
+    public async Task<ActionResult> CreateMarketStopOrderAsync(Position openedPosition, decimal lastPrice, decimal percentFromLastPrice, 
         BinanceFuturesUsdtSymbol symbolInfo, int maxRetries = 5, CancellationToken cancellationToken = default)
     {
         var positionString = openedPosition.ToString();
 
         try
         {
-            if (!percentFromLastPrice.HasValue)
-            {
-                return ActionResult.Success;
-            }
-            
             _logger.LogInformation("{Position}. Start create stop loss order. In {Method}",
                 positionString, nameof(CreateMarketStopOrderAsync));
 
@@ -380,15 +388,15 @@ internal class  PercentLimitEndpoints
             decimal stopLimitPriceFromLastPricePercent;
             if (openedPosition.PositionSide == PositionSide.Short)
             {
-                stopLimitPriceFromLastPricePercent = percentFromLastPrice.Value > 0
-                    ? percentFromLastPrice.Value
-                    : -percentFromLastPrice.Value;
+                stopLimitPriceFromLastPricePercent = percentFromLastPrice > 0
+                    ? percentFromLastPrice
+                    : -percentFromLastPrice;
             }
             else
             {
-                stopLimitPriceFromLastPricePercent = percentFromLastPrice.Value > 0
-                    ? -percentFromLastPrice.Value
-                    : percentFromLastPrice.Value;
+                stopLimitPriceFromLastPricePercent = percentFromLastPrice > 0
+                    ? -percentFromLastPrice
+                    : percentFromLastPrice;
             }
 
             foreach (var partOfOrderQuantity in _calculatorService.SplitPositionQuantity(openedPosition.TotalQuantity, symbolInfo.LotSizeFilter.MaxQuantity))

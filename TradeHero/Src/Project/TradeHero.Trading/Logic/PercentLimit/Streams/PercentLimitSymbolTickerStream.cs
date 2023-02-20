@@ -28,13 +28,24 @@ internal class PercentLimitSymbolTickerStream : BaseFuturesUsdSymbolTickerStream
         _percentLimitEndpoints = percentLimitEndpoints;
     }
 
-    protected override Task ManageTickerAsync(IBinance24HPrice ticker, CancellationToken cancellationToken = default)
+    protected override async Task ManageTickerAsync(IBinance24HPrice ticker, CancellationToken cancellationToken = default)
     {
         try
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                Logger.LogInformation("CancellationToken is requested. In {Method}",
+                    nameof(ManageTickerAsync));
+                
+                return;
+            }
+            
             if (_percentLimitStore.TradeLogicLogicOptions is { EnableTrailingStops: false, EnableMarketStopToExit: false })
             {
-                return Task.CompletedTask;
+                Logger.LogInformation("{Symbol}. Market stop exit and Trailing stop are disabled. In {Method}", 
+                    ticker.Symbol, nameof(ManageTickerAsync));
+                
+                return;
             }
             
             var symbolInfo = _percentLimitStore.FuturesUsd.ExchangerData.ExchangeInfo.Symbols.SingleOrDefault(x => x.Name == ticker.Symbol);
@@ -42,7 +53,7 @@ internal class PercentLimitSymbolTickerStream : BaseFuturesUsdSymbolTickerStream
             {
                 Logger.LogWarning("{Symbol}. {PropertyName} is null. In {Method}", ticker.Symbol, nameof(symbolInfo), nameof(ManageTickerAsync));
 
-                return Task.CompletedTask;
+                return;
             }
             
             var balance = _percentLimitStore.FuturesUsd.AccountData.Balances.SingleOrDefault(x => x.Asset == symbolInfo.QuoteAsset);
@@ -51,13 +62,34 @@ internal class PercentLimitSymbolTickerStream : BaseFuturesUsdSymbolTickerStream
                 Logger.LogWarning("{Symbol}. {PropertyName} by quote ({QuoteName}) is null. In {Method}", 
                     ticker.Symbol, nameof(balance), symbolInfo.QuoteAsset, nameof(ManageTickerAsync));
                 
-                return Task.CompletedTask;
+                return;
+            }
+
+            if (_percentLimitStore.Positions.All(x => x.Name != ticker.Symbol))
+            {
+                Logger.LogWarning("{Symbol}. There is no positions for current socket connection. In {Method}", 
+                    ticker.Symbol, nameof(ManageTickerAsync));
+                
+                return;
             }
             
-            foreach (var position in _percentLimitStore.Positions.Where(x => x.Name == ticker.Symbol).ToArray())
+            var parallelOptions = new ParallelOptions
             {
-                Task.Run(async () =>
+                MaxDegreeOfParallelism = 2,
+                CancellationToken = cancellationToken
+            };
+            
+            await Parallel.ForEachAsync(_percentLimitStore.Positions.Where(x => x.Name == ticker.Symbol).ToArray(), 
+                parallelOptions, async (position, parallelCancellationToken) =>
                 {
+                    if (parallelCancellationToken.IsCancellationRequested)
+                    {
+                        Logger.LogInformation("CancellationToken is requested is Parallel. In {Method}",
+                            nameof(ManageTickerAsync));
+                
+                        return;
+                    }
+                    
                     var key = $"{position.Name}_{position.PositionSide}";
                     if (!_percentLimitStore.PositionsInfo.ContainsKey(key))
                     {
@@ -94,7 +126,7 @@ internal class PercentLimitSymbolTickerStream : BaseFuturesUsdSymbolTickerStream
                             var marketClosePositionResult = await _percentLimitEndpoints.CreateMarketClosePositionOrderAsync(
                                 position,
                                 symbolInfo,
-                                cancellationToken: cancellationToken
+                                cancellationToken: parallelCancellationToken
                             );
                             if (marketClosePositionResult == ActionResult.Success)
                             {
@@ -103,28 +135,24 @@ internal class PercentLimitSymbolTickerStream : BaseFuturesUsdSymbolTickerStream
                             break;
                         }
                         case PercentLimitOrderToPlace.MarketStopToSafe:
-                        {
-                            var stopLimitToSafeResult = await _percentLimitEndpoints.CreateMarketStopOrderAsync(
-                                position,
-                                ticker.LastPrice,
-                                _percentLimitStore.TradeLogicLogicOptions.MarketStopSafePriceFromLastPricePercent,
-                                symbolInfo,
-                                cancellationToken: cancellationToken
-                            );
-                            if (stopLimitToSafeResult == ActionResult.Success)
-                            {
-                                positionInfo.IsNeedToPlaceMarketStop = false;
-                            }   
-                            break;
-                        }
                         case PercentLimitOrderToPlace.MarketStopToExit:
                         {
+                            var pricePercent = orderToPlace switch
+                            {
+                                PercentLimitOrderToPlace.MarketStopToSafe => _percentLimitStore.TradeLogicLogicOptions
+                                    .MarketStopSafePriceFromLastPricePercent ?? 0.0m,
+                                PercentLimitOrderToPlace.MarketStopToExit => _percentLimitStore.TradeLogicLogicOptions
+                                    .MarketStopExitPriceFromLastPricePercent,
+                                // ReSharper disable once UnreachableSwitchArmDueToIntegerAnalysis
+                                _ => 0.0m
+                            };
+
                             var stopLimitToCloseResult = await _percentLimitEndpoints.CreateMarketStopOrderAsync(
                                 position,
                                 ticker.LastPrice,
-                                _percentLimitStore.TradeLogicLogicOptions.MarketStopExitPriceFromLastPricePercent,
+                                pricePercent,
                                 symbolInfo,
-                                cancellationToken: cancellationToken
+                                cancellationToken: parallelCancellationToken
                             );
                             if (stopLimitToCloseResult == ActionResult.Success)
                             {
@@ -138,25 +166,17 @@ internal class PercentLimitSymbolTickerStream : BaseFuturesUsdSymbolTickerStream
                     }
 
                     positionInfo.IsNeedToCheckPosition = true;
-                    
-                }, cancellationToken);
-            }
-
-            return Task.CompletedTask;
+                });
         }
         catch (TaskCanceledException taskCanceledException)
         {
             Logger.LogInformation("{Message}. In {Method}",
                 taskCanceledException.Message, nameof(ManageTickerAsync));
-
-            return Task.CompletedTask;
         }
         catch (Exception exception)
         {
             Logger.LogCritical(exception, "{Symbol}. In {Method}", 
                 ticker.Symbol, nameof(ManageTickerAsync));
-            
-            return Task.CompletedTask;
         }
     }
 }

@@ -17,7 +17,6 @@ internal abstract class BaseTradeLogicStore : ITradeLogicStore
     public FuturesUsdMarket FuturesUsd { get; private set; } = new();
     public List<Position> Positions { get; } = new();
     public Dictionary<string, ITickerStream?> SymbolTickerStreams { get; } = new();
-    public Dictionary<string, decimal> MarketLastPrices { get; } = new();
     public BaseInstanceOptions? InstanceOptions { get; private set; }
 
     protected BaseTradeLogicStore(
@@ -89,7 +88,6 @@ internal abstract class BaseTradeLogicStore : ITradeLogicStore
             await ClearInstanceOptionsAsync();
             
             Positions.Clear();
-            MarketLastPrices.Clear();
             SymbolTickerStreams.Clear();
             
             Spot = new SpotMarket();

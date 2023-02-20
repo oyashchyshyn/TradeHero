@@ -7,7 +7,6 @@ using TradeHero.Core.Enums;
 using TradeHero.Core.Models.Trading;
 using TradeHero.Trading.Base;
 using TradeHero.Trading.Endpoints.Rest;
-using TradeHero.Trading.Endpoints.Socket;
 using TradeHero.Trading.Helpers;
 using TradeHero.Trading.Logic.PercentMove.Flow;
 using TradeHero.Trading.Logic.PercentMove.Streams;
@@ -27,12 +26,11 @@ internal class PercentMoveTradeLogic : BaseFuturesUsdTradeLogic
         IFuturesUsdEndpoints futuresUsdEndpoints,
         ISpotEndpoints spotEndpoints,
         IInstanceFactory instanceFactory,
-        IFuturesUsdMarketTickerStream futuresUsdMarketTickerStream,
         PercentMovePositionWorker percentMovePositionWorker,
         PercentMoveStore percentMoveStore, 
         PercentMoveUserAccountStream percentMoveUserAccountStream
         )
-        : base(binanceSocketClient, jobService, spotEndpoints, instanceFactory, futuresUsdMarketTickerStream,
+        : base(binanceSocketClient, jobService, spotEndpoints, instanceFactory,
             percentMoveUserAccountStream, logger, telegramService, futuresUsdEndpoints)
     {
         _percentMovePositionWorker = percentMovePositionWorker;

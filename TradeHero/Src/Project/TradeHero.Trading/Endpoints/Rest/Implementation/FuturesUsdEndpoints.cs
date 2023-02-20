@@ -5,6 +5,7 @@ using TradeHero.Core.Contracts.Client;
 using TradeHero.Core.Contracts.Trading;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Exceptions;
+using TradeHero.Trading.Endpoints.Models;
 
 namespace TradeHero.Trading.Endpoints.Rest.Implementation;
 
@@ -514,7 +515,59 @@ internal class FuturesUsdEndpoints : IFuturesUsdEndpoints
             return ActionResult.SystemError;
         }
     }
-    
+
+    public async Task<LastPriceResult> GetSymbolLastPriceAsync(string symbol, int maxRetries = 5, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            for (var i = 0; i < maxRetries; i++)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    _logger.LogInformation("Cancellation token is requested. In {Method}", 
+                        nameof(GetSymbolLastPriceAsync));
+
+                    return new LastPriceResult(ActionResult.CancellationTokenRequested, 0);
+                }
+                
+                var lastPriceRequest = await _restBinanceClient.UsdFuturesApi.ExchangeData.GetPriceAsync(
+                    symbol, 
+                    ct: cancellationToken
+                );
+            
+                if (lastPriceRequest.Success)
+                {
+                    _logger.LogInformation("{Symbol}. Last price got successfully. In {Method}",
+                        symbol, nameof(GetSymbolLastPriceAsync));
+                    
+                    return new LastPriceResult(ActionResult.Success, lastPriceRequest.Data.Price);
+                }
+                
+                _logger.LogWarning(new ThException(lastPriceRequest.Error),"In {Method}",
+                    nameof(GetSymbolLastPriceAsync));
+            }
+            
+            _logger.LogError("{Number} retries exceeded In {Method}", maxRetries, 
+                nameof(DestroyStreamListerKeyAsync));
+
+            return new LastPriceResult(ActionResult.ClientError, 0);
+        }
+        catch (TaskCanceledException taskCanceledException)
+        {
+            _logger.LogWarning("{Message}. In {Method}",
+                taskCanceledException.Message, nameof(GetSymbolLastPriceAsync));
+            
+            return new LastPriceResult(ActionResult.CancellationTokenRequested, 0);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogCritical(exception, "{Symbol}. Cannot manage leverage change request. In {Method}",
+                symbol, nameof(GetSymbolLastPriceAsync));
+
+            return new LastPriceResult(ActionResult.SystemError, 0);
+        }
+    }
+
     public async Task<ActionResult> CancelOpenedOrdersAsync(string symbol, PositionSide side, int maxRetries = 5, CancellationToken cancellationToken = default)
     {
         try
