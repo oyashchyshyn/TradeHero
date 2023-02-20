@@ -15,10 +15,10 @@ internal abstract class BaseTradeLogicStore : ITradeLogicStore
 
     public SpotMarket Spot { get; private set; } = new();
     public FuturesUsdMarket FuturesUsd { get; private set; } = new();
-    public BaseInstanceOptions? InstanceOptions { get; private set; }
     public List<Position> Positions { get; } = new();
-    public Dictionary<string, BaseFuturesUsdSymbolTickerStream?> UsdFuturesTickerStreams { get; } = new();
+    public Dictionary<string, ITickerStream?> SymbolTickerStreams { get; } = new();
     public Dictionary<string, decimal> MarketLastPrices { get; } = new();
+    public BaseInstanceOptions? InstanceOptions { get; private set; }
 
     protected BaseTradeLogicStore(
         ILogger logger, 
@@ -90,7 +90,7 @@ internal abstract class BaseTradeLogicStore : ITradeLogicStore
             
             Positions.Clear();
             MarketLastPrices.Clear();
-            UsdFuturesTickerStreams.Clear();
+            SymbolTickerStreams.Clear();
             
             Spot = new SpotMarket();
             FuturesUsd = new FuturesUsdMarket();

@@ -2,18 +2,20 @@ using Binance.Net.Interfaces;
 using CryptoExchange.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using TradeHero.Core.Contracts.Client;
+using TradeHero.Core.Contracts.Trading;
 using TradeHero.Core.Enums;
 using TradeHero.Core.Exceptions;
 
 namespace TradeHero.Trading.Base;
 
-internal abstract class BaseFuturesUsdSymbolTickerStream
+internal abstract class BaseFuturesUsdSymbolTickerStream : ITickerStream
 {
     private readonly IThSocketBinanceClient _socketBinanceClient;
 
     protected readonly ILogger Logger;
     
     public UpdateSubscription SocketSubscription { get; private set; } = null!;
+    public bool IsConnected { get; private set; }
     
     protected BaseFuturesUsdSymbolTickerStream(
         ILogger logger,
@@ -49,6 +51,8 @@ internal abstract class BaseFuturesUsdSymbolTickerStream
 
                 if (socketSubscriptionResult.Success)
                 {
+                    IsConnected = true;
+                    
                     SocketSubscription = socketSubscriptionResult.Data;
                 
                     socketSubscriptionResult.Data.Exception += exception =>
@@ -58,9 +62,21 @@ internal abstract class BaseFuturesUsdSymbolTickerStream
 
                     socketSubscriptionResult.Data.ActivityPaused += () => { Logger.LogWarning("{Symbol}. Server activity paused", symbol); };
                     socketSubscriptionResult.Data.ActivityUnpaused += () => { Logger.LogInformation("{Symbol}. Server activity unpaused", symbol); };
-                    socketSubscriptionResult.Data.ConnectionLost += () => { Logger.LogWarning("{Symbol}. Server connection lost", symbol); };
-                    socketSubscriptionResult.Data.ConnectionRestored += _ => { Logger.LogInformation("{Symbol}. Server connection established", symbol); };
-                    socketSubscriptionResult.Data.ConnectionClosed += () => { Logger.LogInformation("{Symbol}. Server connection closed", symbol); };
+                    socketSubscriptionResult.Data.ConnectionLost += () =>
+                    {
+                        IsConnected = false;
+                        Logger.LogWarning("{Symbol}. Server connection lost", symbol);
+                    };
+                    socketSubscriptionResult.Data.ConnectionRestored += _ =>
+                    {
+                        IsConnected = true;
+                        Logger.LogInformation("{Symbol}. Server connection established", symbol);
+                    };
+                    socketSubscriptionResult.Data.ConnectionClosed += () =>
+                    {
+                        IsConnected = false;
+                        Logger.LogInformation("{Symbol}. Server connection closed", symbol);
+                    };
                     
                     break;
                 }

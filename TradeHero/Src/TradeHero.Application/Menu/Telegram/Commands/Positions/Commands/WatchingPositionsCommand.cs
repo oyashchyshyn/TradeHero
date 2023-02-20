@@ -36,8 +36,7 @@ internal class WatchingPositionsCommand : ITelegramMenuCommand
             _telegramMenuStore.PreviousCommandId = _telegramMenuStore.TelegramButtons.Positions;
             _telegramMenuStore.LastCommandId = Id;
         
-            var positions = _storeService.Bot.TradeLogic?.Store.Positions;
-
+            var positions = _storeService.Bot.TradeLogic?.Store.Positions.ToArray();
             if (positions == null || !positions.Any())
             {
                 await _telegramService.SendTextMessageToUserAsync(
@@ -47,12 +46,27 @@ internal class WatchingPositionsCommand : ITelegramMenuCommand
             
                 return;
             }
-        
+            
+            var socketSubscriptions = _storeService.Bot.TradeLogic?.Store.SymbolTickerStreams;
+            if (socketSubscriptions == null)
+            {
+                await _telegramService.SendTextMessageToUserAsync(
+                    "There is subscriptions for sockets.", 
+                    _telegramMenuStore.GetKeyboard(_telegramMenuStore.TelegramButtons.Positions),
+                    cancellationToken: cancellationToken);
+            }
+            
             var stringBuilderList = new List<StringBuilder> { new() };
             var counter = 0;
             foreach (var position in positions)
             {
-                var message = string.Format("S: {0}{1}S: {2}{3}L: x{4}{5}Q: {6}{7}E: {8}{9}{10}",
+                var inSocketSubscribed = false;
+                if (socketSubscriptions != null && socketSubscriptions.TryGetValue(position.Name, out var value))
+                {
+                    inSocketSubscribed = value?.IsConnected ?? false;
+                }
+                
+                var message = string.Format("{0}{1}Side: {2}{3}Leverage: x{4}{5}Quantity: {6}{7}Entry price: {8}{9}Socket connected: {10}{11}{12}",
                     position.Name,
                     Environment.NewLine,
                     position.PositionSide,
@@ -62,6 +76,8 @@ internal class WatchingPositionsCommand : ITelegramMenuCommand
                     position.TotalQuantity,
                     Environment.NewLine,
                     position.EntryPrice,
+                    Environment.NewLine,
+                    inSocketSubscribed,
                     Environment.NewLine,
                     Environment.NewLine
                 );

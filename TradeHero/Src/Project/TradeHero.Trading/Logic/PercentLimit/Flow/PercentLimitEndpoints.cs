@@ -424,19 +424,14 @@ internal class  PercentLimitEndpoints
                         quantity: partOfOrderQuantity,
                         positionSide: openedPosition.PositionSide,
                         stopPrice: roundedStopPrice,
-                        closePosition: true,
-                        timeInForce: TimeInForce.GoodTillCanceled,
                         ct: cancellationToken
                     );
 
                     if (placeOrderRequest.Success)
                     {
                         _logger.LogInformation("{Position}. Stop market order with id {OrderId} and quantity {Quantity} placed successfully. In {Method}",
-                            positionString, placeOrderRequest.Data.Id, partOfOrderQuantity, nameof(CreateMarketAverageBuyOrderAsync));
-                        
-                        _logger.LogInformation("{Position}. Stop market order placed successfully. In {Method}",
-                            positionString, nameof(CreateMarketStopOrderAsync));
-                        
+                            positionString, placeOrderRequest.Data.Id, partOfOrderQuantity, nameof(CreateMarketStopOrderAsync));
+
                         break;
                     }
 

@@ -7,4 +7,6 @@ public interface ITradeLogicStore
     SpotMarket Spot { get; }
     FuturesUsdMarket FuturesUsd { get; }
     List<Position> Positions { get; }
+    Dictionary<string, ITickerStream?> SymbolTickerStreams { get; }
+    Dictionary<string, decimal> MarketLastPrices { get; }
 }
