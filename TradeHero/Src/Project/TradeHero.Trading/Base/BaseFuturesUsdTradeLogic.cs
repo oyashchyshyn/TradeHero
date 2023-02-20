@@ -8,7 +8,6 @@ using TradeHero.Core.Models.Repositories;
 using TradeHero.Core.Models.Trading;
 using TradeHero.Trading.Constants;
 using TradeHero.Trading.Endpoints.Rest;
-using TradeHero.Trading.Endpoints.Socket;
 
 namespace TradeHero.Trading.Base;
 
@@ -18,7 +17,6 @@ internal abstract class BaseFuturesUsdTradeLogic : ITradeLogic
     private readonly IJobService _jobService;
     private readonly ISpotEndpoints _spotEndpoints;
     private readonly IInstanceFactory _instanceFactory;
-    private readonly IFuturesUsdMarketTickerStream _futuresUsdMarketTickerStream;
     
     private readonly BaseFuturesUsdUserAccountStream _userAccountStreamStream;
 
@@ -38,7 +36,6 @@ internal abstract class BaseFuturesUsdTradeLogic : ITradeLogic
         IJobService jobService,
         ISpotEndpoints spotEndpoints,
         IInstanceFactory instanceFactory,
-        IFuturesUsdMarketTickerStream futuresUsdMarketTickerStream,
         BaseFuturesUsdUserAccountStream userAccountStreamStream,
         ILogger logger,
         ITelegramService telegramService,
@@ -49,7 +46,6 @@ internal abstract class BaseFuturesUsdTradeLogic : ITradeLogic
         _jobService = jobService;
         _spotEndpoints = spotEndpoints;
         _instanceFactory = instanceFactory;
-        _futuresUsdMarketTickerStream = futuresUsdMarketTickerStream;
         _userAccountStreamStream = userAccountStreamStream;
 
         Logger = logger;
@@ -108,12 +104,6 @@ internal abstract class BaseFuturesUsdTradeLogic : ITradeLogic
                 return actionResult;
             }
 
-            actionResult = await _futuresUsdMarketTickerStream.StartStreamMarketTickerAsync(Store, cancellationToken: CancellationTokenSource.Token);
-            if (actionResult != ActionResult.Success)
-            {
-                return actionResult;
-            }
-            
             actionResult = await _userAccountStreamStream.StartUserUpdateDataStreamAsync(OnOrderReceive);
             if (actionResult != ActionResult.Success)
             {
@@ -252,9 +242,6 @@ internal abstract class BaseFuturesUsdTradeLogic : ITradeLogic
                     tickerStreamKeyValue.Key, nameof(FinishAsync));
             }
 
-            await _binanceSocketClient.UnsubscribeAsync(_futuresUsdMarketTickerStream.SocketSubscription);
-            Logger.LogInformation("Unsubscribe from Market Ticker Stream. In {Method}", nameof(FinishAsync));
-            
             await _binanceSocketClient.UnsubscribeAsync(_userAccountStreamStream.SocketSubscription);
             Logger.LogInformation("Unsubscribe from Account Stream. In {Method}", nameof(FinishAsync));
             

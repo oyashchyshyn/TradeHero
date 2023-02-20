@@ -34,6 +34,9 @@ internal class PercentLimitSymbolTickerStream : BaseFuturesUsdSymbolTickerStream
         {
             if (_percentLimitStore.TradeLogicLogicOptions is { EnableTrailingStops: false, EnableMarketStopToExit: false })
             {
+                Logger.LogInformation("{Symbol}. Market stop exit and Trailing stop are disabled. In {Method}", 
+                    ticker.Symbol, nameof(ManageTickerAsync));
+                
                 return Task.CompletedTask;
             }
             
@@ -50,6 +53,14 @@ internal class PercentLimitSymbolTickerStream : BaseFuturesUsdSymbolTickerStream
             {
                 Logger.LogWarning("{Symbol}. {PropertyName} by quote ({QuoteName}) is null. In {Method}", 
                     ticker.Symbol, nameof(balance), symbolInfo.QuoteAsset, nameof(ManageTickerAsync));
+                
+                return Task.CompletedTask;
+            }
+
+            if (_percentLimitStore.Positions.All(x => x.Name != ticker.Symbol))
+            {
+                Logger.LogWarning("{Symbol}. There is no positions for current socket connection. In {Method}", 
+                    ticker.Symbol, nameof(ManageTickerAsync));
                 
                 return Task.CompletedTask;
             }
@@ -103,26 +114,22 @@ internal class PercentLimitSymbolTickerStream : BaseFuturesUsdSymbolTickerStream
                             break;
                         }
                         case PercentLimitOrderToPlace.MarketStopToSafe:
-                        {
-                            var stopLimitToSafeResult = await _percentLimitEndpoints.CreateMarketStopOrderAsync(
-                                position,
-                                ticker.LastPrice,
-                                _percentLimitStore.TradeLogicLogicOptions.MarketStopSafePriceFromLastPricePercent,
-                                symbolInfo,
-                                cancellationToken: cancellationToken
-                            );
-                            if (stopLimitToSafeResult == ActionResult.Success)
-                            {
-                                positionInfo.IsNeedToPlaceMarketStop = false;
-                            }   
-                            break;
-                        }
                         case PercentLimitOrderToPlace.MarketStopToExit:
                         {
+                            var pricePercent = orderToPlace switch
+                            {
+                                PercentLimitOrderToPlace.MarketStopToSafe => _percentLimitStore.TradeLogicLogicOptions
+                                    .MarketStopSafePriceFromLastPricePercent ?? 0.0m,
+                                PercentLimitOrderToPlace.MarketStopToExit => _percentLimitStore.TradeLogicLogicOptions
+                                    .MarketStopExitPriceFromLastPricePercent,
+                                // ReSharper disable once UnreachableSwitchArmDueToIntegerAnalysis
+                                _ => 0.0m
+                            };
+
                             var stopLimitToCloseResult = await _percentLimitEndpoints.CreateMarketStopOrderAsync(
                                 position,
                                 ticker.LastPrice,
-                                _percentLimitStore.TradeLogicLogicOptions.MarketStopExitPriceFromLastPricePercent,
+                                pricePercent,
                                 symbolInfo,
                                 cancellationToken: cancellationToken
                             );
