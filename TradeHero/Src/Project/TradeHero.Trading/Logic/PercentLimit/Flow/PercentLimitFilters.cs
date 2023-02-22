@@ -348,14 +348,12 @@ internal class PercentLimitFilters
             // Stop loss logic
             if (tradeLogicLogicOptions.EnableMarketStopLoss)
             {
-                var currentPnl = _calculatorService.CalculatePnl(openedPosition.PositionSide, lastPrice,
-                    openedPosition.EntryPrice, openedPosition.TotalQuantity);
-
-                if (tradeLogicLogicOptions.StopLossForSide == PositionSide.Both ||
-                    tradeLogicLogicOptions.StopLossForSide == openedPosition.PositionSide)
+                if (tradeLogicLogicOptions.StopLossForSide == PositionSide.Both || tradeLogicLogicOptions.StopLossForSide == openedPosition.PositionSide)
                 {
-                    if (Math.Abs(currentPnl) >=
-                        Math.Round(balance.WalletBalance * tradeLogicLogicOptions.StopLossPercentFromDeposit / 100, 2))
+                    var currentPnl = _calculatorService.CalculatePnl(openedPosition.PositionSide, lastPrice,
+                        openedPosition.EntryPrice, openedPosition.TotalQuantity);
+                    
+                    if (currentPnl < 0 && Math.Abs(currentPnl) >= Math.Round(balance.WalletBalance * tradeLogicLogicOptions.StopLossPercentFromDeposit / 100, 2))
                     {
                         _logger.LogInformation(
                             "{Position}. Order will be closed by stop loss. Stop loss side: {Side}. Current pnl: {CurrentPnl}. " +
