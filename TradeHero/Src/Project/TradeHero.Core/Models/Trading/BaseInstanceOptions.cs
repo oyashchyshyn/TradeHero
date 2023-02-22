@@ -6,7 +6,6 @@ namespace TradeHero.Core.Models.Trading;
 public class BaseInstanceOptions
 {
     public KlineInterval Interval { get; set; }
-    public PositionSide Side { get; set; }
     public virtual Market Market { get; set; }
     public int ItemsInTask { get; set; }
     public bool RunImmediately { get; set; }

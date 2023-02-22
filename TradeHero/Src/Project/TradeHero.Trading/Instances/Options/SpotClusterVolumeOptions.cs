@@ -21,7 +21,7 @@ internal class SpotClusterVolumeOptions : BaseInstanceOptions
     public override string ToString()
     {
         var message =  $"Interval: {Interval} | Volume average: {VolumeAverage} | Order book depth: {OrderBookDepthPercent}% " +
-                       $"| Side: {Side} | Market: {Market} | Short mood: {ShortMoodAt}% | Long mood: {LongMoodAt}%";
+                       $"| Market: {Market} | Short mood: {ShortMoodAt}% | Long mood: {LongMoodAt}%";
         
         if (QuoteAssets.Any())
         {
