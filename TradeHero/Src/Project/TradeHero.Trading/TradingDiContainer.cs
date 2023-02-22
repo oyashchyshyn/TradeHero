@@ -2,8 +2,6 @@
 using TradeHero.Core.Contracts.Trading;
 using TradeHero.Trading.Endpoints.Rest;
 using TradeHero.Trading.Endpoints.Rest.Implementation;
-using TradeHero.Trading.Endpoints.Socket;
-using TradeHero.Trading.Endpoints.Socket.Implementation;
 using TradeHero.Trading.Factory;
 using TradeHero.Trading.Instances;
 using TradeHero.Trading.Logic.PercentLimit;
@@ -29,7 +27,6 @@ public static class TradingDiContainer
         serviceCollection.AddTransient<ITradeLogicFactory, TradeLogicFactory>();
         serviceCollection.AddTransient<IFuturesUsdEndpoints, FuturesUsdEndpoints>();
         serviceCollection.AddTransient<ISpotEndpoints, SpotEndpoints>();
-        serviceCollection.AddTransient<IFuturesUsdMarketTickerStream, FuturesUsdMarketTickerStream>();
         
         // Percent limit strategy
         serviceCollection.AddSingleton<PercentLimitStore>();

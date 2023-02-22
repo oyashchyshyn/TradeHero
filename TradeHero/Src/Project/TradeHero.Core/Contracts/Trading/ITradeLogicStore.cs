@@ -8,5 +8,4 @@ public interface ITradeLogicStore
     FuturesUsdMarket FuturesUsd { get; }
     List<Position> Positions { get; }
     Dictionary<string, ITickerStream?> SymbolTickerStreams { get; }
-    Dictionary<string, decimal> MarketLastPrices { get; }
 }

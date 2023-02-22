@@ -30,8 +30,6 @@ internal class PercentMoveSymbolTickerStream : BaseFuturesUsdSymbolTickerStream
     {
         try
         {
-            _percentMoveStore.MarketLastPrices[ticker.Symbol] = ticker.LastPrice;
-
             if (!_percentMoveStore.SymbolStatus.ContainsKey(ticker.Symbol) || !_percentMoveStore.SymbolStatus[ticker.Symbol] 
                 || !_percentMoveStore.SymbolLastOrderPrice.ContainsKey(ticker.Symbol) || _percentMoveStore.SymbolLastOrderPrice[ticker.Symbol] == 0)
             {

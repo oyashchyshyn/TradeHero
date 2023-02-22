@@ -7,7 +7,6 @@ using TradeHero.Core.Enums;
 using TradeHero.Core.Models.Trading;
 using TradeHero.Trading.Base;
 using TradeHero.Trading.Endpoints.Rest;
-using TradeHero.Trading.Endpoints.Socket;
 using TradeHero.Trading.Helpers;
 using TradeHero.Trading.Logic.PercentLimit.Flow;
 using TradeHero.Trading.Logic.PercentLimit.Streams;
@@ -29,14 +28,13 @@ internal class PercentLimitTradeLogic : BaseFuturesUsdTradeLogic
         IFuturesUsdEndpoints futuresUsdEndpoints,
         ISpotEndpoints spotEndpoints,
         IInstanceFactory instanceFactory,
-        IFuturesUsdMarketTickerStream futuresUsdMarketTickerStream,
         PercentLimitPositionWorker percentLimitPositionWorker, 
         PercentLimitEndpoints percentLimitEndpoints, 
         PercentLimitFilters percentLimitFilters,
         PercentLimitStore percentLimitStore, 
         PercentLimitUserAccountStream percentLimitUserAccountStream
         ) 
-        : base(binanceSocketClient, jobService, spotEndpoints, instanceFactory, futuresUsdMarketTickerStream,
+        : base(binanceSocketClient, jobService, spotEndpoints, instanceFactory,
             percentLimitUserAccountStream, logger, telegramService, futuresUsdEndpoints)
     {
         _percentLimitPositionWorker = percentLimitPositionWorker;
@@ -206,12 +204,19 @@ internal class PercentLimitTradeLogic : BaseFuturesUsdTradeLogic
                 
                 foreach (var openedPosition in _percentLimitStore.Positions.Where(x => x.Name == marketSignals.FuturesUsdName).ToArray())
                 {
-                    var symbolInfo =
-                        _percentLimitStore.FuturesUsd.ExchangerData.ExchangeInfo.Symbols.Single(x => x.Name == openedPosition.Name);
+                    var symbolInfo = _percentLimitStore.FuturesUsd.ExchangerData.ExchangeInfo.Symbols.Single(x => x.Name == openedPosition.Name);
 
-                    var lastPrice = _percentLimitStore.MarketLastPrices[openedPosition.Name];
-                
-                    var isAverageNeeded = await _percentLimitFilters.IsNeedToPlaceMarketAverageOrderAsync(instanceResult, openedPosition, lastPrice, 
+                    var lastPriceRequest = await FuturesUsdEndpoints.GetSymbolLastPriceAsync(
+                        openedPosition.Name, 
+                        cancellationToken: CancellationTokenSource.Token
+                    );
+
+                    if (lastPriceRequest.ActionResult != ActionResult.Success)
+                    {
+                        continue;
+                    }
+
+                    var isAverageNeeded = await _percentLimitFilters.IsNeedToPlaceMarketAverageOrderAsync(instanceResult, openedPosition, lastPriceRequest.LastPrice, 
                         marketSignals, symbolInfo, _percentLimitStore.TradeLogicLogicOptions);
                     
                     if (!isAverageNeeded)
@@ -219,12 +224,10 @@ internal class PercentLimitTradeLogic : BaseFuturesUsdTradeLogic
                         continue;
                     }
                 
-                    var balance = 
-                        _percentLimitStore.FuturesUsd.AccountData.Balances.Single(x => x.Asset == openedPosition.QuoteAsset);
+                    var balance = _percentLimitStore.FuturesUsd.AccountData.Balances.Single(x => x.Asset == openedPosition.QuoteAsset);
 
                     await _percentLimitEndpoints.CreateMarketAverageBuyOrderAsync(
-                        openedPosition, 
-                        lastPrice,
+                        openedPosition,
                         symbolInfo,
                         balance,
                         _percentLimitStore.TradeLogicLogicOptions,
