@@ -106,7 +106,6 @@ internal class SpotClusterVolumeInstance : IInstance
             {
                 Interval = localInstanceOptions.Interval,
                 Market = localInstanceOptions.Market,
-                Side = localInstanceOptions.Side,
                 LongsMarketMoodPercent = longMoodPercent,
                 ShortMarketMoodPercent = shortMoodPercent,
                 MarketMood = shortMoodPercent >= localInstanceOptions.ShortMoodAt ? Mood.Short : longMoodPercent >= localInstanceOptions.LongMoodAt ? Mood.Long : Mood.Balanced
