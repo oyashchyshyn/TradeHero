@@ -135,12 +135,30 @@ internal class PercentLimitFilters
             var shortsToOpen = GetPositions(shortsPositionsToOpen, PositionSide.Short, shortSignals, openedPositions, positionsInfo, options);
             var longsToOpen = GetPositions(longsPositionsToOpen, PositionSide.Long, longSignals, openedPositions, positionsInfo, options);
 
-            _logger.LogInformation("Longs to open: {LongsCount}. Shorts to open: {ShortsCount}. In {Method}",
-                longsToOpen.Count, shortsToOpen.Count, nameof(GetFilteredOrdersForOpenPositionAsync));
+            var signalsToOpen = new List<SignalInfo>();
 
-            shortsToOpen.AddRange(longsToOpen);
+            switch (options.OpenPositionsForSide)
+            {
+                case PositionSide.Short:
+                    signalsToOpen.AddRange(shortsToOpen);
+                    _logger.LogInformation("Shorts to open: {ShortsCount}. In {Method}",
+                        shortsToOpen.Count, nameof(GetFilteredOrdersForOpenPositionAsync));
+                    break;
+                case PositionSide.Long:
+                    signalsToOpen.AddRange(longsToOpen);
+                    _logger.LogInformation("Longs to open: {LongsCount}. In {Method}",
+                        longsToOpen.Count, nameof(GetFilteredOrdersForOpenPositionAsync));
+                    break;
+                case PositionSide.Both:
+                default:
+                    signalsToOpen.AddRange(longsToOpen);
+                    signalsToOpen.AddRange(shortsToOpen);
+                    _logger.LogInformation("Longs to open: {LongsCount}. Shorts to open: {ShortsCount}. In {Method}",
+                        longsToOpen.Count, shortsToOpen.Count, nameof(GetFilteredOrdersForOpenPositionAsync));
+                    break;
+            }
 
-            return shortsToOpen;
+            return signalsToOpen;
         }
         catch (Exception exception)
         {
@@ -172,12 +190,21 @@ internal class PercentLimitFilters
                 return Task.FromResult(false);
             }
 
+            if (options.AveragingPositionsForSide != PositionSide.Both && options.AveragingPositionsForSide != openedPosition.PositionSide)
+            {
+                _logger.LogInformation("{Position}. Position side is {PositionSide}. Available side for open is {AvailableSideForOpen}. In {Method}", 
+                    openedPosition.ToString(), openedPosition.PositionSide, options.AveragingPositionsForSide, 
+                    nameof(IsNeedToPlaceMarketAverageOrderAsync));
+                
+                return Task.FromResult(false);
+            }
+            
             var positionOption = GetPositionOption(instanceResult.MarketMood, options, FilterPositionAction.Average, 
                 openedPosition.PositionSide);
 
             if (positionOption == null)
             {
-                _logger.LogError("{Position}. Signal options  is null. In {Method}", 
+                _logger.LogError("{Position}. Signal options is null. In {Method}", 
                     openedPosition.ToString(), nameof(IsNeedToPlaceMarketAverageOrderAsync));
                 
                 return Task.FromResult(false);

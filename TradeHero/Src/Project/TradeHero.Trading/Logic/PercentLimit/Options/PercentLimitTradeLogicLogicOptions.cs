@@ -14,11 +14,13 @@ internal class PercentLimitTradeLogicLogicOptions : BaseTradeLogicOptions
     
     // Open Position
     public bool EnableOpenPositions { get; set; }
+    public PositionSide OpenPositionsForSide { get; set; }
     public decimal PercentFromDepositForOpen { get; set; }
     public SignalSettings SignalSettingsForOpen { get; set; } = new();
 
     // Average Position
     public bool EnableAveraging { get; set; }
+    public PositionSide AveragingPositionsForSide { get; set; }
     public decimal AverageFromRoe { get; set; }
     public decimal AverageToRoe { get; set; }
     public SignalSettings SignalSettingsForAverage { get; set; } = new();
